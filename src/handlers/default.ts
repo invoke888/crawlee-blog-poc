@@ -1,8 +1,11 @@
 import { createCheerioRouter } from 'crawlee';
 
-export const router = createCheerioRouter();
+export const defaultRouter = createCheerioRouter();
 
-router.addDefaultHandler(async ({ request, $, log, pushData }) => {
+defaultRouter.addDefaultHandler(async ({ request, $, log, pushData }) => {
+    const tokenId = request.userData?.token_id as number | undefined;
+    const baseSymbol = request.userData?.base_symbol as string | undefined;
+
     const ogTitle = $('meta[property="og:title"]').attr('content') ?? '';
     const ogImage = $('meta[property="og:image"]').attr('content') ?? '';
     const ogDescription = $('meta[property="og:description"]').attr('content') ?? '';
@@ -13,7 +16,10 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
     const title = ogTitle || $('title').text().trim();
     const description = ogDescription || $('meta[name="description"]').attr('content') || '';
 
-    const data = {
+    await pushData({
+        crawler: 'general',
+        token_id: tokenId,
+        base_symbol: baseSymbol,
         url: request.loadedUrl,
         title,
         description,
@@ -26,8 +32,7 @@ router.addDefaultHandler(async ({ request, $, log, pushData }) => {
             publishedTime: ogPublishedTime,
         },
         crawledAt: new Date().toISOString(),
-    };
+    });
 
-    log.info(`✅ ${title || '(no title)'} | ${request.loadedUrl}`);
-    await pushData(data);
+    log.info(`✅ [general] ${title || '(no title)'} | ${request.loadedUrl}`);
 });
