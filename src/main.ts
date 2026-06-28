@@ -1,9 +1,9 @@
 import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
-import { CheerioCrawler, Dataset, Configuration } from 'crawlee';
+import { CheerioCrawler, Dataset, Configuration, RequestQueue } from 'crawlee';
 
 import { defaultRouter } from './handlers/default.js';
 import { mediumRouter, mediumToRss } from './handlers/medium.js';
-import { listSources, type SourceRow } from './registry/db.js';
+import { listSources } from './registry/db.js';
 
 const sources = listSources({ limit: 5000 });
 const mediumSources = sources.filter((s) => s.host_platform === 'medium');
@@ -25,28 +25,9 @@ console.log(`   · general ${otherSources.length} → generalCrawler`);
 
 Configuration.getGlobalConfig().set('purgeOnStart', true);
 
-const mediumCrawler = new CheerioCrawler({
-    httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
-    requestHandler: mediumRouter,
-    maxRequestsPerMinute: 30,
-    maxConcurrency: 2,
-    sameDomainDelaySecs: 2,
-    useSessionPool: true,
-    persistCookiesPerSession: true,
-    additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
-    maxRequestRetries: 2,
-});
-
-const generalCrawler = new CheerioCrawler({
-    httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
-    requestHandler: defaultRouter,
-    maxRequestsPerMinute: 300,
-    maxConcurrency: 10,
-    sameDomainDelaySecs: 1,
-    useSessionPool: true,
-    persistCookiesPerSession: true,
-    maxRequestRetries: 2,
-});
+// 每个 Crawler 用 named RequestQueue · 避免共享 default queue 出 race condition
+const mediumQueue = await RequestQueue.open('medium');
+const generalQueue = await RequestQueue.open('general');
 
 const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
     url: rssUrl,
@@ -61,11 +42,39 @@ const generalReqs = otherSources.map((s) => ({
     },
 }));
 
-console.log(`\n🚀 启动 · 2 个 Crawler 并行`);
+await mediumQueue.addRequests(mediumReqs);
+await generalQueue.addRequests(generalReqs);
+
+const mediumCrawler = new CheerioCrawler({
+    requestQueue: mediumQueue,
+    httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
+    requestHandler: mediumRouter,
+    maxRequestsPerMinute: 30,
+    maxConcurrency: 2,
+    sameDomainDelaySecs: 2,
+    useSessionPool: true,
+    persistCookiesPerSession: true,
+    additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
+    maxRequestRetries: 2,
+});
+
+const generalCrawler = new CheerioCrawler({
+    requestQueue: generalQueue,
+    httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
+    requestHandler: defaultRouter,
+    maxRequestsPerMinute: 300,
+    maxConcurrency: 10,
+    sameDomainDelaySecs: 1,
+    useSessionPool: true,
+    persistCookiesPerSession: true,
+    maxRequestRetries: 2,
+});
+
+console.log(`\n🚀 启动 · 2 个 Crawler 并行 · named queues`);
 const t0 = performance.now();
 await Promise.all([
-    mediumCrawler.run(mediumReqs),
-    generalCrawler.run(generalReqs),
+    mediumCrawler.run(),
+    generalCrawler.run(),
 ]);
 const dt = ((performance.now() - t0) / 1000).toFixed(1);
 
