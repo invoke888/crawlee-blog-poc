@@ -1,4 +1,5 @@
 import { upsertSource, countSources } from './registry/db.js';
+import { isIgnoredUrl } from './config.js';
 
 const API_BASE = process.env.HHWL_API_BASE ?? 'https://blog-picker.hhwlnet.com';
 const PAGE_SIZE = 50;
@@ -56,7 +57,12 @@ async function main(): Promise<void> {
             break;
         }
 
+        let pageIgnored = 0;
         for (const it of page.items) {
+            if (isIgnoredUrl(it.blog_url)) {
+                pageIgnored += 1;
+                continue;
+            }
             upsertSource({
                 token_id: it.token_id,
                 base_symbol: it.base_symbol,
@@ -71,7 +77,7 @@ async function main(): Promise<void> {
 
         fetched += page.items.length;
         offset += page.items.length;
-        console.log(`  · 已拉 ${fetched}/${targetCount}(blogpicker 总计 ${total})`);
+        console.log(`  · 已拉 ${fetched}/${targetCount}(blogpicker 总计 ${total}) ⊘ ignored ${pageIgnored}`);
     }
 
     console.log(`✅ 完成 · registry 总条数 ${countSources()}`);
