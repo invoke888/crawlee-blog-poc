@@ -1,6 +1,6 @@
 import { db, countSources } from './registry/db.js';
 
-interface Row { c: number; v: string | null }
+interface Row { c: number; v: string | number | null }
 
 function group(sql: string, label: string): void {
     const rows = db().prepare(sql).all() as Row[];
@@ -8,7 +8,8 @@ function group(sql: string, label: string): void {
     const total = rows.reduce((a, r) => a + r.c, 0);
     for (const r of rows) {
         const pct = ((r.c / total) * 100).toFixed(1);
-        console.log(`  ${(r.v ?? '(null)').padEnd(20)} ${String(r.c).padStart(5)}  ${pct}%`);
+        const v = r.v === null || r.v === undefined ? '(null)' : String(r.v);
+        console.log(`  ${v.padEnd(20)} ${String(r.c).padStart(5)}  ${pct}%`);
     }
 }
 
