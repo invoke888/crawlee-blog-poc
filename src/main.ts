@@ -9,28 +9,28 @@ const sources = listSources({ limit: 5000 });
 const mediumSources = sources.filter((s) => s.host_platform === 'medium');
 const otherSources = sources.filter((s) => s.host_platform !== 'medium');
 
+// bug 2 修复:多 token_id 共 medium URL · 按 RSS URL 去重 · 反向 1-to-N mapping
+interface TokenAssoc { token_id: number; base_symbol: string; original_url: string }
+const mediumByRss = new Map<string, TokenAssoc[]>();
+for (const s of mediumSources) {
+    const rss = mediumToRss(s.blog_url);
+    const list = mediumByRss.get(rss) ?? [];
+    list.push({ token_id: s.token_id, base_symbol: s.base_symbol, original_url: s.blog_url });
+    mediumByRss.set(rss, list);
+}
+
 console.log(`📊 source registry 总 ${sources.length} 条`);
-console.log(`   · medium  ${mediumSources.length} → mediumCrawler(RSS · 1 req/s · 并发 2)`);
-console.log(`   · general ${otherSources.length} → generalCrawler(默认 · 并发 10)`);
+console.log(`   · medium  ${mediumSources.length} 源 → ${mediumByRss.size} unique RSS(1-to-N mapping)`);
+console.log(`   · general ${otherSources.length} → generalCrawler`);
 
 Configuration.getGlobalConfig().set('purgeOnStart', true);
-
-function buildRequest(s: SourceRow, urlOverride?: string) {
-    return {
-        url: urlOverride ?? s.blog_url,
-        userData: {
-            token_id: s.token_id,
-            base_symbol: s.base_symbol,
-            original_url: s.blog_url,
-        },
-    };
-}
 
 const mediumCrawler = new CheerioCrawler({
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mediumRouter,
-    maxRequestsPerMinute: 60,
+    maxRequestsPerMinute: 30,
     maxConcurrency: 2,
+    sameDomainDelaySecs: 2,
     useSessionPool: true,
     persistCookiesPerSession: true,
     additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
@@ -42,13 +42,24 @@ const generalCrawler = new CheerioCrawler({
     requestHandler: defaultRouter,
     maxRequestsPerMinute: 300,
     maxConcurrency: 10,
+    sameDomainDelaySecs: 1,
     useSessionPool: true,
     persistCookiesPerSession: true,
     maxRequestRetries: 2,
 });
 
-const mediumReqs = mediumSources.map((s) => buildRequest(s, mediumToRss(s.blog_url)));
-const generalReqs = otherSources.map((s) => buildRequest(s));
+const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
+    url: rssUrl,
+    userData: { sources_for_url: assoc },
+}));
+const generalReqs = otherSources.map((s) => ({
+    url: s.blog_url,
+    userData: {
+        token_id: s.token_id,
+        base_symbol: s.base_symbol,
+        original_url: s.blog_url,
+    },
+}));
 
 console.log(`\n🚀 启动 · 2 个 Crawler 并行`);
 const t0 = performance.now();
