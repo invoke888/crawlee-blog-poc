@@ -149,13 +149,18 @@ const generalCrawler = new CheerioCrawler({
 
 // 串行跑 · 避免 named queue 并发 race(ENOENT mkdir lock)
 const t0 = performance.now();
+const SKIP_MEDIUM = process.env.SKIP_MEDIUM === '1';
 
-console.log(`\n🚀 mediumCrawler 启动 · ${mediumReqs.length} 个 RSS`);
-const tMed = performance.now();
-await mediumCrawler.run();
-console.log(`   · medium 完成 ${((performance.now() - tMed) / 1000).toFixed(1)}s`);
+if (SKIP_MEDIUM) {
+    console.log(`\n⊘ 跳过 mediumCrawler(SKIP_MEDIUM=1)· ${mediumReqs.length} 个 RSS 不抓`);
+} else {
+    console.log(`\n🚀 mediumCrawler 启动 · ${mediumReqs.length} 个 RSS`);
+    const tMed = performance.now();
+    await mediumCrawler.run();
+    console.log(`   · medium 完成 ${((performance.now() - tMed) / 1000).toFixed(1)}s`);
+}
 
-console.log(`\n🚀 generalCrawler 启动 · ${otherReqs.length + sitemapReqs.length} 个 URL`);
+console.log(`\n🚀 generalCrawler 启动 · ${otherReqs.length + sitemapReqs.length + heuristicReqs.length} 个 URL(含 ${heuristicReqs.length} heuristic)`);
 const tGen = performance.now();
 await generalCrawler.run();
 console.log(`   · general 完成 ${((performance.now() - tGen) / 1000).toFixed(1)}s`);
