@@ -51,6 +51,16 @@ const sitemapResults = await Promise.allSettled(
     }),
 );
 let sitemapFailed = 0;
+function isValidHttpUrl(u: string): boolean {
+    try {
+        const parsed = new URL(u);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+let sitemapInvalidUrls = 0;
 const sitemapReqs = sitemapResults.flatMap((r, i): { url: string; userData: Record<string, unknown> }[] => {
     if (r.status === 'rejected') {
         sitemapFailed += 1;
@@ -58,16 +68,23 @@ const sitemapReqs = sitemapResults.flatMap((r, i): { url: string; userData: Reco
         return [];
     }
     const { source, urls } = r.value;
-    return urls.map((url) => ({
-        url,
-        userData: {
-            token_id: source.token_id,
-            base_symbol: source.base_symbol,
-            original_url: source.blog_url,
-            from_sitemap: true,
-        },
-    }));
+    return urls
+        .filter((url) => {
+            const ok = isValidHttpUrl(url);
+            if (!ok) sitemapInvalidUrls += 1;
+            return ok;
+        })
+        .map((url) => ({
+            url,
+            userData: {
+                token_id: source.token_id,
+                base_symbol: source.base_symbol,
+                original_url: source.blog_url,
+                from_sitemap: true,
+            },
+        }));
 });
+if (sitemapInvalidUrls > 0) console.warn(`   ⚠️ ${sitemapInvalidUrls} 个非法 URL 已跳过`);
 console.log(`   · sitemap 解析成功 ${sitemapSources.length - sitemapFailed} · 失败 ${sitemapFailed} · 总 ${sitemapReqs.length} URL`);
 
 const otherReqs = otherSources.map((s: SourceRow) => ({
