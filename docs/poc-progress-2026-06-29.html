@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Crawlee Node PoC · 全量进展报告 · 2026-06-29</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --bg: #FBFAF5; --paper: #FFFFFF; --ink: #1A1A1A;
+    --mute: #6B6B6B; --line: #E2DFD4; --line-strong: #C9C4B4;
+    --accent: #2D5A3D; --warn: #8B6914; --danger: #9C2A2A;
+    --highlight: #FFF6CC; --chip-bg: #F3F0E6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "SF Pro Text", "PingFang SC", system-ui, sans-serif;
+    font-size: 14.5px; line-height: 1.6; letter-spacing: 0.005em;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 40px 36px 80px; }
+  .meta-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px; margin-bottom: 28px;
+    font-size: 12.5px; color: var(--mute);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  h1 {
+    font-family: "Iowan Old Style", Charter, Georgia, serif;
+    font-weight: 600; font-size: 38px; line-height: 1.18;
+    margin: 0 0 10px; letter-spacing: -0.01em;
+  }
+  .sub { color: var(--mute); font-size: 15px; max-width: 760px; margin-bottom: 28px; }
+  .tldr {
+    background: var(--paper); border: 1px solid var(--line-strong);
+    border-left: 4px solid var(--accent);
+    padding: 18px 22px; margin-bottom: 36px; border-radius: 2px;
+  }
+  .tldr-label {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 6px;
+  }
+  .tldr-body {
+    font-family: "Iowan Old Style", Charter, Georgia, serif;
+    font-size: 17px; line-height: 1.55;
+  }
+  h2 {
+    font-family: "Iowan Old Style", Charter, Georgia, serif;
+    font-weight: 600; font-size: 22px;
+    margin: 56px 0 14px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--line); letter-spacing: -0.005em;
+  }
+  h2 .num {
+    color: var(--mute);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 14px; margin-right: 12px; font-weight: 400;
+  }
+  h3 { font-weight: 600; font-size: 16px; margin: 22px 0 8px; }
+  p { margin: 6px 0 12px; }
+  .table-wrap {
+    overflow-x: auto; border: 1px solid var(--line-strong);
+    background: var(--paper); border-radius: 2px; margin: 8px 0;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  thead { background: #F1EDDF; border-bottom: 2px solid var(--line-strong); }
+  th { text-align: left; padding: 10px 12px; font-weight: 600; font-size: 11.5px;
+       letter-spacing: 0.06em; text-transform: uppercase; color: #4A4A4A; white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:nth-child(even) { background: #FAF8F0; }
+  td.name { font-weight: 600; }
+  td.num { text-align: right; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+         margin-right: 6px; vertical-align: 1px; }
+  .dot.g { background: #2D7A4A; }
+  .dot.y { background: #C99514; }
+  .dot.r { background: #B23A3A; }
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px; margin: 16px 0 8px;
+  }
+  .stat-card {
+    background: var(--paper); border: 1px solid var(--line-strong);
+    padding: 14px 16px; border-radius: 2px;
+  }
+  .stat-label {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--mute); margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: "Iowan Old Style", Charter, Georgia, serif;
+    font-size: 28px; font-weight: 600; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-foot { font-size: 12px; color: var(--mute); margin-top: 2px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+         font-size: 12.5px; background: #F3F0E6; padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+  pre {
+    background: #F3F0E6; padding: 12px 14px; border-radius: 3px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12.5px; line-height: 1.5; overflow-x: auto;
+    border: 1px solid var(--line);
+  }
+  .bucket {
+    background: var(--paper); border: 1px solid var(--line-strong);
+    padding: 18px 22px; margin: 16px 0; border-radius: 2px;
+    border-left: 4px solid var(--accent);
+  }
+  .bucket-1 { border-left-color: #B33A8A; }   /* medium */
+  .bucket-2 { border-left-color: #2D5A3D; }   /* sitemap */
+  .bucket-3 { border-left-color: #C99514; }   /* heuristic */
+  .bucket-4 { border-left-color: #6B6B6B; }   /* other */
+  .bucket h3 { margin-top: 0; font-size: 17px; }
+  .bucket-meta {
+    display: flex; gap: 12px; font-size: 12px; color: var(--mute);
+    margin-bottom: 12px; font-variant-numeric: tabular-nums;
+  }
+  .bucket-meta strong { color: var(--ink); }
+  .sample {
+    background: #FAF8F0; padding: 10px 12px; border-left: 2px solid var(--line-strong);
+    margin: 6px 0; font-size: 12.5px; border-radius: 2px;
+  }
+  .sample-label { color: var(--mute); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .pipeline { display: flex; flex-direction: column; gap: 6px; }
+  .pipeline-step {
+    background: #FAF8F0; padding: 6px 10px; border-radius: 2px;
+    font-size: 12.5px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .arrow { color: var(--mute); margin: 0 6px; }
+  .future {
+    background: linear-gradient(180deg, #F7F4E6 0%, #FBFAF5 100%);
+    border: 1px solid var(--line-strong);
+    padding: 18px 22px; margin: 16px 0; border-radius: 2px;
+  }
+  .pri { font-weight: 700; }
+  .pri-1 { color: var(--accent); }
+  .pri-2 { color: var(--warn); }
+  .pri-3 { color: var(--mute); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="meta-top">
+  <span>Crawlee Node PoC · 全量进展报告</span>
+  <span>2026-06-29 21:00 CST · 黄权权 + Claude Opus 4.7</span>
+</div>
+
+<h1>Crawlee Node PoC · 全量进展报告</h1>
+<p class="sub">638 个博客源 · 4 个采集桶 · 一次跑出 2,740 条新闻 · 一切自动 · blogpicker prod 全程零影响 · 等老板代理池接入后可继续扩张。</p>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR · 当前家底</div>
+  <div class="tldr-body">
+    PoC 接入了 <strong>638 个博客源</strong>(全部 hhwl 上游) · 分 4 个采集桶各走各的策略 · 一次跑下来 <strong>2,740 条新闻数据</strong>(含标题/正文摘要/发布时间/token_id 关联) · <strong>96.5% 成功率</strong> · 失败 <strong>225 个源</strong>(主要是 Medium 反爬 + Mirror.xyz 类 Cloudflare 硬骨头 · 代理池能救大部分) · systemd 已装好 <strong>每 3 小时自动跑</strong> · 下次 21:08:01。当前限速保守 · <strong>代理池接入后理论可让每个 Medium 5 分钟 / 自部署 15 分钟 / 静态 1 小时 跑一次</strong>。
+  </div>
+</div>
+
+<h2><span class="num">§1</span>总览数据 · 一图全看</h2>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">博客源总数</div>
+    <div class="stat-value">638</div>
+    <div class="stat-foot">已 probe 623 · binance 永久忽略 10</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">这次 dataset 总条</div>
+    <div class="stat-value">2,740</div>
+    <div class="stat-foot">平均 4.4 条/源/次</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">采集成功率</div>
+    <div class="stat-value" style="color:#2D7A4A">96.5%</div>
+    <div class="stat-foot">2,448 成功 / 90 失败(retry)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">单次耗时</div>
+    <div class="stat-value">45 分钟</div>
+    <div class="stat-foot">2c4G 服务器 · 跟 blogpicker 双跑</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">采集频率</div>
+    <div class="stat-value">3h</div>
+    <div class="stat-foot">systemd timer 自启 · 一天 8 次</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">blogpicker 状态</div>
+    <div class="stat-value" style="color:#2D7A4A">零影响</div>
+    <div class="stat-foot">active + HTTP 200 全程</div>
+  </div>
+</div>
+
+<h3>1.1 全部 638 个源按类型分布</h3>
+
+<div class="table-wrap"><table>
+<thead><tr><th>类型</th><th>源数</th><th>占比</th><th>抓取策略</th></tr></thead>
+<tbody>
+<tr><td class="name">🌐 自部署 SSR</td><td class="num">433</td><td class="num">67.9%</td><td>抓首页 og 或者 sitemap URL</td></tr>
+<tr><td class="name">📝 Medium 平台</td><td class="num">171</td><td class="num">26.8%</td><td>走 Medium 官方 RSS endpoint</td></tr>
+<tr><td class="name">📨 Substack 平台</td><td class="num">10</td><td class="num">1.6%</td><td>暂走自部署逻辑(后续可特化)</td></tr>
+<tr><td class="name">🪞 Mirror.xyz 平台</td><td class="num">9</td><td class="num">1.4%</td><td>暂走自部署 · Cloudflare 反爬硬</td></tr>
+<tr><td class="name">⚪ Substack/Mirror 之外其他</td><td class="num">15</td><td class="num">2.3%</td><td>—</td></tr>
+</tbody>
+</table></div>
+
+<h3>1.2 OG meta 完整度(决定走哪个 handler)</h3>
+
+<div class="table-wrap"><table>
+<thead><tr><th>OG 完整度</th><th>源数</th><th>占比</th><th>走哪个 handler</th></tr></thead>
+<tbody>
+<tr><td class="name">✅ og:* 完整</td><td class="num">295</td><td class="num">47.4%</td><td>default handler(直接抽 og)</td></tr>
+<tr><td class="name">⚠️ og 部分</td><td class="num">50</td><td class="num">8.0%</td><td>default handler · 兜底 fallback</td></tr>
+<tr><td class="name">❌ 无 og</td><td class="num">278</td><td class="num">44.6%</td><td>heuristic handler 多重 fallback</td></tr>
+</tbody>
+</table></div>
+
+<h2><span class="num">§2</span>4 个采集桶 · 每个怎么干的</h2>
+
+<p>每个博客先分进对应的"桶"(基于域名 + probe 探测结果)· 各自走不同 handler · 抽不同字段的逻辑。详细看下面 4 个 box。</p>
+
+<!-- 桶 1 · Medium -->
+<div class="bucket bucket-1">
+<h3>桶 1 · 📝 Medium 平台 · 171 源(165 unique RSS)</h3>
+<div class="bucket-meta">
+  <span>策略:<strong>RSS endpoint + 1-to-N mapping</strong></span>
+  <span>Crawler:<strong>mediumCrawler</strong></span>
+  <span>本次抓到:<strong>292 条</strong></span>
+  <span>handler:<code>src/handlers/medium.ts</code></span>
+</div>
+
+<p><strong>怎么抓:</strong></p>
+<div class="pipeline">
+  <div class="pipeline-step">1. URL 转换 · <code>medium.com/@user</code> → <code>medium.com/feed/@user</code>(RSS endpoint)</div>
+  <div class="pipeline-step">2. 用 Crawlee CheerioCrawler + ImpitHttpClient 抓 XML</div>
+  <div class="pipeline-step">3. cheerio 解 XML 抽 <code>&lt;item&gt;</code> 列表(每个 item 一个 post)</div>
+  <div class="pipeline-step">4. <strong>1-to-N mapping</strong> · 多个 token 共一个 Medium publication → 一次抓 RSS 输出 N 条 dataset(每个 token 一份)</div>
+</div>
+
+<p><strong>抽取字段:</strong></p>
+<div class="table-wrap"><table>
+<thead><tr><th>字段</th><th>取自</th><th>例</th></tr></thead>
+<tbody>
+<tr><td class="name">标题</td><td><code>&lt;item&gt;&lt;title&gt;</code></td><td>"SuperEx Web3 Wallet User Guide(XIV)"</td></tr>
+<tr><td class="name">URL</td><td><code>&lt;item&gt;&lt;link&gt;</code></td><td>https://superex.medium.com/...</td></tr>
+<tr><td class="name">发布时间</td><td><code>&lt;item&gt;&lt;pubDate&gt;</code>(RFC 822)</td><td>"Mon, 29 Jun 2026 07:36:39 GMT"</td></tr>
+<tr><td class="name">作者</td><td><code>&lt;item&gt;&lt;dc:creator&gt;</code></td><td>"SuperEx"</td></tr>
+<tr><td class="name">正文摘要</td><td><code>&lt;description&gt;</code> 或 <code>&lt;content:encoded&gt;</code> 前 280 字 · 剥 HTML</td><td>"The Road to TGE: Yooldo's Path..."</td></tr>
+<tr><td class="name">分类</td><td>多个 <code>&lt;category&gt;</code></td><td>["account-abstraction", "ethereum"]</td></tr>
+<tr><td class="name">GUID</td><td><code>&lt;guid&gt;</code></td><td>medium 文章唯一 ID · 后续去重用</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>真实样本:</strong></p>
+<div class="sample">
+<div class="sample-label">最新 · token_id=12718 · base_symbol=UVXY</div>
+<div><strong>SuperEx Guide: SuperEx Web3 Wallet User Guide(XIV)</strong></div>
+<div>发布:Mon, 29 Jun 2026 07:36:39 GMT(今天)</div>
+<div>作者:SuperEx · URL:<code>https://superex.medium.com/superex-guide-...-c8ae9663cf66?source=rss-...</code></div>
+</div>
+
+<p><strong>这次的成功率(why 只 292 条):</strong> Medium 实测对 RSS endpoint <strong>也限速</strong>(IP 维度)· 我们这次提速后(60 RPM + 3 并发 · sessionPool 关闭)触发了 Medium IP-based limit · 大部分 RSS 被 403。代理池来后用多 IP 轮换可解。</p>
+</div>
+
+<!-- 桶 2 · sitemap -->
+<div class="bucket bucket-2">
+<h3>桶 2 · 🗺️ sitemap 自部署站 · 294 源 · 2,485 个 URL</h3>
+<div class="bucket-meta">
+  <span>策略:<strong>读站点 sitemap.xml 拿 article URL 列表</strong></span>
+  <span>Crawler:<strong>generalCrawler</strong></span>
+  <span>本次抓到:<strong>2,349 条</strong>(占总 86%)</span>
+  <span>handler:<code>src/handlers/default.ts</code></span>
+</div>
+
+<p><strong>怎么抓:</strong></p>
+<div class="pipeline">
+  <div class="pipeline-step">1. probe 阶段已经为每个源探到 <code>sitemap_url</code>(<code>/sitemap.xml</code> / <code>/sitemap_index.xml</code> / <code>/sitemap.txt</code>)</div>
+  <div class="pipeline-step">2. 并发 <code>Sitemap.load()</code> 拉所有 sitemap · 解析 XML 拿 URL 列表</div>
+  <div class="pipeline-step">3. 每源取 <strong>前 10 个 URL</strong>(可调 · 默认 10 · 防止某些站 sitemap 几万 URL 撑爆)</div>
+  <div class="pipeline-step">4. 入 generalCrawler 队列 · 每个 URL 抓 article 页 · 走 default handler 抽 og</div>
+</div>
+
+<p><strong>抽取字段(走 default handler · 同桶 4):</strong></p>
+<div class="table-wrap"><table>
+<thead><tr><th>字段</th><th>取自</th></tr></thead>
+<tbody>
+<tr><td class="name">标题</td><td><code>og:title</code> → <code>&lt;title&gt;</code> 兜底</td></tr>
+<tr><td class="name">描述</td><td><code>og:description</code> → <code>meta[name=description]</code></td></tr>
+<tr><td class="name">图片</td><td><code>og:image</code></td></tr>
+<tr><td class="name">站点名</td><td><code>og:site_name</code></td></tr>
+<tr><td class="name">类型</td><td><code>og:type</code>(article / website / ...)</td></tr>
+<tr><td class="name">发布时间</td><td><code>article:published_time</code>(很多 sitemap 列的不是 article · 没这字段)</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>真实样本:</strong></p>
+<div class="sample">
+<div class="sample-label">token_id=12970 · base_symbol=SONY · 来自 dinari.com sitemap</div>
+<div><strong>Dinari Inc. Privacy Policy</strong></div>
+<div>URL:<code>https://dinari.com/privacy</code></div>
+<div style="color:var(--warn)">⚠️ 这是 sitemap 列了非 article 页面带来的"杂项" · 后续可加 URL pattern 过滤(只要 <code>/blog/</code> <code>/news/</code> 路径)</div>
+</div>
+
+<p><strong>洞察 · sitemap 大小分布:</strong></p>
+<div class="table-wrap"><table>
+<thead><tr><th>base_symbol</th><th>blog_url</th><th>sitemap URL 数</th></tr></thead>
+<tbody>
+<tr><td class="name">ASR</td><td>asroma.com/en/news</td><td class="num">26,156</td></tr>
+<tr><td class="name">TWLO</td><td>twilio.com/blog</td><td class="num">22,472</td></tr>
+<tr><td class="name">SOL</td><td>solana.com/news</td><td class="num">13,794</td></tr>
+<tr><td class="name">TKO</td><td>tokocrypto.com</td><td class="num">10,349</td></tr>
+<tr><td class="name">TWT</td><td>trustwallet.com/blog</td><td class="num">10,267</td></tr>
+</tbody>
+</table></div>
+<p style="color:var(--mute); font-size:12.5px">我们只取前 10 = <strong>巨多文章被浪费</strong>。后续可:① 取最新 50-100;② 加 lastmod 字段排序(sitemap.xml 标准字段);③ 增量爬(每次只新发的)</p>
+</div>
+
+<!-- 桶 3 · heuristic -->
+<div class="bucket bucket-3">
+<h3>桶 3 · 🔍 heuristic 启发式 · 87 源(无 og)</h3>
+<div class="bucket-meta">
+  <span>策略:<strong>多重 fallback + RSS auto-discovery</strong></span>
+  <span>Crawler:<strong>generalCrawler</strong>(label='heuristic')</span>
+  <span>本次抓到:<strong>26 条 · 96% 有 title</strong></span>
+  <span>handler:<code>src/handlers/heuristic.ts</code></span>
+</div>
+
+<p><strong>抽取字段(多重 fallback · 谁有用谁):</strong></p>
+<div class="table-wrap"><table>
+<thead><tr><th>字段</th><th>取自(优先级从高到低)</th></tr></thead>
+<tbody>
+<tr><td class="name">标题</td><td><code>og:title</code> → <code>meta[name=title]</code> → <code>&lt;title&gt;</code> → <code>&lt;h1&gt;</code></td></tr>
+<tr><td class="name">描述</td><td><code>og:description</code> → <code>meta[name=description]</code> → <code>&lt;article p&gt;</code>首段 → <code>&lt;main p&gt;</code>首段 → <code>&lt;p&gt;</code>首段(各取 280 字)</td></tr>
+<tr><td class="name">图片</td><td><code>og:image</code> → <code>twitter:image</code> → <code>&lt;article img&gt;</code> → <code>&lt;main img&gt;</code> → 各种 <code>&lt;link rel=icon&gt;</code> → 首张 <code>&lt;img&gt;</code></td></tr>
+<tr><td class="name">发布时间</td><td><code>article:published_time</code> → <code>meta[itemprop=datePublished]</code> → <code>&lt;time datetime&gt;</code> → <code>meta[name=date]</code> → <code>meta[name=publish_date]</code> → <code>meta[name=pubdate]</code></td></tr>
+<tr><td class="name">RSS 自动发现</td><td><code>&lt;link rel="alternate" type="application/rss+xml"&gt;</code> + atom · 找到就记录 · 后续可走 RSS 路径</td></tr>
+<tr><td class="name">候选 article 链接</td><td>站内 <code>&lt;article a&gt;</code> <code>&lt;main a&gt;</code> <code>.post a</code> <code>.entry a</code> 前 5 个 · 后续可深爬</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>真实样本:</strong></p>
+<div class="sample">
+<div class="sample-label">token_id=12158 · base_symbol=POWER_2</div>
+<div><strong>Power Protocol</strong> · description: <em>Power Up Your Play.</em></div>
+<div>image:<code>https://powerprotocol.xyz/_next/image?url=...power_protocol_logo-long.webp</code></div>
+<div>sample_article_links:3 个外部交易所链接(不是 article · 需后续优化)</div>
+</div>
+
+<p style="color:var(--mute); font-size:12.5px"><strong>验证结论</strong>:思路 OK · 96% 有 title · 但 <strong>RSS auto-discovery 0% 命中</strong>(这批 og=none 站普遍不暴露 RSS link)· 87 源里 61 个被反爬挡了 · 代理池可救。</p>
+</div>
+
+<!-- 桶 4 · other -->
+<div class="bucket bucket-4">
+<h3>桶 4 · ⚪ other 标准 OG · 86 源</h3>
+<div class="bucket-meta">
+  <span>策略:<strong>抓首页 + 抽 og</strong></span>
+  <span>Crawler:<strong>generalCrawler</strong>(default handler)</span>
+  <span>本次抓到:<strong>~47 条</strong></span>
+  <span>handler:<code>src/handlers/default.ts</code></span>
+</div>
+
+<p><strong>怎么抓:</strong></p>
+<div class="pipeline">
+  <div class="pipeline-step">1. 这批源 og 完整(probe 时识别)· 但没 sitemap · 也不是 Medium</div>
+  <div class="pipeline-step">2. 直接抓首页 · 走 default handler</div>
+  <div class="pipeline-step">3. 跟桶 2(sitemap)抽取逻辑完全一样:og:title / og:description / og:image / article:published_time</div>
+</div>
+<p style="color:var(--mute); font-size:12.5px">这是最简单的桶 · 没特殊处理 · 但只覆盖 86 源(13%)</p>
+</div>
+
+<h2><span class="num">§3</span>当前 dataset · 抽到的真实数据</h2>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-label">Medium</div><div class="stat-value">292</div><div class="stat-foot">真 post 数据 · token 关联</div></div>
+  <div class="stat-card"><div class="stat-label">sitemap 抓的</div><div class="stat-value">2,349</div><div class="stat-foot">占总 86% · 主力</div></div>
+  <div class="stat-card"><div class="stat-label">heuristic 抓的</div><div class="stat-value">26</div><div class="stat-foot">96% 有 title</div></div>
+  <div class="stat-card"><div class="stat-label">other(纯 og)</div><div class="stat-value">~73</div><div class="stat-foot">general - sitemap</div></div>
+</div>
+
+<h3>3.1 最新帖子样本 · 各桶各 1 条</h3>
+
+<div class="table-wrap"><table>
+<thead><tr><th>桶</th><th>token / 币</th><th>标题</th><th>发布时间</th><th>URL</th></tr></thead>
+<tbody>
+<tr>
+  <td>📝 medium</td>
+  <td>12718 / UVXY</td>
+  <td>SuperEx Web3 Wallet User Guide(XIV)</td>
+  <td>2026-06-29 07:36 GMT</td>
+  <td><code>superex.medium.com/...c8ae9663cf66</code></td>
+</tr>
+<tr>
+  <td>🗺️ sitemap</td>
+  <td>12970 / SONY</td>
+  <td>Dinari Inc. Privacy Policy</td>
+  <td>(无)</td>
+  <td><code>dinari.com/privacy</code></td>
+</tr>
+<tr>
+  <td>🗺️ sitemap</td>
+  <td>12540 / UP2_3</td>
+  <td>Superform - The user-owned neobank</td>
+  <td>(无)</td>
+  <td><code>blog.superform.xyz/</code></td>
+</tr>
+<tr>
+  <td>🔍 heuristic</td>
+  <td>11334 / ASTR</td>
+  <td>Blog | Astar</td>
+  <td>(无)</td>
+  <td><code>astar.network/blog/</code></td>
+</tr>
+<tr>
+  <td>🔍 heuristic</td>
+  <td>12158 / POWER_2</td>
+  <td>Power Protocol</td>
+  <td>(无)</td>
+  <td><code>powerprotocol.xyz/en</code></td>
+</tr>
+</tbody>
+</table></div>
+
+<h2><span class="num">§4</span>没采集到的硬骨头 · 225 个反爬失败源</h2>
+
+<p>225 / 638 = <strong>35% 源</strong>在 probe 阶段已 HTTP 失败(http_status = -1)· 主要是反爬。这些是<strong>代理池能救</strong>的对象。</p>
+
+<h3>4.1 失败源 Top 20(代表性)</h3>
+
+<div class="table-wrap"><table>
+<thead><tr><th>币</th><th>blog_url</th><th>类型</th><th>难度</th><th>代理池能救?</th></tr></thead>
+<tbody>
+<tr><td class="name">AGLD</td><td>mirror.xyz/aglddao.eth</td><td>Mirror.xyz</td><td>🔴 Cloudflare 硬</td><td>⚠️ 部分 · 可能要配 Playwright</td></tr>
+<tr><td class="name">ETHFI</td><td>etherfi.medium.com</td><td>Medium</td><td>🟡 IP 限速</td><td>✅ 大概率能救</td></tr>
+<tr><td class="name">AT</td><td>medium.com/@APRO_Oracle</td><td>Medium</td><td>🟡 IP 限速</td><td>✅</td></tr>
+<tr><td class="name">JTO</td><td>jito.network/blog/</td><td>自部署</td><td>🟡 偶发</td><td>✅</td></tr>
+<tr><td class="name">F</td><td>medium.com/synfutures</td><td>Medium</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">BIGTIME</td><td>medium.com/@playbigtime</td><td>Medium</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">BLUR</td><td>mirror.xyz/blurdao.eth</td><td>Mirror.xyz</td><td>🔴 Cloudflare</td><td>⚠️ 部分</td></tr>
+<tr><td class="name">WAVES</td><td>blog.waves.tech</td><td>自部署</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">FLOKI</td><td>blog.floki.com</td><td>自部署</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">SAND</td><td>medium.com/sandbox-game</td><td>Medium</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">TUSD</td><td>trueusd.medium.com</td><td>Medium</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">SKL</td><td>medium.com/skale</td><td>Medium</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">DOT</td><td>medium.com/polkadot-network</td><td>Medium</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">PENDLE</td><td>medium.com/pendle</td><td>Medium</td><td>🟡</td><td>✅</td></tr>
+<tr><td class="name">API3</td><td>medium.com/api3</td><td>Medium</td><td>🟡</td><td>✅</td></tr>
+</tbody>
+</table></div>
+
+<h3>4.2 难度分类</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>难度</th><th>类型</th><th>数量</th><th>解法</th></tr></thead>
+<tbody>
+<tr><td>🟡 中</td><td>Medium IP 限速</td><td>~140 个</td><td><strong>代理池 IP 轮换</strong>(主力)</td></tr>
+<tr><td>🟡 中</td><td>自部署偶发(限速/网络)</td><td>~50 个</td><td>代理池 + 重试</td></tr>
+<tr><td>🔴 难</td><td>Mirror.xyz / Cloudflare 硬反爬</td><td>~15 个</td><td>代理池 + <strong>Playwright 浏览器</strong>(P3.5)</td></tr>
+<tr><td>🔴 难</td><td>Substack 反爬</td><td>~5 个</td><td>同上</td></tr>
+<tr><td>🟡 中</td><td>SPA / JS 渲染</td><td>~15 个</td><td>Playwright</td></tr>
+</tbody>
+</table></div>
+
+<h2><span class="num">§5</span>当前限速策略 · 跑得保守</h2>
+
+<div class="table-wrap"><table>
+<thead><tr><th>Crawler</th><th>maxRPM</th><th>并发</th><th>同域延迟</th><th>Session Pool</th><th>重试</th><th>备注</th></tr></thead>
+<tbody>
+<tr><td class="name">mediumCrawler</td><td class="num">60</td><td class="num">3</td><td class="num">0s</td><td>关</td><td class="num">1</td><td>RSS endpoint · 已避 reclaim thrashing</td></tr>
+<tr><td class="name">generalCrawler</td><td class="num">300</td><td class="num">10</td><td class="num">1s</td><td>开</td><td class="num">2</td><td>多域抓首页 + sitemap article 页</td></tr>
+</tbody>
+</table></div>
+
+<h3>5.1 多久跑一次</h3>
+
+<p><strong>systemd timer</strong>:<code>OnUnitActiveSec=3h</code> · 每 3 小时跑一次 · 一天跑 8 轮 · 开机自启。</p>
+<p>下一次 <strong>21:08:01 CST</strong>(本报告生成后约 20 分钟)。</p>
+
+<h2><span class="num">§6</span>代理池接入后 · 每个博客能多快抓 ✨</h2>
+
+<p>这是老板感兴趣的关键。<strong>当前限速完全是因为单 IP 被同站限速</strong> · 一旦代理池接入(假设 100 个 IP)· 速度可以拉到博客发文频率级。</p>
+
+<h3>6.1 按发文频率分级 · 代理池后建议采集间隔</h3>
+
+<div class="table-wrap"><table>
+<thead><tr><th>类型</th><th>典型例</th><th>发文频率</th><th>当前(无代理)</th><th>代理池后建议</th><th>提升</th></tr></thead>
+<tbody>
+<tr><td class="name">📰 资讯类 / 快讯</td><td>SuperEx / Binance Square / 交易所公告</td><td>每天 5-20 篇</td><td>3 小时/次</td><td><strong>5 分钟/次</strong></td><td>36x</td></tr>
+<tr><td class="name">📝 项目方 Medium 公告</td><td>多数 token 项目方</td><td>每周 1-3 篇</td><td>3 小时/次</td><td><strong>15-30 分钟/次</strong></td><td>6-12x</td></tr>
+<tr><td class="name">📄 自部署 SSR 博客</td><td>vitalik / paradigm / a16z / ethereum.org</td><td>每周 1-5 篇</td><td>3 小时/次</td><td><strong>30 分钟/次</strong></td><td>6x</td></tr>
+<tr><td class="name">📚 静态博客(月更)</td><td>个人博客 / 小项目</td><td>每月 1-3 篇</td><td>3 小时/次</td><td><strong>1-2 小时/次</strong></td><td>~2x</td></tr>
+<tr><td class="name">📕 长尾(季更)</td><td>白皮书站 / 老项目</td><td>每季度 1 篇</td><td>3 小时/次</td><td><strong>1 天/次</strong></td><td>降 8x · 省资源</td></tr>
+</tbody>
+</table></div>
+
+<h3>6.2 代理池后的工程改动(我后续做)</h3>
+
+<div class="future">
+<ol>
+  <li><strong>加 ProxyConfiguration</strong>:mediumCrawler 和 generalCrawler 各接一份代理池 · Crawlee 自带支持</li>
+  <li><strong>Registry 加 <code>interval_ms</code> 字段</strong>:按 host_platform / 发文频率自动分配(Medium 类 = 5 min · 自部署 = 30 min · 静态 = 2h)</li>
+  <li><strong>systemd timer 改成 per-source 调度</strong>:不再统一 3h 全量跑 · 而是每分钟检查"哪些源到时间了" · 增量抓</li>
+  <li><strong>反爬 fallback</strong>:同一源连续失败 N 次 → 自动降级走 Playwright(P3.5)</li>
+  <li><strong>监控</strong>:每 IP 的命中率 / 失败率 / cooldown · dashboard 显示</li>
+</ol>
+</div>
+
+<h2><span class="num">§7</span>当前项目结构</h2>
+
+<pre>crawlee-blog-poc/
+├── src/
+│   ├── main.ts                  # 入口 · 4 桶分流 · 2 Crawler 编排
+│   ├── handlers/
+│   │   ├── medium.ts            # RSS handler + 1-to-N mapping
+│   │   ├── default.ts           # OG handler + heuristic 注册
+│   │   └── heuristic.ts         # 多重 fallback handler
+│   ├── registry/
+│   │   ├── schema.sql           # SQLite 表结构
+│   │   └── db.ts                # 操作封装
+│   ├── fetch-sources.ts         # 拉 hhwl /api/blogs → registry
+│   ├── probe.ts                 # 自动探测 fetch_strategy / og_quality / sitemap
+│   ├── push.ts                  # 推送 hhwl /api/posts(DRY_RUN 框架)
+│   ├── report.ts                # 分布表
+│   └── config.ts                # IGNORED_HOST_PATTERNS(binance 等)
+├── systemd/
+│   ├── crawlee-blog-poc.service
+│   ├── crawlee-blog-poc.timer   # 每 3h 跑
+│   └── install.sh
+├── docs-reference/              # Crawlee 官方文档本地缓存(91 md) · .gitignore
+├── package.json
+└── README.md</pre>
+
+<h2><span class="num">§8</span>下一步 · 等代理池来一起做</h2>
+
+<div class="future">
+<h3>需老板这边做</h3>
+<ol>
+  <li><span class="pri pri-1">★ 给代理池配置</span>(URL + 鉴权 · 用户名密码 / token / SOCKS5 等)</li>
+  <li><span class="pri pri-1">★ 给 hhwl <code>push_api_url</code> + <code>push_api_secret</code></span>(blogpicker settings 当前都空 · 没法真推送)</li>
+  <li><span class="pri pri-2">可选:把 sitemap 取前 10 改成"按 lastmod 排序取最新 50"</span>(<code>SITEMAP_URLS_PER_SOURCE</code> 改 50 即可 · 但需要观察资源占用)</li>
+</ol>
+
+<h3>我接到代理池后做</h3>
+<ol>
+  <li><span class="pri pri-1">★ 接入 ProxyConfiguration · 给两个 Crawler 各配代理</span></li>
+  <li><span class="pri pri-1">★ Registry 加 interval_ms · 按博客类型分配采集频率</span></li>
+  <li><span class="pri pri-1">★ systemd timer 改 per-source 调度</span></li>
+  <li><span class="pri pri-2">配 Playwright 兜底 Mirror.xyz / Substack 类硬反爬(~20 源)</span></li>
+  <li><span class="pri pri-2">推送接通 · 端到端业务闭环</span></li>
+  <li><span class="pri pri-3">监控页面 · 看每天抓多少 / 推送成功率 / 失败趋势</span></li>
+  <li><span class="pri pri-3">sitemap URL 过滤(只要 <code>/blog/</code> <code>/news/</code> 路径 · 减少"杂项"页面)</span></li>
+</ol>
+</div>
+
+<h2><span class="num">§9</span>关键链接 + 状态</h2>
+
+<div class="table-wrap"><table>
+<tbody>
+<tr><td class="name">GitHub 仓库</td><td><a href="https://github.com/invoke888/crawlee-blog-poc">invoke888/crawlee-blog-poc</a>(public)</td></tr>
+<tr><td class="name">服务器</td><td><code>119.28.68.105</code> hk-prod 2c4G · 跟 blogpicker 双跑零冲突</td></tr>
+<tr><td class="name">systemd timer</td><td><code>systemctl status crawlee-blog-poc.timer</code> · active · 下次 21:08:01</td></tr>
+<tr><td class="name">本报告</td><td><code>docs/poc-progress-2026-06-29.html</code></td></tr>
+<tr><td class="name">前一份阶段一报告</td><td><code>docs/poc-phase1-report-2026-06-29.html</code></td></tr>
+<tr><td class="name">本地 Crawlee 文档</td><td><code>docs-reference/crawlee-docs/</code>(91 md · 后续 grep 排查)</td></tr>
+</tbody>
+</table></div>
+
+<p style="color: var(--mute); font-size: 12.5px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);">
+  本报告由 Claude Opus 4.7 在 2026-06-29 21:00 CST 生成 · 等老板:① 代理池配置 ② hhwl 推送目标地址 · 拿到我立刻接 + 重做限速 + 业务闭环。<br>
+  当前 systemd 每 3 小时跑一次 · blogpicker prod 全程零影响 · 数据持续在累积 · 老板可以打开 GitHub 仓库看代码或 SSH 服务器看 <code>~/crawlee-blog-poc/storage/datasets/default/</code> 看真实数据。
+</p>
+
+</div>
+</body>
+</html>

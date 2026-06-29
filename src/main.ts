@@ -122,18 +122,23 @@ const heuristicReqs = heuristicSources.map((s: SourceRow) => ({
 await mediumQueue.addRequests(mediumReqs);
 await generalQueue.addRequests([...otherReqs, ...sitemapReqs, ...heuristicReqs]);
 
-// medium RSS endpoint(medium.com/feed/...)medium 官方接口不反爬 · 不需要 sameDomainDelay/SessionPool
-// 之前 sameDomainDelaySecs=1 + queue 全同域 · reclaim 机制导致 60 秒/req · 慢 60x
+// 混合方案(2026-06-29 老板拍板 · 等代理池来再调):
+// - sameDomainDelaySecs=0: 真 bug 修复(queue 全同域 reclaim thrashing · 之前 60 秒/req)
+// - useSessionPool=true: medium 实测对 RSS 也限速(IP 维度) · SessionPool 保留反爬韧性
+// - maxRPM=60 + concurrency=3: 保守 · 不触发限速
+// - retries=2: 反爬偶发 · 多重试一次
+// 代理池接入后:升 RPM + 配 ProxyConfiguration + per-source interval
 const mediumCrawler = new CheerioCrawler({
     requestQueue: mediumQueue,
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mediumRouter,
-    maxRequestsPerMinute: 120,
-    maxConcurrency: 5,
+    maxRequestsPerMinute: 60,
+    maxConcurrency: 3,
     sameDomainDelaySecs: 0,
-    useSessionPool: false,
+    useSessionPool: true,
+    persistCookiesPerSession: true,
     additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
-    maxRequestRetries: 1,
+    maxRequestRetries: 2,
     maxRequestsPerCrawl: process.env.MEDIUM_LIMIT ? Number(process.env.MEDIUM_LIMIT) : undefined,
 });
 
