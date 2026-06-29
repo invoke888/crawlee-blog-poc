@@ -1,5 +1,7 @@
 export const IGNORED_HOST_PATTERNS = [
-    'binance.com',
+    'binance.com',          // 交易所 · 不是 token 项目方 blog
+    'okx.com',              // 交易所 · 同上
+    'club.onefootball.com', // OFC · 粉丝俱乐部活动页 · 不是 blog
 ];
 
 export function isIgnoredUrl(url: string): boolean {
