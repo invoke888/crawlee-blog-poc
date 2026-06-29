@@ -101,11 +101,18 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('meta[property="og:image"]').attr('content') ||
         $('meta[name="twitter:image"]').attr('content') ||
         '';
+    // 多 meta + tag fallback · 老板实测漏:frax 用 article:modified_time(无 published)
     const publishedAt =
         $('meta[property="article:published_time"]').attr('content')?.trim() ||
+        $('meta[property="article:modified_time"]').attr('content')?.trim() ||
         $('meta[itemprop="datePublished"]').attr('content')?.trim() ||
+        $('meta[itemprop="dateModified"]').attr('content')?.trim() ||
         $('time[datetime]').first().attr('datetime')?.trim() ||
+        $('time[datepublished]').first().attr('datepublished')?.trim() ||
+        $('time[pubdate]').first().attr('datetime')?.trim() ||
         $('meta[name="date"]').attr('content')?.trim() ||
+        $('meta[name="publish_date"]').attr('content')?.trim() ||
+        $('meta[name="pubdate"]').attr('content')?.trim() ||
         '';
     const author =
         $('meta[property="article:author"]').attr('content')?.trim() ||

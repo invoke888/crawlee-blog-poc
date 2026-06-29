@@ -20,7 +20,16 @@ defaultRouter.addDefaultHandler(async ({ request, $, log, pushData }) => {
     const ogDescription = $('meta[property="og:description"]').attr('content') ?? '';
     const ogType = $('meta[property="og:type"]').attr('content') ?? '';
     const ogSiteName = $('meta[property="og:site_name"]').attr('content') ?? '';
-    const ogPublishedTime = $('meta[property="article:published_time"]').attr('content') ?? '';
+    // 多 meta fallback · 部分站只有 modified_time(frax)· 部分用 <time> tag(superform/monad)
+    const ogPublishedTime =
+        $('meta[property="article:published_time"]').attr('content') ||
+        $('meta[property="article:modified_time"]').attr('content') ||
+        $('meta[itemprop="datePublished"]').attr('content') ||
+        $('meta[name="date"]').attr('content') ||
+        $('meta[name="pubdate"]').attr('content') ||
+        $('time[datetime]').first().attr('datetime') ||
+        $('time[datepublished]').first().attr('datepublished') ||
+        '';
 
     const title = ogTitle || $('title').text().trim();
     const description = ogDescription || $('meta[name="description"]').attr('content') || '';

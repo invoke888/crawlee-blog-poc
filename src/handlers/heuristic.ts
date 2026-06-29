@@ -46,11 +46,14 @@ export async function heuristicHandler(ctx: CheerioCrawlingContext): Promise<voi
         '';
     const image = abs(loaded, imageRaw);
 
-    // published_at:多重 fallback
+    // published_at:多重 fallback · 部分站只有 modified_time(frax)· 部分用 <time> tag(superform/monad)
     const publishedAt =
         $('meta[property="article:published_time"]').attr('content') ||
+        $('meta[property="article:modified_time"]').attr('content') ||
         $('meta[itemprop="datePublished"]').attr('content') ||
+        $('meta[itemprop="dateModified"]').attr('content') ||
         $('time[datetime]').first().attr('datetime') ||
+        $('time[datepublished]').first().attr('datepublished') ||
         $('meta[name="date"]').attr('content') ||
         $('meta[name="publish_date"]').attr('content') ||
         $('meta[name="pubdate"]').attr('content') ||
