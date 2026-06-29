@@ -31,7 +31,9 @@ console.log(`   · medium  ${mediumSources.length} 源 → ${mediumByRss.size} u
 console.log(`   · sitemap ${sitemapSources.length} 源 → 每个取前 ${SITEMAP_URLS_PER_SOURCE} URL`);
 console.log(`   · other   ${otherSources.length} 源 → 走首页 og`);
 
-Configuration.getGlobalConfig().set('purgeOnStart', true);
+// purgeOnStart=false · 避免跟 named queue race(已观察到 ENOENT mkdir lock)
+// 外部 SSH 命令前 rm -rf storage/datasets storage/request_queues 控制 purge 时机
+Configuration.getGlobalConfig().set('purgeOnStart', false);
 
 // 每个 Crawler 用 named RequestQueue · 避免共享 default queue 出 race condition
 const mediumQueue = await RequestQueue.open('medium');
@@ -104,9 +106,9 @@ const mediumCrawler = new CheerioCrawler({
     requestQueue: mediumQueue,
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mediumRouter,
-    maxRequestsPerMinute: 30,
-    maxConcurrency: 2,
-    sameDomainDelaySecs: 2,
+    maxRequestsPerMinute: 60,
+    maxConcurrency: 3,
+    sameDomainDelaySecs: 1,
     useSessionPool: true,
     persistCookiesPerSession: true,
     additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
