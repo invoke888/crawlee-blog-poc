@@ -21,9 +21,10 @@
         "start:prod": "node dist/main.js",
         "start:dev": "tsx src/main.ts",
         "fetch": "tsx src/fetch-sources.ts",
-        "probe": "tsx src/probe.ts",
+        "probe": "NODE_OPTIONS='--max-old-space-size=3072' tsx src/probe.ts",
         "report": "tsx src/report.ts",
         "push": "tsx src/push.ts",
+        "start:prod-mem": "NODE_OPTIONS='--max-old-space-size=3072' tsx src/main.ts",
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
     },
