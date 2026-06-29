@@ -62,7 +62,7 @@ async function main(): Promise<void> {
     const crawler = new CheerioCrawler({
         httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
         maxConcurrency: MAX_CONCURRENCY,
-        maxRequestsPerCrawl: sources.length + 50,
+        maxRequestsPerCrawl: sources.length * 4,
         requestHandlerTimeoutSecs: 60,
         async requestHandler({ request, $, response, log }) {
             const tokenId = request.userData?.token_id as number;
