@@ -35,6 +35,14 @@ for (const s of mediumSources) {
     mediumByRss.set(rss, list);
 }
 
+// P3.5 Bug A · 非 medium 源按 blog_url 维护 1-to-N(KLAC vs TTMI 共 ondo.finance/blog · 不丢数据)
+const blogUrlToTokens = new Map<string, TokenAssoc[]>();
+for (const s of [...sitemapSources, ...heuristicSources, ...otherSources]) {
+    const arr = blogUrlToTokens.get(s.blog_url) ?? [];
+    arr.push({ token_id: s.token_id, base_symbol: s.base_symbol, original_url: s.blog_url });
+    blogUrlToTokens.set(s.blog_url, arr);
+}
+
 console.log(`📊 source registry 总 ${sources.length} 条`);
 console.log(`   · medium    ${mediumSources.length} 源 → ${mediumByRss.size} unique RSS(1-to-N mapping)`);
 console.log(`   · sitemap   ${sitemapSources.length} 源 → 每个取前 ${SITEMAP_URLS_PER_SOURCE} URL`);
@@ -87,13 +95,13 @@ const sitemapReqs = sitemapResults.flatMap((r, i) => {
         if (!isLikelyArticleUrl(url)) { sitemapNonArticle += 1; return false; }
         return true;
     });
+    // P3.5 Bug A · userData 改用 sources_for_url 数组 · 1-to-N
+    const sources_for_url = blogUrlToTokens.get(source.blog_url) ?? [];
     return articleUrls.slice(0, SITEMAP_URLS_PER_SOURCE).map((url) => ({
         url,
         label: 'DETAIL',
         userData: {
-            token_id: source.token_id,
-            base_symbol: source.base_symbol,
-            original_url: source.blog_url,
+            sources_for_url,
             from_sitemap: true,
         },
     }));
@@ -102,33 +110,22 @@ if (sitemapInvalidUrls > 0) console.warn(`   ⚠️ ${sitemapInvalidUrls} 个非
 if (sitemapNonArticle > 0) console.log(`   · ⊘ ${sitemapNonArticle} 个非 article URL 跳过(isLikelyArticleUrl 过滤)`);
 console.log(`   · sitemap 解析成功 ${sitemapSources.length - sitemapFailed} · 失败 ${sitemapFailed} · article URL ${sitemapReqs.length} 待 DETAIL`);
 
-// P3.5 · other 走 LIST handler(首页 → enqueueLinks 发现 article → DETAIL)
-const otherReqs = otherSources.map((s: SourceRow) => ({
-    url: s.blog_url,
+// P3.5 Bug A · heuristic + other 合并 · 按 blog_url 去重 · 1-to-N
+// 解决 KLAC vs TTMI 共用 blog_url 二号位拿不到数据 bug
+const listUrlSet = new Set<string>();
+for (const s of [...heuristicSources, ...otherSources]) listUrlSet.add(s.blog_url);
+const listReqs = Array.from(listUrlSet).map((url) => ({
+    url,
     label: 'LIST',
     userData: {
-        token_id: s.token_id,
-        base_symbol: s.base_symbol,
-        original_url: s.blog_url,
+        sources_for_url: blogUrlToTokens.get(url) ?? [],
         from_sitemap: false,
     },
 }));
-
-// P3.5 · heuristic 也走 LIST handler · 跟 other 同流程
-// 之前的 heuristicHandler 暂时保留(作为兜底)· 但实际 entry 改走 LIST
-const heuristicReqs = heuristicSources.map((s: SourceRow) => ({
-    url: s.blog_url,
-    label: 'LIST',
-    userData: {
-        token_id: s.token_id,
-        base_symbol: s.base_symbol,
-        original_url: s.blog_url,
-        from_sitemap: false,
-    },
-}));
+console.log(`   · LIST 入队 ${listReqs.length} unique URL(heuristic+other 去重前 ${heuristicSources.length + otherSources.length})`);
 
 await mediumQueue.addRequests(mediumReqs);
-await generalQueue.addRequests([...otherReqs, ...sitemapReqs, ...heuristicReqs]);
+await generalQueue.addRequests([...listReqs, ...sitemapReqs]);
 
 // 混合方案(2026-06-29 老板拍板 · 等代理池来再调):
 // - sameDomainDelaySecs=0: 真 bug 修复(queue 全同域 reclaim thrashing · 之前 60 秒/req)
@@ -175,7 +172,7 @@ if (SKIP_MEDIUM) {
     console.log(`   · medium 完成 ${((performance.now() - tMed) / 1000).toFixed(1)}s`);
 }
 
-console.log(`\n🚀 generalCrawler 启动 · ${otherReqs.length + sitemapReqs.length + heuristicReqs.length} 个 URL(含 ${heuristicReqs.length} heuristic)`);
+console.log(`\n🚀 generalCrawler 启动 · ${listReqs.length} LIST + ${sitemapReqs.length} sitemap DETAIL = ${listReqs.length + sitemapReqs.length} 入口 URL`);
 const tGen = performance.now();
 await generalCrawler.run();
 console.log(`   · general 完成 ${((performance.now() - tGen) / 1000).toFixed(1)}s`);

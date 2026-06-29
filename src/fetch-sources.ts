@@ -1,5 +1,5 @@
 import { upsertSource, countSources } from './registry/db.js';
-import { isIgnoredUrl } from './config.js';
+import { isIgnoredUrl, URL_OVERRIDES } from './config.js';
 
 const API_BASE = process.env.HHWL_API_BASE ?? 'https://blog-picker.hhwlnet.com';
 const PAGE_SIZE = 50;
@@ -58,15 +58,20 @@ async function main(): Promise<void> {
         }
 
         let pageIgnored = 0;
+        let pageOverridden = 0;
         for (const it of page.items) {
-            if (isIgnoredUrl(it.blog_url)) {
+            // URL_OVERRIDES: hhwl 数据 URL 错的 · 这里硬改
+            const blogUrl = URL_OVERRIDES[it.base_symbol] ?? it.blog_url;
+            if (URL_OVERRIDES[it.base_symbol]) pageOverridden += 1;
+
+            if (isIgnoredUrl(blogUrl)) {
                 pageIgnored += 1;
                 continue;
             }
             upsertSource({
                 token_id: it.token_id,
                 base_symbol: it.base_symbol,
-                blog_url: it.blog_url,
+                blog_url: blogUrl,
                 fetch_url: unwrapStr(it.fetch_url),
                 blogpicker_id: it.id,
                 blogpicker_status: it.status,
@@ -77,7 +82,7 @@ async function main(): Promise<void> {
 
         fetched += page.items.length;
         offset += page.items.length;
-        console.log(`  · 已拉 ${fetched}/${targetCount}(blogpicker 总计 ${total}) ⊘ ignored ${pageIgnored}`);
+        console.log(`  · 已拉 ${fetched}/${targetCount}(blogpicker 总计 ${total}) ⊘ ignored ${pageIgnored} · overridden ${pageOverridden}`);
     }
 
     console.log(`✅ 完成 · registry 总条数 ${countSources()}`);

@@ -1,7 +1,7 @@
 import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
 import { ARTICLE_GLOBS, NON_ARTICLE_GLOBS } from '../config.js';
 
-interface SourceInfo {
+interface TokenAssoc {
     token_id: number;
     base_symbol: string;
     original_url: string;
@@ -13,10 +13,16 @@ async function rawStore(): Promise<KeyValueStore> {
     return _rawStore;
 }
 
+function getSources(ctx: CheerioCrawlingContext): TokenAssoc[] {
+    return (ctx.request.userData?.sources_for_url ?? []) as TokenAssoc[];
+}
+
 // LIST handler · 在博客首页/列表页 · enqueueLinks 发现 article 链接
 export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
     const { request, log, enqueueLinks } = ctx;
-    const source = request.userData as unknown as SourceInfo;
+    const sources = getSources(ctx);
+    const label = sources[0]?.base_symbol ?? '?';
+    const extraTokens = sources.length > 1 ? ` +${sources.length - 1}` : '';
 
     try {
         const enqueued = await enqueueLinks({
@@ -26,39 +32,42 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
             globs: ARTICLE_GLOBS,
             exclude: NON_ARTICLE_GLOBS,
             limit: 30,
-            userData: { ...source },
+            userData: { sources_for_url: sources, from_sitemap: false },
         });
-        log.info(`📋 [LIST] ${source.base_symbol} 入队 ${enqueued.processedRequests.length} article · 跳过 ${enqueued.unprocessedRequests.length} | ${request.url}`);
+        log.info(`📋 [LIST] ${label}${extraTokens} 入队 ${enqueued.processedRequests.length} article · 跳过 ${enqueued.unprocessedRequests.length} | ${request.url}`);
     } catch (e) {
-        log.warning(`📋 [LIST] enqueueLinks 失败 ${source.base_symbol} ${request.url}: ${(e as Error).message?.slice(0, 80)}`);
+        log.warning(`📋 [LIST] enqueueLinks 失败 ${label}: ${(e as Error).message?.slice(0, 80)}`);
     }
 }
 
-// DETAIL handler · 真 article 页 · 抽真 metadata + 存 raw HTML
 function isCategoryPathname(url: string): boolean {
     try {
         const p = new URL(url).pathname.toLowerCase().replace(/\/+$/, '');
-        // 纯目录(无 slug):/blog · /posts · /news · /blog/page/2 等
-        const bareCategoryPaths = ['', '/blog', '/posts', '/post', '/news', '/articles', '/article', '/insights', '/stories'];
+        const bareCategoryPaths = ['', '/blog', '/posts', '/post', '/news', '/articles', '/article', '/insights', '/stories', '/writing', '/media', '/updates', '/announcements', '/journal', '/dispatch'];
         if (bareCategoryPaths.includes(p)) return true;
-        if (/^\/blog\/page\/\d+$/i.test(p) || /^\/posts?\/page\/\d+$/i.test(p)) return true;
+        if (/^\/(blog|posts?|news|articles?)\/page\/\d+$/i.test(p)) return true;
         return false;
     } catch {
         return false;
     }
 }
 
+// DETAIL handler · 真 article 页 · 抽真 metadata + 1-to-N pushData + 存 raw HTML
 export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> {
     const { request, $, log, pushData, body } = ctx;
-    const source = request.userData as unknown as SourceInfo;
+    const sources = getSources(ctx);
+    if (sources.length === 0) {
+        log.warning(`⊘ [DETAIL] 无 sources_for_url · ${request.loadedUrl}`);
+        return;
+    }
     const loaded = request.loadedUrl ?? request.url;
 
-    // 双保险 1:URL 跟博客首页 URL 完全一致 · 跳过(防 enqueueLinks 把首页自己加回 DETAIL)
-    if (request.url === source.original_url || loaded === source.original_url) {
+    // 双保险 1:URL 等于任一 source 的博客首页 · 跳过(防 enqueueLinks 把首页加回来)
+    if (sources.some((s) => request.url === s.original_url || loaded === s.original_url)) {
         log.info(`⊘ [DETAIL] URL 等于博客首页 跳过 | ${loaded}`);
         return;
     }
-    // 双保险 2:URL pathname 是纯目录(/blog · /blog/ · /posts 等无 slug)· 跳过
+    // 双保险 2:pathname 纯目录
     if (isCategoryPathname(loaded)) {
         log.info(`⊘ [DETAIL] pathname 纯目录 跳过 | ${loaded}`);
         return;
@@ -104,31 +113,36 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('[itemprop="author"]').first().text().trim() ||
         '';
 
-    // 存 raw HTML(老板拍板:每次访问保存一份 · 后续调白/黑名单 + selector 不用重抓)
+    // 存 raw HTML · key 用第一个 source 的 token_id 命名
     try {
         const kv = await rawStore();
         const ts = new Date().toISOString().replace(/[:.]/g, '-');
-        const key = `${source.token_id}-${ts}-${request.id}`;
+        const key = `${sources[0].token_id}-${ts}-${request.id}`;
         await kv.setValue(key, body, { contentType: 'text/html; charset=utf-8' });
     } catch (e) {
         log.warning(`存 raw HTML 失败 ${(e as Error).message?.slice(0, 80)}`);
     }
 
-    await pushData({
-        crawler: 'article-detail',
-        token_id: source.token_id,
-        base_symbol: source.base_symbol,
-        source_url: source.original_url,
-        url: loaded,
-        title,
-        description,
-        image,
-        published_at: publishedAt,
-        author,
-        og_type: ogType,
-        has_schema_blogposting: hasArticleSchema || hasJsonLdArticle,
-        crawledAt: new Date().toISOString(),
-    });
+    // P3.5 Bug A · 1-to-N · 每个 source 一条 dataset(KLAC vs TTMI 都有数据)
+    const crawledAt = new Date().toISOString();
+    for (const src of sources) {
+        await pushData({
+            crawler: 'article-detail',
+            token_id: src.token_id,
+            base_symbol: src.base_symbol,
+            source_url: src.original_url,
+            url: loaded,
+            title,
+            description,
+            image,
+            published_at: publishedAt,
+            author,
+            og_type: ogType,
+            has_schema_blogposting: hasArticleSchema || hasJsonLdArticle,
+            crawledAt,
+        });
+    }
 
-    log.info(`✅ [DETAIL] ${source.base_symbol} | ${title.slice(0, 80)} | pub=${publishedAt || '-'}`);
+    const symbols = sources.map((s) => s.base_symbol).join(',');
+    log.info(`✅ [DETAIL] ${symbols}(×${sources.length}) | ${title.slice(0, 80)} | pub=${publishedAt || '-'}`);
 }

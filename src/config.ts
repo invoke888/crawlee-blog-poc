@@ -27,7 +27,21 @@ export const ARTICLE_GLOBS = [
     '**/202[0-9]/**',
     '**/announcements/**',
     '**/research/**',
+    // 2026-06-29 老板拍板加(Bug B 扩名单)
+    '**/writing/**',       // MIRA 类
+    '**/press-center/**',  // GUN 类
+    '**/updates/**',       // 项目方公告
+    '**/media/**',         // 媒体页
+    '**/journal/**',       // 期刊
+    '**/dispatch/**',      // newsletter
+    '**/announcement/**',
 ];
+
+// URL_OVERRIDES · hhwl 数据 URL 错的硬改 · 老板维护 · 长期清单
+// key = base_symbol(因为 token_id 难记) · value = 正确 blog_url
+export const URL_OVERRIDES: Record<string, string> = {
+    MEW: 'https://mew.xyz/news', // 老板指出:hhwl 给的是 /media · 真实是 /news
+};
 
 // 非 article URL 黑名单(glob 风格)· 长期迭代
 export const NON_ARTICLE_GLOBS = [
