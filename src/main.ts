@@ -127,12 +127,19 @@ const generalCrawler = new CheerioCrawler({
     maxRequestRetries: 2,
 });
 
-console.log(`\n🚀 启动 · 2 个 Crawler 并行 · named queues`);
+// 串行跑 · 避免 named queue 并发 race(ENOENT mkdir lock)
 const t0 = performance.now();
-await Promise.all([
-    mediumCrawler.run(),
-    generalCrawler.run(),
-]);
+
+console.log(`\n🚀 mediumCrawler 启动 · ${mediumReqs.length} 个 RSS`);
+const tMed = performance.now();
+await mediumCrawler.run();
+console.log(`   · medium 完成 ${((performance.now() - tMed) / 1000).toFixed(1)}s`);
+
+console.log(`\n🚀 generalCrawler 启动 · ${otherReqs.length + sitemapReqs.length} 个 URL`);
+const tGen = performance.now();
+await generalCrawler.run();
+console.log(`   · general 完成 ${((performance.now() - tGen) / 1000).toFixed(1)}s`);
+
 const dt = ((performance.now() - t0) / 1000).toFixed(1);
 
 const dataset = await Dataset.open();
