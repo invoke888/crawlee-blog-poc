@@ -122,17 +122,19 @@ const heuristicReqs = heuristicSources.map((s: SourceRow) => ({
 await mediumQueue.addRequests(mediumReqs);
 await generalQueue.addRequests([...otherReqs, ...sitemapReqs, ...heuristicReqs]);
 
+// medium RSS endpoint(medium.com/feed/...)medium 官方接口不反爬 · 不需要 sameDomainDelay/SessionPool
+// 之前 sameDomainDelaySecs=1 + queue 全同域 · reclaim 机制导致 60 秒/req · 慢 60x
 const mediumCrawler = new CheerioCrawler({
     requestQueue: mediumQueue,
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mediumRouter,
-    maxRequestsPerMinute: 60,
-    maxConcurrency: 3,
-    sameDomainDelaySecs: 1,
-    useSessionPool: true,
-    persistCookiesPerSession: true,
+    maxRequestsPerMinute: 120,
+    maxConcurrency: 5,
+    sameDomainDelaySecs: 0,
+    useSessionPool: false,
     additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
-    maxRequestRetries: 2,
+    maxRequestRetries: 1,
+    maxRequestsPerCrawl: process.env.MEDIUM_LIMIT ? Number(process.env.MEDIUM_LIMIT) : undefined,
 });
 
 const generalCrawler = new CheerioCrawler({
