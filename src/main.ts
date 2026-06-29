@@ -1,13 +1,20 @@
 import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
-import { CheerioCrawler, Dataset, Configuration, RequestQueue } from 'crawlee';
+import { CheerioCrawler, Dataset, Configuration, RequestQueue, Sitemap } from 'crawlee';
 
 import { defaultRouter } from './handlers/default.js';
 import { mediumRouter, mediumToRss } from './handlers/medium.js';
-import { listSources } from './registry/db.js';
+import { listSources, type SourceRow } from './registry/db.js';
+
+const SITEMAP_URLS_PER_SOURCE = Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20);
 
 const sources = listSources({ limit: 5000 });
 const mediumSources = sources.filter((s) => s.host_platform === 'medium');
-const otherSources = sources.filter((s) => s.host_platform !== 'medium');
+const sitemapSources = sources.filter(
+    (s) => s.host_platform !== 'medium' && s.fetch_strategy === 'sitemap' && s.sitemap_url,
+);
+const otherSources = sources.filter(
+    (s) => s.host_platform !== 'medium' && !(s.fetch_strategy === 'sitemap' && s.sitemap_url),
+);
 
 // bug 2 修复:多 token_id 共 medium URL · 按 RSS URL 去重 · 反向 1-to-N mapping
 interface TokenAssoc { token_id: number; base_symbol: string; original_url: string }
@@ -21,7 +28,8 @@ for (const s of mediumSources) {
 
 console.log(`📊 source registry 总 ${sources.length} 条`);
 console.log(`   · medium  ${mediumSources.length} 源 → ${mediumByRss.size} unique RSS(1-to-N mapping)`);
-console.log(`   · general ${otherSources.length} → generalCrawler`);
+console.log(`   · sitemap ${sitemapSources.length} 源 → 每个取前 ${SITEMAP_URLS_PER_SOURCE} URL`);
+console.log(`   · other   ${otherSources.length} 源 → 走首页 og`);
 
 Configuration.getGlobalConfig().set('purgeOnStart', true);
 
@@ -33,17 +41,47 @@ const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
     url: rssUrl,
     userData: { sources_for_url: assoc },
 }));
-const generalReqs = otherSources.map((s) => ({
+
+// 并发拉所有 sitemap · 取每个的前 N URL
+console.log(`\n📍 并发拉 ${sitemapSources.length} 个 sitemap...`);
+const sitemapResults = await Promise.allSettled(
+    sitemapSources.map(async (s) => {
+        const { urls } = await Sitemap.load(s.sitemap_url!);
+        return { source: s, urls: urls.slice(0, SITEMAP_URLS_PER_SOURCE) };
+    }),
+);
+let sitemapFailed = 0;
+const sitemapReqs = sitemapResults.flatMap((r, i): { url: string; userData: Record<string, unknown> }[] => {
+    if (r.status === 'rejected') {
+        sitemapFailed += 1;
+        console.warn(`   ⚠️ sitemap 失败 token_id=${sitemapSources[i].token_id} ${sitemapSources[i].sitemap_url}`);
+        return [];
+    }
+    const { source, urls } = r.value;
+    return urls.map((url) => ({
+        url,
+        userData: {
+            token_id: source.token_id,
+            base_symbol: source.base_symbol,
+            original_url: source.blog_url,
+            from_sitemap: true,
+        },
+    }));
+});
+console.log(`   · sitemap 解析成功 ${sitemapSources.length - sitemapFailed} · 失败 ${sitemapFailed} · 总 ${sitemapReqs.length} URL`);
+
+const otherReqs = otherSources.map((s: SourceRow) => ({
     url: s.blog_url,
     userData: {
         token_id: s.token_id,
         base_symbol: s.base_symbol,
         original_url: s.blog_url,
+        from_sitemap: false,
     },
 }));
 
 await mediumQueue.addRequests(mediumReqs);
-await generalQueue.addRequests(generalReqs);
+await generalQueue.addRequests([...otherReqs, ...sitemapReqs]);
 
 const mediumCrawler = new CheerioCrawler({
     requestQueue: mediumQueue,

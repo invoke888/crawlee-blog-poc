@@ -1,0 +1,11 @@
+[Unit]
+Description=Crawlee Blog PoC · 每 3 小时跑一次
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=3h
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

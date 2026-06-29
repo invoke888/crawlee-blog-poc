@@ -16,10 +16,15 @@ defaultRouter.addDefaultHandler(async ({ request, $, log, pushData }) => {
     const title = ogTitle || $('title').text().trim();
     const description = ogDescription || $('meta[name="description"]').attr('content') || '';
 
+    const fromSitemap = (request.userData?.from_sitemap as boolean | undefined) ?? false;
+    const originalUrl = request.userData?.original_url as string | undefined;
+
     await pushData({
         crawler: 'general',
+        from_sitemap: fromSitemap,
         token_id: tokenId,
         base_symbol: baseSymbol,
+        source_url: originalUrl,
         url: request.loadedUrl,
         title,
         description,

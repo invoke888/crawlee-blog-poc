@@ -1,0 +1,18 @@
+[Unit]
+Description=Crawlee Blog PoC · 跑一次抓取(由 timer 触发)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/crawlee-blog-poc
+EnvironmentFile=-/home/ubuntu/crawlee-blog-poc/.env.local
+ExecStart=/bin/bash -lc 'export PATH="$HOME/.local/share/fnm:$PATH" && eval "$(fnm env --shell bash)" && npm start && npm run push'
+StandardOutput=append:/home/ubuntu/crawlee-blog-poc/storage/crawlee-poc.log
+StandardError=append:/home/ubuntu/crawlee-blog-poc/storage/crawlee-poc.log
+TimeoutStartSec=1800
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

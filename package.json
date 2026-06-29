@@ -23,6 +23,7 @@
         "fetch": "tsx src/fetch-sources.ts",
         "probe": "tsx src/probe.ts",
         "report": "tsx src/report.ts",
+        "push": "tsx src/push.ts",
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
     },
