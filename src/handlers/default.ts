@@ -1,6 +1,10 @@
 import { createCheerioRouter } from 'crawlee';
+import { heuristicHandler } from './heuristic.js';
 
 export const defaultRouter = createCheerioRouter();
+
+// P3.4 · og=none 的源走 heuristic handler · 多重 fallback
+defaultRouter.addHandler('heuristic', heuristicHandler);
 
 defaultRouter.addDefaultHandler(async ({ request, $, log, pushData }) => {
     const tokenId = request.userData?.token_id as number | undefined;

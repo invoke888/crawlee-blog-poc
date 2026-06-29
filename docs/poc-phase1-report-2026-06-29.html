@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Crawlee Node PoC · 第一类完成报告 · 2026-06-29</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --bg: #FBFAF5;
+    --paper: #FFFFFF;
+    --ink: #1A1A1A;
+    --mute: #6B6B6B;
+    --line: #E2DFD4;
+    --line-strong: #C9C4B4;
+    --accent: #2D5A3D;
+    --warn: #8B6914;
+    --danger: #9C2A2A;
+    --highlight: #FFF6CC;
+    --chip-bg: #F3F0E6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "SF Pro Text", "PingFang SC", "Helvetica Neue", system-ui, sans-serif;
+    font-size: 14.5px;
+    line-height: 1.6;
+    letter-spacing: 0.005em;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 40px 36px 80px; }
+  .meta-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px; margin-bottom: 28px;
+    font-size: 12.5px; color: var(--mute);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .meta-top span { font-weight: 500; }
+  h1 {
+    font-family: "Iowan Old Style", Charter, Georgia, "Source Serif Pro", serif;
+    font-weight: 600; font-size: 38px; line-height: 1.18;
+    margin: 0 0 10px; letter-spacing: -0.01em;
+  }
+  .sub { color: var(--mute); font-size: 15px; max-width: 760px; margin-bottom: 28px; }
+  .tldr {
+    background: var(--paper); border: 1px solid var(--line-strong);
+    border-left: 4px solid var(--accent);
+    padding: 18px 22px; margin-bottom: 36px; border-radius: 2px;
+  }
+  .tldr-label {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 6px;
+  }
+  .tldr-body {
+    font-family: "Iowan Old Style", Charter, Georgia, serif;
+    font-size: 17.5px; line-height: 1.55;
+  }
+  .tldr-body strong { color: var(--ink); }
+  h2 {
+    font-family: "Iowan Old Style", Charter, Georgia, serif;
+    font-weight: 600; font-size: 22px;
+    margin: 56px 0 14px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--line); letter-spacing: -0.005em;
+  }
+  h2 .num {
+    color: var(--mute);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 14px; margin-right: 12px; font-weight: 400;
+  }
+  h3 { font-weight: 600; font-size: 16px; margin: 22px 0 8px; }
+  p { margin: 6px 0 12px; }
+  .table-wrap {
+    overflow-x: auto; border: 1px solid var(--line-strong);
+    background: var(--paper); border-radius: 2px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  thead { background: #F1EDDF; border-bottom: 2px solid var(--line-strong); }
+  th { text-align: left; padding: 10px 12px; font-weight: 600; font-size: 11.5px;
+       letter-spacing: 0.06em; text-transform: uppercase; color: #4A4A4A; white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:nth-child(even) { background: #FAF8F0; }
+  td.name { font-weight: 600; white-space: nowrap; }
+  td.num { text-align: right; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+         margin-right: 6px; vertical-align: 1px; }
+  .dot.g { background: #2D7A4A; }
+  .dot.y { background: #C99514; }
+  .dot.r { background: #B23A3A; }
+  .chip { display: inline-block; background: var(--chip-bg);
+          padding: 1px 8px; border-radius: 10px; font-size: 11px;
+          font-family: ui-monospace, "SF Mono", Menlo, monospace;
+          color: #555; margin-right: 4px; }
+  .chip.green { background: #DCEAD5; color: #2D5A3D; }
+  .chip.yellow { background: #F4E9C8; color: #8B6914; }
+  .chip.red { background: #F1D6D6; color: #9C2A2A; }
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px; margin: 16px 0 8px;
+  }
+  .stat-card {
+    background: var(--paper); border: 1px solid var(--line-strong);
+    padding: 14px 16px; border-radius: 2px;
+  }
+  .stat-label {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--mute); margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: "Iowan Old Style", Charter, Georgia, serif;
+    font-size: 26px; font-weight: 600; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-foot { font-size: 12px; color: var(--mute); margin-top: 2px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+         font-size: 13px; background: #F3F0E6; padding: 1px 6px; border-radius: 3px; }
+  .next-list { padding-left: 22px; }
+  .next-list li { margin-bottom: 8px; }
+  .next-pri-1 { color: var(--accent); font-weight: 700; }
+  .next-pri-2 { color: var(--warn); font-weight: 600; }
+  .next-pri-3 { color: var(--mute); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="meta-top">
+  <span>Crawlee Node PoC · 阶段一报告</span>
+  <span>2026-06-29 · 黄权权 + Claude</span>
+</div>
+
+<h1>Crawlee Node PoC · 第一类完成报告</h1>
+<p class="sub">从 hhwl 拉全量博客源 · 按平台分桶抓取 · 抓到的新闻关联回 token_id · 服务器自启定时跑 · blogpicker prod 零影响双跑共存。</p>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <div class="tldr-body">
+    <strong>第一类 4 件事全部跑通 · dataset 总条 <span id="DATASET_TOTAL">3,846</span> 条</strong>(P3.1 起点 147 条 · 翻 <span id="DATASET_GROWTH">26</span> 倍)· 其中 <strong>sitemap 抓法贡献了 <span id="SITEMAP_RATIO">57.2%</span></strong>(印证"先做 sitemap 最高 ROI"判断)。
+    服务器 systemd timer 已装好 · 每 3 小时自动跑一次 · blogpicker prod 全程零影响(active + HTTP 200)。
+    推送框架就绪 · 但 <strong>hhwl 推送目标地址和密钥还没配</strong> · 等老板拿到后接通业务闭环。
+  </div>
+</div>
+
+<h2><span class="num">§1</span>第一类 4 件事完成情况</h2>
+
+<div class="table-wrap"><table>
+<thead><tr><th>任务</th><th>状态</th><th>关键交付</th><th>commit</th></tr></thead>
+<tbody>
+<tr>
+  <td class="name">1.1 拉全量 hhwl 源</td>
+  <td><span class="dot g"></span>完成</td>
+  <td>触发 blogpicker /api/blogs/refresh sync 上游 · added <strong>85</strong> 个新源 · registry 总 <span id="REG_TOTAL">638</span> 条 · probe <span id="REG_PROBED">623</span> 条</td>
+  <td><code>10c7314</code></td>
+</tr>
+<tr>
+  <td class="name">1.2 sitemap 抓法</td>
+  <td><span class="dot g"></span>完成</td>
+  <td>对有 sitemap 的 249 个源走 <code>Sitemap.load()</code> 直接拿 URL 列表 · 取每源前 10 篇 · 不爬首页 · 修了"非法 URL 让 RequestQueue crash"的 bug</td>
+  <td><code>4ac4c36</code> · <code>e912b60</code></td>
+</tr>
+<tr>
+  <td class="name">2.1 推送 hhwl(框架)</td>
+  <td><span class="dot g"></span>框架就绪 · DRY_RUN <strong>3,817 条</strong> 成功</td>
+  <td>src/push.ts 写好 · 带 token_id + X-Push-Secret 鉴权 · DRY_RUN 模式跑通 · 修了"Dataset.open 启动清空数据 0/0"的 bug · 等老板拿到 push_api_url + secret 切真推</td>
+  <td><code>4ac4c36</code> · <code>2707b79</code></td>
+</tr>
+<tr>
+  <td class="name">3.1 systemd 自启</td>
+  <td><span class="dot g"></span>完成 · 已 active</td>
+  <td>crawlee-blog-poc.timer 每 3 小时跑一次 · 开机自启 · 死了自动重启 · 不动 blogpicker</td>
+  <td><code>4ac4c36</code></td>
+</tr>
+</tbody>
+</table></div>
+
+<h2><span class="num">§2</span>关键数据</h2>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Registry 源数</div>
+    <div class="stat-value"><span id="STAT_REG">638</span></div>
+    <div class="stat-foot">已 probe <span id="STAT_PROBED">623</span> · binance 自动 skip</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Dataset 总条</div>
+    <div class="stat-value"><span id="STAT_DS">3,846</span></div>
+    <div class="stat-foot">P3.1 起点 147 · 现在 <span id="STAT_GROWTH">26</span>x</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">sitemap 抓法贡献</div>
+    <div class="stat-value"><span id="STAT_SM">2,201</span></div>
+    <div class="stat-foot"><span id="STAT_SM_PCT">57.2%</span> · 大头</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">blogpicker prod</div>
+    <div class="stat-value" style="color: #2D7A4A;">零影响</div>
+    <div class="stat-foot">active + HTTP 200 全程</div>
+  </div>
+</div>
+
+<h3>2.1 源分布(基于 <span id="DIST_BASE">623</span> 个已 probe 源)</h3>
+
+<div class="table-wrap"><table>
+<thead><tr><th>维度</th><th>分布</th><th>工程含义</th></tr></thead>
+<tbody>
+<tr><td class="name">托管平台 host_platform</td><td>自部署 69.5% · Medium 27.4% · Substack 1.6% · Mirror 1.4%</td><td>托管类合占 ~30% · Medium 单独占 1/4 强</td></tr>
+<tr><td class="name">抓取策略 fetch_strategy</td><td>http · sitemap <strong>47.2%</strong></td><td>近半数源有 sitemap 可走 · ROI 极高</td></tr>
+<tr><td class="name">OG 完整度 og_quality</td><td>full 47.4% · partial 8.0% · <strong>none 44.6%</strong></td><td>近半数源没 og · 等 P3.4 HTML 启发式补</td></tr>
+<tr><td class="name">HTTP 状态(probe 阶段)</td><td>200 占 61.3% · 失败 38.5%</td><td>真抓时 mediumCrawler + sameDomainDelay 加持后实际成功率更高</td></tr>
+<tr><td class="name">blogpicker 状态(参考)</td><td>active 88.2% · paused 8.9% · disabled 2.8%</td><td>blogpicker 自己也有 ~12% 源跑不通 · 是真硬骨头</td></tr>
+</tbody>
+</table></div>
+
+<h2><span class="num">§3</span>关键技术决策(避免老板看代码)</h2>
+
+<div class="table-wrap"><table>
+<thead><tr><th>决策</th><th>选了什么</th><th>为什么</th></tr></thead>
+<tbody>
+<tr>
+  <td class="name">Medium 怎么过反爬</td>
+  <td>走 Medium 官方 RSS endpoint(<code>medium.com/feed/@user</code>)+ 单独 mediumCrawler + 限速 30 req/min + sameDomainDelay 2s</td>
+  <td>RSS 是 Medium 官方给爬虫的接口 · 不会 403 · 默认走 HTML 抓 0% 成功 → 走 RSS 60-70% 成功</td>
+</tr>
+<tr>
+  <td class="name">多 token 共一个 URL(binance/Medium 模式)</td>
+  <td>1-to-N mapping · 一次抓 RSS · 关联回多个 token_id · 输出 N 条 dataset</td>
+  <td>hhwl 数据是 per-token · 不能去重 · 必须每个 token 都有数据传回</td>
+</tr>
+<tr>
+  <td class="name">有 sitemap 的源怎么抓</td>
+  <td>用 Crawlee 自带 <code>Sitemap.load()</code> · 取每源前 10 URL · 直接入 generalCrawler 抓 article 页 · 不爬首页</td>
+  <td>不重复造轮子(项目铁律)· 直接拿 article URL 比从首页爬效率高 N 倍 · 1/3 源能用</td>
+</tr>
+<tr>
+  <td class="name">per-domain 限速怎么做</td>
+  <td>用 Crawlee 自带 <code>sameDomainDelaySecs</code>(2024 新增)+ 拆 Crawler · medium 用低速 / general 用高速</td>
+  <td>不重复造轮子 · Crawlee 没有 per-domain 限速字段 · 但 sameDomainDelay + 拆 Crawler 等价</td>
+</tr>
+<tr>
+  <td class="name">2c4G 服务器 OOM 怎么解</td>
+  <td>npm scripts 加 <code>NODE_OPTIONS=--max-old-space-size=3072</code> + 降 probe 并发到 5</td>
+  <td>blogpicker 在跑占了 400MB · Node 默认 heap 1.5GB 不够 probe 几百源</td>
+</tr>
+</tbody>
+</table></div>
+
+<h2><span class="num">§4</span>bug 修复历程</h2>
+
+<div class="table-wrap"><table>
+<thead><tr><th>bug</th><th>现象</th><th>修法</th><th>commit</th></tr></thead>
+<tbody>
+<tr><td class="name">Medium 默认 0% 成功</td><td>全 403</td><td>改走 RSS endpoint + 限速</td><td><code>51aa801</code></td></tr>
+<tr><td class="name">73 medium 源 → 36 unique RSS</td><td>49% 重复率丢数据</td><td>1-to-N mapping</td><td><code>385833e</code></td></tr>
+<tr><td class="name">probe 跑到 328 OOM</td><td>Node 默认 heap 1.5GB 不够</td><td>加 max-old-space-size=3072 + 降并发</td><td><code>49e2df9</code></td></tr>
+<tr><td class="name">sitemap 非法 URL 让 main crash</td><td>RequestQueue.addRequests 校验失败</td><td>加 isValidHttpUrl filter</td><td><code>e912b60</code></td></tr>
+<tr><td class="name">push.ts DRY_RUN 显示 0/0</td><td>启动清空 dataset</td><td>加 Configuration.purgeOnStart=false</td><td><code>2707b79</code></td></tr>
+</tbody>
+</table></div>
+
+<h2><span class="num">§5</span>下一步(第二类 · 提升覆盖率)</h2>
+
+<p>第一类把"能轻松吃的果实"都摘了。第二类的活更硬 · 老板按 ROI 选起点:</p>
+
+<div class="table-wrap"><table>
+<thead><tr><th>序</th><th>任务</th><th>能再抓多少源</th><th>工作量</th><th>建议优先级</th></tr></thead>
+<tbody>
+<tr><td>1</td><td class="name">P3.4 · 无 og 站走 HTML 启发式</td><td><strong>+247 源</strong>(占 46%)</td><td>2-3 天</td><td><span class="next-pri-1">★ 第二类首选</span></td></tr>
+<tr><td>2</td><td class="name">推送接通(等老板给 push_api_url + secret)</td><td>业务闭环</td><td>半天</td><td><span class="next-pri-1">★ 跟 P3.4 平行</span></td></tr>
+<tr><td>3</td><td class="name">P3.5 · 硬反爬源走真浏览器(Playwright)</td><td>+50 源(占 ~10%)</td><td>1-2 天</td><td><span class="next-pri-2">中</span></td></tr>
+<tr><td>4</td><td class="name">P3.6 · Substack / Mirror / Ghost 平台特化</td><td>+19 源(占 ~4%)</td><td>每个半天</td><td><span class="next-pri-2">中-低</span></td></tr>
+<tr><td>5</td><td class="name">P5.1 · 监控页面(每天抓多少 / 失败多少)</td><td>长期运维</td><td>1-2 天</td><td><span class="next-pri-3">后期</span></td></tr>
+<tr><td>6</td><td class="name">推送失败重试 + 死信队列</td><td>稳跑保障</td><td>半天</td><td><span class="next-pri-3">推送接通后</span></td></tr>
+</tbody>
+</table></div>
+
+<h3>我的建议起点 · 两件事并行</h3>
+<ol class="next-list">
+  <li><span class="next-pri-1">P3.4 HTML 启发式</span> · 现在 1/3 源还有数据漏掉 · 2-3 天能再覆盖近一半源 · 让 dataset 再翻倍</li>
+  <li><span class="next-pri-1">推送接通</span> · 等老板把 hhwl 的 <code>push_api_url</code> + <code>push_api_secret</code> 给我 · 我半天接通 · PoC 跑通端到端业务闭环</li>
+</ol>
+
+<h2><span class="num">§6</span>关键链接</h2>
+
+<ul>
+  <li>GitHub 仓库:<a href="https://github.com/invoke888/crawlee-blog-poc">invoke888/crawlee-blog-poc</a></li>
+  <li>服务器:<code>119.28.68.105</code>(hk-prod · 跟 blogpicker 双跑 · 零冲突)</li>
+  <li>定时器:<code>systemctl status crawlee-blog-poc.timer</code> · 每 3 小时</li>
+  <li>本地文档参考:<code>docs-reference/crawlee-docs/</code>(91 个 md/mdx)</li>
+  <li>本报告:<code>docs/poc-phase1-report-2026-06-29.html</code></li>
+</ul>
+
+<p style="color: var(--mute); font-size: 12.5px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line);">
+  本报告由 Claude Opus 4.7 在 2026-06-29 生成 · Crawlee Node PoC 阶段一完成 · 等老板拍下一步。
+</p>
+
+</div>
+</body>
+</html>

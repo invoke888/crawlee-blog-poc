@@ -12,8 +12,16 @@ const mediumSources = sources.filter((s) => s.host_platform === 'medium');
 const sitemapSources = sources.filter(
     (s) => s.host_platform !== 'medium' && s.fetch_strategy === 'sitemap' && s.sitemap_url,
 );
+// P3.4 · og=none 的源走 heuristic handler · 多重 fallback 抽 title/description/image/date + RSS auto-discovery
+const heuristicSources = sources.filter(
+    (s) => s.host_platform !== 'medium'
+        && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
+        && s.og_quality === 'none',
+);
 const otherSources = sources.filter(
-    (s) => s.host_platform !== 'medium' && !(s.fetch_strategy === 'sitemap' && s.sitemap_url),
+    (s) => s.host_platform !== 'medium'
+        && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
+        && s.og_quality !== 'none',
 );
 
 // bug 2 修复:多 token_id 共 medium URL · 按 RSS URL 去重 · 反向 1-to-N mapping
@@ -27,9 +35,10 @@ for (const s of mediumSources) {
 }
 
 console.log(`📊 source registry 总 ${sources.length} 条`);
-console.log(`   · medium  ${mediumSources.length} 源 → ${mediumByRss.size} unique RSS(1-to-N mapping)`);
-console.log(`   · sitemap ${sitemapSources.length} 源 → 每个取前 ${SITEMAP_URLS_PER_SOURCE} URL`);
-console.log(`   · other   ${otherSources.length} 源 → 走首页 og`);
+console.log(`   · medium    ${mediumSources.length} 源 → ${mediumByRss.size} unique RSS(1-to-N mapping)`);
+console.log(`   · sitemap   ${sitemapSources.length} 源 → 每个取前 ${SITEMAP_URLS_PER_SOURCE} URL`);
+console.log(`   · heuristic ${heuristicSources.length} 源 → 多重 fallback 抽(og=none 兜底)`);
+console.log(`   · other     ${otherSources.length} 源 → 走首页 og`);
 
 // purgeOnStart=false · 避免跟 named queue race(已观察到 ENOENT mkdir lock)
 // 外部 SSH 命令前 rm -rf storage/datasets storage/request_queues 控制 purge 时机
@@ -99,8 +108,19 @@ const otherReqs = otherSources.map((s: SourceRow) => ({
     },
 }));
 
+const heuristicReqs = heuristicSources.map((s: SourceRow) => ({
+    url: s.blog_url,
+    label: 'heuristic',
+    userData: {
+        token_id: s.token_id,
+        base_symbol: s.base_symbol,
+        original_url: s.blog_url,
+        from_sitemap: false,
+    },
+}));
+
 await mediumQueue.addRequests(mediumReqs);
-await generalQueue.addRequests([...otherReqs, ...sitemapReqs]);
+await generalQueue.addRequests([...otherReqs, ...sitemapReqs, ...heuristicReqs]);
 
 const mediumCrawler = new CheerioCrawler({
     requestQueue: mediumQueue,
