@@ -1,4 +1,7 @@
-import { Dataset } from 'crawlee';
+import { Dataset, Configuration } from 'crawlee';
+
+// 关键!不清空 dataset · 否则 push.ts 启动时 main.ts 抓的数据就没了
+Configuration.getGlobalConfig().set('purgeOnStart', false);
 
 const PUSH_API_URL = process.env.PUSH_API_URL ?? '';
 const PUSH_API_SECRET = process.env.PUSH_API_SECRET ?? '';
