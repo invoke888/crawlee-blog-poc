@@ -35,10 +35,34 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
 }
 
 // DETAIL handler · 真 article 页 · 抽真 metadata + 存 raw HTML
+function isCategoryPathname(url: string): boolean {
+    try {
+        const p = new URL(url).pathname.toLowerCase().replace(/\/+$/, '');
+        // 纯目录(无 slug):/blog · /posts · /news · /blog/page/2 等
+        const bareCategoryPaths = ['', '/blog', '/posts', '/post', '/news', '/articles', '/article', '/insights', '/stories'];
+        if (bareCategoryPaths.includes(p)) return true;
+        if (/^\/blog\/page\/\d+$/i.test(p) || /^\/posts?\/page\/\d+$/i.test(p)) return true;
+        return false;
+    } catch {
+        return false;
+    }
+}
+
 export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> {
     const { request, $, log, pushData, body } = ctx;
     const source = request.userData as unknown as SourceInfo;
     const loaded = request.loadedUrl ?? request.url;
+
+    // 双保险 1:URL 跟博客首页 URL 完全一致 · 跳过(防 enqueueLinks 把首页自己加回 DETAIL)
+    if (request.url === source.original_url || loaded === source.original_url) {
+        log.info(`⊘ [DETAIL] URL 等于博客首页 跳过 | ${loaded}`);
+        return;
+    }
+    // 双保险 2:URL pathname 是纯目录(/blog · /blog/ · /posts 等无 slug)· 跳过
+    if (isCategoryPathname(loaded)) {
+        log.info(`⊘ [DETAIL] pathname 纯目录 跳过 | ${loaded}`);
+        return;
+    }
 
     // 二次验证:是不是真 article
     const ogType = ($('meta[property="og:type"]').attr('content') ?? '').trim();
