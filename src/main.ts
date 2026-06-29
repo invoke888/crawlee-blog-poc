@@ -8,7 +8,8 @@ import { isLikelyArticleUrl } from './config.js';
 
 const SITEMAP_URLS_PER_SOURCE = Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20);
 
-const sources = listSources({ limit: 5000 });
+// 🆕 2026-06-30:过滤掉 blogpicker 自己标 paused/disabled 的源 · 58 个不应爬(Explore agent 调研)
+const sources = listSources({ limit: 5000 }).filter((s) => s.blogpicker_status === 'active');
 const mediumSources = sources.filter((s) => s.host_platform === 'medium');
 const sitemapSources = sources.filter(
     (s) => s.host_platform !== 'medium' && s.fetch_strategy === 'sitemap' && s.sitemap_url,

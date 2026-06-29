@@ -35,6 +35,39 @@ export const ARTICLE_GLOBS = [
     '**/journal/**',       // 期刊
     '**/dispatch/**',      // newsletter
     '**/announcement/**',
+    // 🆕 2026-06-30 Explore agent 调研:42.6% 失败源是 sitemap 被过滤过严 · 加 21 个白名单
+    // 证据:WOO sitemap 8660 URL → 过滤后 0 / SCR 36→0 / UNI 178→0
+    '**/learn/**',         // learning hub
+    '**/tutorial/**',
+    '**/tutorials/**',
+    '**/guide/**',
+    '**/guides/**',
+    '**/resource/**',      // vaulta.com/resources 类
+    '**/resources/**',
+    '**/education/**',
+    '**/docs/**',          // 文档型博客
+    '**/publication/**',
+    '**/publications/**',
+    '**/post-mortem/**',   // 事后分析
+    '**/event/**',
+    '**/events/**',
+    '**/content/**',
+    '**/column/**',
+    '**/columns/**',
+    '**/opinion/**',
+    '**/analysis/**',
+    '**/feature/**',
+    '**/features/**',
+    '**/interview/**',
+    '**/interviews/**',
+    '**/report/**',
+    '**/reports/**',
+    '**/case-study/**',
+    '**/case-studies/**',
+    '**/whitepaper/**',
+    '**/whitepapers/**',
+    '**/technical/**',
+    '**/deep-dive/**',
 ];
 
 // URL_OVERRIDES · hhwl 数据 URL 错的硬改 · 老板维护 · 长期清单
@@ -75,6 +108,7 @@ export function isLikelyArticleUrl(url: string): boolean {
             '/category/', '/categories/', '/tag/', '/tags/', '/author/',
             '/feed', '/rss', '/sitemap',
             '/page/', '/search', '/archive',
+            '/embed/',  // 🆕 2026-06-30
         ];
         if (blackSegments.some((s) => path.includes(s))) return false;
 
@@ -87,6 +121,24 @@ export function isLikelyArticleUrl(url: string): boolean {
             '/insights/', '/stories/', '/p/',
             '/announcements/', '/research/',
             '/2023/', '/2024/', '/2025/', '/2026/',
+            // 🆕 2026-06-30 跟 ARTICLE_GLOBS 同步 · 解 sitemap 零文章
+            '/learn/', '/tutorial/', '/tutorials/',
+            '/guide/', '/guides/',
+            '/resource/', '/resources/',
+            '/education/', '/docs/',
+            '/publication/', '/publications/',
+            '/post-mortem/', '/event/', '/events/',
+            '/content/', '/column/', '/columns/',
+            '/opinion/', '/analysis/',
+            '/feature/', '/features/',
+            '/interview/', '/interviews/',
+            '/report/', '/reports/',
+            '/case-study/', '/case-studies/',
+            '/whitepaper/', '/whitepapers/',
+            '/technical/', '/deep-dive/',
+            '/writing/', '/press-center/',
+            '/updates/', '/media/', '/journal/',
+            '/dispatch/', '/announcement/',
         ];
         if (whiteSegments.some((s) => path.includes(s))) return true;
 
