@@ -1,10 +1,15 @@
 import { createCheerioRouter } from 'crawlee';
 import { heuristicHandler } from './heuristic.js';
+import { listHandler, detailHandler } from './article.js';
 
 export const defaultRouter = createCheerioRouter();
 
 // P3.4 · og=none 的源走 heuristic handler · 多重 fallback
 defaultRouter.addHandler('heuristic', heuristicHandler);
+
+// P3.5 · article 2-level crawl · LIST(首页发现链接)→ DETAIL(抓真 article)
+defaultRouter.addHandler('LIST', listHandler);
+defaultRouter.addHandler('DETAIL', detailHandler);
 
 defaultRouter.addDefaultHandler(async ({ request, $, log, pushData }) => {
     const tokenId = request.userData?.token_id as number | undefined;

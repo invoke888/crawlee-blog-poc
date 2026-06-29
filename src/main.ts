@@ -4,6 +4,7 @@ import { CheerioCrawler, Dataset, Configuration, RequestQueue, Sitemap } from 'c
 import { defaultRouter } from './handlers/default.js';
 import { mediumRouter, mediumToRss } from './handlers/medium.js';
 import { listSources, type SourceRow } from './registry/db.js';
+import { isLikelyArticleUrl } from './config.js';
 
 const SITEMAP_URLS_PER_SOURCE = Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20);
 
@@ -58,7 +59,7 @@ console.log(`\n📍 并发拉 ${sitemapSources.length} 个 sitemap...`);
 const sitemapResults = await Promise.allSettled(
     sitemapSources.map(async (s) => {
         const { urls } = await Sitemap.load(s.sitemap_url!);
-        return { source: s, urls: urls.slice(0, SITEMAP_URLS_PER_SOURCE) };
+        return { source: s, urls };
     }),
 );
 let sitemapFailed = 0;
@@ -72,34 +73,39 @@ function isValidHttpUrl(u: string): boolean {
 }
 
 let sitemapInvalidUrls = 0;
-const sitemapReqs = sitemapResults.flatMap((r, i): { url: string; userData: Record<string, unknown> }[] => {
+let sitemapNonArticle = 0;
+const sitemapReqs = sitemapResults.flatMap((r, i) => {
     if (r.status === 'rejected') {
         sitemapFailed += 1;
         console.warn(`   ⚠️ sitemap 失败 token_id=${sitemapSources[i].token_id} ${sitemapSources[i].sitemap_url}`);
         return [];
     }
     const { source, urls } = r.value;
-    return urls
-        .filter((url) => {
-            const ok = isValidHttpUrl(url);
-            if (!ok) sitemapInvalidUrls += 1;
-            return ok;
-        })
-        .map((url) => ({
-            url,
-            userData: {
-                token_id: source.token_id,
-                base_symbol: source.base_symbol,
-                original_url: source.blog_url,
-                from_sitemap: true,
-            },
-        }));
+    // P3.5 · 用 isLikelyArticleUrl 过滤 article-only · 再取前 N
+    const articleUrls = (urls as string[]).filter((url) => {
+        if (!isValidHttpUrl(url)) { sitemapInvalidUrls += 1; return false; }
+        if (!isLikelyArticleUrl(url)) { sitemapNonArticle += 1; return false; }
+        return true;
+    });
+    return articleUrls.slice(0, SITEMAP_URLS_PER_SOURCE).map((url) => ({
+        url,
+        label: 'DETAIL',
+        userData: {
+            token_id: source.token_id,
+            base_symbol: source.base_symbol,
+            original_url: source.blog_url,
+            from_sitemap: true,
+        },
+    }));
 });
 if (sitemapInvalidUrls > 0) console.warn(`   ⚠️ ${sitemapInvalidUrls} 个非法 URL 已跳过`);
-console.log(`   · sitemap 解析成功 ${sitemapSources.length - sitemapFailed} · 失败 ${sitemapFailed} · 总 ${sitemapReqs.length} URL`);
+if (sitemapNonArticle > 0) console.log(`   · ⊘ ${sitemapNonArticle} 个非 article URL 跳过(isLikelyArticleUrl 过滤)`);
+console.log(`   · sitemap 解析成功 ${sitemapSources.length - sitemapFailed} · 失败 ${sitemapFailed} · article URL ${sitemapReqs.length} 待 DETAIL`);
 
+// P3.5 · other 走 LIST handler(首页 → enqueueLinks 发现 article → DETAIL)
 const otherReqs = otherSources.map((s: SourceRow) => ({
     url: s.blog_url,
+    label: 'LIST',
     userData: {
         token_id: s.token_id,
         base_symbol: s.base_symbol,
@@ -108,9 +114,11 @@ const otherReqs = otherSources.map((s: SourceRow) => ({
     },
 }));
 
+// P3.5 · heuristic 也走 LIST handler · 跟 other 同流程
+// 之前的 heuristicHandler 暂时保留(作为兜底)· 但实际 entry 改走 LIST
 const heuristicReqs = heuristicSources.map((s: SourceRow) => ({
     url: s.blog_url,
-    label: 'heuristic',
+    label: 'LIST',
     userData: {
         token_id: s.token_id,
         base_symbol: s.base_symbol,
