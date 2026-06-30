@@ -1,6 +1,90 @@
-import { createCheerioRouter, type CheerioCrawlingContext } from 'crawlee';
+import { createCheerioRouter, type CheerioCrawlingContext, Dataset } from 'crawlee';
+import * as cheerio from 'cheerio';
 
 export const mediumRouter = createCheerioRouter();
+
+// 🆕 2026-06-30 substack fetch + parse · 不走 Crawlee crawler 框架(ImpitHttpClient TLS 被 cf 拉黑)
+// 共享给 main.ts 跑 substack 流 + run-substack.ts 单独测
+export interface FeedSourceAssoc {
+    token_id: number;
+    base_symbol: string;
+    original_url: string;
+}
+
+const SUBSTACK_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Accept': 'application/rss+xml,application/xml;q=0.9,text/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Upgrade-Insecure-Requests': '1',
+};
+
+export async function fetchAndPushSubstack(
+    byRss: Map<string, FeedSourceAssoc[]>,
+    dataset: Dataset,
+): Promise<{ ok: number; failed: number; pushed: number }> {
+    let ok = 0;
+    let failed = 0;
+    let pushed = 0;
+    await Promise.all(Array.from(byRss.entries()).map(async ([rssUrl, assoc]) => {
+        try {
+            const res = await fetch(rssUrl, {
+                headers: SUBSTACK_HEADERS,
+                redirect: 'follow',
+                signal: AbortSignal.timeout(20000),
+            });
+            if (!res.ok) {
+                console.log(`❌ [substack] ${rssUrl} HTTP=${res.status}`);
+                failed += 1;
+                return;
+            }
+            const xml = await res.text();
+            const $ = cheerio.load(xml, { xmlMode: true });
+            const channelTitle = $('channel > title').first().text().trim();
+            let itemCount = 0;
+            const tasks: Promise<void>[] = [];
+            $('item').each((_, el) => {
+                const $item = $(el);
+                const desc = $item.find('description').first().text().trim();
+                const ce = $item.find('content\\:encoded, encoded').first().text().trim();
+                const snippet = (desc || ce).replace(/<[^>]+>/g, '').slice(0, 280);
+                const postUrl = $item.find('link').first().text().trim();
+                const postTitle = $item.find('title').first().text().trim();
+                const author = $item.find('dc\\:creator, creator').first().text().trim();
+                const pubDate = $item.find('pubDate').first().text().trim();
+                const guid = $item.find('guid').first().text().trim();
+                for (const src of assoc) {
+                    tasks.push(dataset.pushData({
+                        crawler: 'substack',
+                        token_id: src.token_id,
+                        base_symbol: src.base_symbol,
+                        source_url: src.original_url,
+                        rss_url: rssUrl,
+                        channel: channelTitle,
+                        url: postUrl,
+                        title: postTitle,
+                        description: snippet,
+                        author,
+                        publishedTime: pubDate,
+                        guid,
+                        crawledAt: new Date().toISOString(),
+                    }));
+                }
+                itemCount += 1;
+            });
+            await Promise.all(tasks);
+            ok += 1;
+            pushed += tasks.length;
+            console.log(`✅ [substack] ${rssUrl} ${itemCount}×${assoc.length}=${tasks.length} | ${channelTitle || '(no channel)'}`);
+        } catch (e) {
+            failed += 1;
+            console.log(`❌ [substack] ${rssUrl} ${(e as Error).message ?? e}`);
+        }
+    }));
+    return { ok, failed, pushed };
+}
 
 export function mediumToRss(url: string): string {
     try {

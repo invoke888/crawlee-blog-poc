@@ -2,7 +2,7 @@ import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
 import { CheerioCrawler, Dataset, Configuration, RequestQueue, Sitemap } from 'crawlee';
 
 import { defaultRouter } from './handlers/default.js';
-import { mediumRouter, mediumToRss, paragraphToRss, substackToRss } from './handlers/medium.js';
+import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushSubstack } from './handlers/medium.js';
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
@@ -114,15 +114,12 @@ const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
     url: rssUrl,
     userData: { sources_for_url: assoc },
 }));
-// paragraph / substack 入同 mediumQueue · 复用 mediumRouter · userData 带 crawler_label 分类
+// paragraph 入 mediumQueue · 复用 mediumRouter · userData 带 crawler_label 分类
 const paragraphReqs = Array.from(paragraphByRss.entries()).map(([rssUrl, assoc]) => ({
     url: rssUrl,
     userData: { sources_for_url: assoc, crawler_label: 'paragraph' as const },
 }));
-const substackReqs = Array.from(substackByRss.entries()).map(([rssUrl, assoc]) => ({
-    url: rssUrl,
-    userData: { sources_for_url: assoc, crawler_label: 'substack' as const },
-}));
+// 🆕 substack 不入 mediumQueue · 改用 node:fetch 直跑(下方)· ImpitHttpClient TLS 被 cf 拉黑
 // mirror 独立 queue · 因为 router 不一样(Atom · 不是 RSS)
 const mirrorReqs = Array.from(mirrorByAtom.entries()).map(([atomUrl, assoc]) => ({
     url: atomUrl,
@@ -192,7 +189,7 @@ const listReqs = Array.from(listUrlSet).map((url) => ({
 }));
 console.log(`   · LIST 入队 ${listReqs.length} unique URL(heuristic+other 去重前 ${heuristicSources.length + otherSources.length})`);
 
-await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs, ...substackReqs]);
+await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs]);
 await generalQueue.addRequests([...listReqs, ...sitemapReqs]);
 await mirrorQueue.addRequests(mirrorReqs);
 
@@ -253,6 +250,15 @@ if (SKIP_MEDIUM) {
     const tMed = performance.now();
     await mediumCrawler.run();
     console.log(`   · medium 完成 ${((performance.now() - tMed) / 1000).toFixed(1)}s`);
+}
+
+// 🆕 substack 用 node:fetch 独立跑(Crawlee + ImpitHttpClient 被 cf 拉黑)
+if (substackByRss.size > 0) {
+    console.log(`\n🚀 substack(node:fetch · 绕 cf) · ${substackByRss.size} RSS`);
+    const tSub = performance.now();
+    const ds = await Dataset.open();
+    const r = await fetchAndPushSubstack(substackByRss, ds);
+    console.log(`   · substack 完成 ${((performance.now() - tSub) / 1000).toFixed(1)}s · ok=${r.ok} fail=${r.failed} pushed=${r.pushed}`);
 }
 
 console.log(`\n🚀 generalCrawler 启动 · ${listReqs.length} LIST + ${sitemapReqs.length} sitemap DETAIL = ${listReqs.length + sitemapReqs.length} 入口 URL`);
