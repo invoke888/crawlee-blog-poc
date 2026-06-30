@@ -1,4 +1,5 @@
 import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
+import { createHash } from 'node:crypto';
 import { ARTICLE_GLOBS, NON_ARTICLE_GLOBS } from '../config.js';
 
 interface TokenAssoc {
@@ -73,7 +74,8 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         return;
     }
 
-    // 二次验证:是不是真 article
+    // 二次验证:是不是真 article · 多 fallback(2026-06-30 加 hasArticleTag/hasTime 兜底)
+    // 之前漏:dinari/coredao/casper/macropod/chia 等站 og:type='website' 但实际是 article · 被错误丢
     const ogType = ($('meta[property="og:type"]').attr('content') ?? '').trim();
     const hasArticleSchema = $('[itemtype*="BlogPosting"], [itemtype*="Article"], [itemtype*="NewsArticle"]').length > 0;
     let hasJsonLdArticle = false;
@@ -81,10 +83,24 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         const txt = $(el).text();
         if (/"@type"\s*:\s*"(BlogPosting|Article|NewsArticle)"/i.test(txt)) hasJsonLdArticle = true;
     });
-    const isArticle = ogType === 'article' || hasArticleSchema || hasJsonLdArticle;
+    // 🆕 兜底证据:<article> tag · <time> tag · article:published/modified_time · h1+datetime 组合
+    const hasArticleTag = $('article').length > 0;
+    const hasPublishedMeta = !!(
+        $('meta[property="article:published_time"]').attr('content')?.trim()
+        || $('meta[property="article:modified_time"]').attr('content')?.trim()
+        || $('meta[itemprop="datePublished"]').attr('content')?.trim()
+    );
+    const hasTimeTag = $('time[datetime]').length > 0;
+
+    const isArticle = ogType === 'article'
+        || hasArticleSchema
+        || hasJsonLdArticle
+        || hasArticleTag
+        || hasPublishedMeta
+        || hasTimeTag;
 
     if (!isArticle) {
-        log.info(`⊘ [DETAIL] 非 article 页跳过 | og:type='${ogType}' schema=${hasArticleSchema} jsonld=${hasJsonLdArticle} | ${loaded}`);
+        log.info(`⊘ [DETAIL] 非 article 页跳过 | og:type='${ogType}' schema=${hasArticleSchema} jsonld=${hasJsonLdArticle} article=${hasArticleTag} time=${hasTimeTag} pub=${hasPublishedMeta} | ${loaded}`);
         return;
     }
 
@@ -120,11 +136,12 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('[itemprop="author"]').first().text().trim() ||
         '';
 
-    // 存 raw HTML · key 用第一个 source 的 token_id 命名
+    // 存 raw HTML · 覆盖式(每 URL 一个 key · 最新覆盖旧)· 作为测试 fixture 调规则用
+    // 老板 2026-06-29:不要每次新文件 · 保存最新一份就好
     try {
         const kv = await rawStore();
-        const ts = new Date().toISOString().replace(/[:.]/g, '-');
-        const key = `${sources[0].token_id}-${ts}-${request.id}`;
+        const urlHash = createHash('sha1').update(loaded).digest('hex').slice(0, 16);
+        const key = `${sources[0].token_id}-${urlHash}`;
         await kv.setValue(key, body, { contentType: 'text/html; charset=utf-8' });
     } catch (e) {
         log.warning(`存 raw HTML 失败 ${(e as Error).message?.slice(0, 80)}`);
