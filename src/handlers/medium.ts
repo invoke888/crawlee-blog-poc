@@ -18,6 +18,18 @@ export function mediumToRss(url: string): string {
     }
 }
 
+// 🆕 2026-06-30 substack 标准 RSS · 每个 substack 站都开放 /feed
+// 形式:https://<sub>.substack.com/  →  https://<sub>.substack.com/feed
+// 也支持 custom domain(如 newsletter.banklesshq.com)· 同 /feed pattern
+export function substackToRss(url: string): string {
+    try {
+        const u = new URL(url);
+        return `${u.protocol}//${u.hostname}/feed`;
+    } catch {
+        return url;
+    }
+}
+
 // 🆕 2026-06-30 paragraph.com 走 RSS · 实测 endpoint: api.paragraph.com/blogs/rss/@handle
 // paragraph.com/@handle/rss 返回的是字符串提示(不是真 XML)· 真 feed 在 api 子域
 export function paragraphToRss(url: string): string {

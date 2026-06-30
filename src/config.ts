@@ -96,6 +96,26 @@ export const NON_ARTICLE_GLOBS = [
     '**/*.{jpg,jpeg,png,gif,pdf,zip,svg,webp,mp4}',
 ];
 
+// 🆕 2026-06-30 hhwl 主域黑名单 · 这些被误判为博客 · 实际是 docs / repo / 平台
+// 不影响 sources.db · main.ts 加载时 filter
+export const HOST_BLACKLIST = new Set<string>([
+    'gitbook.io',     // docs 平台 · 不是博客
+    'github.com',     // 代码仓库 · 不是博客(如 ZEREBRO /releases)
+    'github.io',      // GitHub Pages · 主要 docs / landing
+]);
+
+export function isBlacklistedHost(url: string): boolean {
+    try {
+        const h = new URL(url).hostname.toLowerCase();
+        for (const blocked of HOST_BLACKLIST) {
+            if (h === blocked || h.endsWith(`.${blocked}`)) return true;
+        }
+        return false;
+    } catch {
+        return false;
+    }
+}
+
 // 简单"URL 像 article"判断(给 sitemap URL 过滤用)
 export function isLikelyArticleUrl(url: string): boolean {
     try {
