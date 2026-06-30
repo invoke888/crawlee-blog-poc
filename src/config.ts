@@ -147,7 +147,8 @@ export function isLikelyArticleUrl(url: string): boolean {
         if (segs.some((s) => articleWhitePathSegments.has(s))) return true;
         if (segs.some((s) => blackPathSegments.has(s))) return false;
 
-        const fileExt = /\.(jpg|jpeg|png|gif|pdf|zip|svg|webp|mp4|css|js)$/i;
+        // 🆕 2026-07-01 加 xml/rss/atom/txt/json/csv · 修 MINIMAX sitemap.xml 被当 article 抓 bug
+        const fileExt = /\.(jpg|jpeg|png|gif|pdf|zip|svg|webp|mp4|css|js|xml|rss|atom|txt|json|csv)$/i;
         if (fileExt.test(path)) return false;
 
         // 🆕 2026-06-30 改"默认 true · 只过黑名单"
