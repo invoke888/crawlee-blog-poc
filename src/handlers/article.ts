@@ -74,8 +74,9 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         return;
     }
 
-    // 二次验证:是不是真 article · 多 fallback(2026-06-30 加 hasArticleTag/hasTime 兜底)
-    // 之前漏:dinari/coredao/casper/macropod/chia 等站 og:type='website' 但实际是 article · 被错误丢
+    // 🆕 2026-06-30 大改:取消"6 证据 isArticle"二次验证
+    // 老板实测发现:dinari/coredao 这些站 og:type='website' 但正文真的在 HTML 里 · 被误杀
+    // 信任 URL 已过 isLikelyArticleUrl + sitemap · 都尝试抽数据 · 抽不到 title 才丢(下面 title 判定)
     const ogType = ($('meta[property="og:type"]').attr('content') ?? '').trim();
     const hasArticleSchema = $('[itemtype*="BlogPosting"], [itemtype*="Article"], [itemtype*="NewsArticle"]').length > 0;
     let hasJsonLdArticle = false;
@@ -83,26 +84,6 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         const txt = $(el).text();
         if (/"@type"\s*:\s*"(BlogPosting|Article|NewsArticle)"/i.test(txt)) hasJsonLdArticle = true;
     });
-    // 🆕 兜底证据:<article> tag · <time> tag · article:published/modified_time · h1+datetime 组合
-    const hasArticleTag = $('article').length > 0;
-    const hasPublishedMeta = !!(
-        $('meta[property="article:published_time"]').attr('content')?.trim()
-        || $('meta[property="article:modified_time"]').attr('content')?.trim()
-        || $('meta[itemprop="datePublished"]').attr('content')?.trim()
-    );
-    const hasTimeTag = $('time[datetime]').length > 0;
-
-    const isArticle = ogType === 'article'
-        || hasArticleSchema
-        || hasJsonLdArticle
-        || hasArticleTag
-        || hasPublishedMeta
-        || hasTimeTag;
-
-    if (!isArticle) {
-        log.info(`⊘ [DETAIL] 非 article 页跳过 | og:type='${ogType}' schema=${hasArticleSchema} jsonld=${hasJsonLdArticle} article=${hasArticleTag} time=${hasTimeTag} pub=${hasPublishedMeta} | ${loaded}`);
-        return;
-    }
 
     const title =
         $('meta[property="og:title"]').attr('content')?.trim() ||

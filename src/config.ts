@@ -115,34 +115,16 @@ export function isLikelyArticleUrl(url: string): boolean {
         const fileExt = /\.(jpg|jpeg|png|gif|pdf|zip|svg|webp|mp4|css|js)$/i;
         if (fileExt.test(path)) return false;
 
-        const whiteSegments = [
-            '/blog/', '/post/', '/posts/',
-            '/news/', '/article', '/articles/',
-            '/insights/', '/stories/', '/p/',
-            '/announcements/', '/research/',
-            '/2023/', '/2024/', '/2025/', '/2026/',
-            // 🆕 2026-06-30 跟 ARTICLE_GLOBS 同步 · 解 sitemap 零文章
-            '/learn/', '/tutorial/', '/tutorials/',
-            '/guide/', '/guides/',
-            '/resource/', '/resources/',
-            '/education/', '/docs/',
-            '/publication/', '/publications/',
-            '/post-mortem/', '/event/', '/events/',
-            '/content/', '/column/', '/columns/',
-            '/opinion/', '/analysis/',
-            '/feature/', '/features/',
-            '/interview/', '/interviews/',
-            '/report/', '/reports/',
-            '/case-study/', '/case-studies/',
-            '/whitepaper/', '/whitepapers/',
-            '/technical/', '/deep-dive/',
-            '/writing/', '/press-center/',
-            '/updates/', '/media/', '/journal/',
-            '/dispatch/', '/announcement/',
-        ];
-        if (whiteSegments.some((s) => path.includes(s))) return true;
+        // 🆕 2026-06-30 改"默认 true · 只过黑名单"
+        // 老板实测发现:chromia 用 /may-2026-monthly-update/ 这种月份 slug · 不命中任何白名单关键词
+        // 之前"必须命中白名单"逻辑 → 误杀大量真 article
+        // 修法:sitemap 里的 URL 默认信任 · 只过明确不是 article 的(category / about / 文件等)
 
-        return false;
+        // 根路径不要(首页)
+        if (path === '/' || path === '') return false;
+
+        // 默认信任 sitemap 给的 URL
+        return true;
     } catch {
         return false;
     }
