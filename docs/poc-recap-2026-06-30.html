@@ -147,6 +147,9 @@ a:hover { text-decoration: underline; }
     <option value="none">仅无数据</option>
   </select>
   <select id="f-crawler"><option value="">全部 crawler</option></select>
+  <select id="f-has-title"><option value="">title 不限</option><option value="have">有 title</option><option value="none">无 title</option></select>
+  <select id="f-has-pub"><option value="">pub 不限</option><option value="have">有 pub</option><option value="none">无 pub</option></select>
+  <select id="f-has-desc"><option value="">desc 不限</option><option value="have">有 desc</option><option value="none">无 desc</option></select>
 </div>
 <div class="filter-info" id="info">— / 634</div>
 
@@ -239,11 +242,17 @@ function isLikelyLanding(url) {
   } catch { return false; }
 }
 
+// 老板 2026-06-30 拍:疑似 landing 不进示例 · 除非该源全是 landing 才回退
+// 抽函数 · renderArticles + filter 字段齐全度筛选都用
+function pickArticle(articles) {
+  if (!articles || !articles.length) return null;
+  const nonLanding = articles.filter(a => !(a.url && isLikelyLanding(a.url)));
+  return nonLanding.length > 0 ? nonLanding[0] : articles[0];
+}
+
 function renderArticles(articles) {
   if (!articles || articles.length === 0) return '<span class="no-data">— 无数据</span>';
-  // 老板 2026-06-30 拍:疑似 landing 不进示例 · 除非该源全是 landing 才回退
-  const nonLanding = articles.filter(a => !(a.url && isLikelyLanding(a.url)));
-  const pick = nonLanding.length > 0 ? nonLanding[0] : articles[0];
+  const pick = pickArticle(articles);
   const arr = [pick]; // 只展示 1 条排查
   return '<ul class="articles">' + arr.map(a => {
     // 🆕 2026-06-30 字段齐全度 chip · title/desc/pub 三 dot · 绿=有 · 灰=无
@@ -277,6 +286,10 @@ function render() {
   const bpStatus = document.getElementById('f-status').value;
   const dataState = document.getElementById('f-data').value;
   const crawler = document.getElementById('f-crawler').value;
+  const hasTitle = document.getElementById('f-has-title').value;
+  const hasPub = document.getElementById('f-has-pub').value;
+  const hasDesc = document.getElementById('f-has-desc').value;
+  const has = (x) => x && String(x).trim();
   const filtered = sources.filter(s => {
     if (urlQ && !(s.blog_url || '').toLowerCase().includes(urlQ) && !(s.base_symbol || '').toLowerCase().includes(urlQ)) return false;
     if (platform && (s.host_platform || '(null)') !== platform) return false;
@@ -286,6 +299,17 @@ function render() {
     if (dataState === 'have' && s.dataset_count === 0) return false;
     if (dataState === 'none' && s.dataset_count > 0) return false;
     if (crawler && !(s.crawlers || []).includes(crawler)) return false;
+    // 字段齐全度筛选 · 按展示的第 1 篇 article 判断 (跟 chip ●●● 一致)
+    if (hasTitle || hasPub || hasDesc) {
+      const pick = pickArticle(s.articles);
+      if (!pick) return hasTitle === 'none' || hasPub === 'none' || hasDesc === 'none' ? false : false;
+      if (hasTitle === 'have' && !has(pick.title)) return false;
+      if (hasTitle === 'none' && has(pick.title)) return false;
+      if (hasPub === 'have' && !has(pick.pub)) return false;
+      if (hasPub === 'none' && has(pick.pub)) return false;
+      if (hasDesc === 'have' && !has(pick.desc)) return false;
+      if (hasDesc === 'none' && has(pick.desc)) return false;
+    }
     return true;
   });
   document.getElementById('info').textContent = filtered.length + ' / ' + sources.length + ' 条';
@@ -319,7 +343,7 @@ function render() {
 }
 
 document.getElementById('f-url').addEventListener('input', render);
-['f-platform', 'f-strategy', 'f-og', 'f-status', 'f-data', 'f-crawler'].forEach(id =>
+['f-platform', 'f-strategy', 'f-og', 'f-status', 'f-data', 'f-crawler', 'f-has-title', 'f-has-pub', 'f-has-desc'].forEach(id =>
   document.getElementById(id).addEventListener('change', render));
 function renderSPA() {
   const spa = sources.filter(s =>
