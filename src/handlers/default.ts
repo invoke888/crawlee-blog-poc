@@ -1,6 +1,7 @@
 import { createCheerioRouter } from 'crawlee';
 import { heuristicHandler } from './heuristic.js';
 import { listHandler, detailHandler } from './article.js';
+import { normalizePublishedAt } from '../utils/normalize-date.js';
 
 export const defaultRouter = createCheerioRouter();
 
@@ -52,7 +53,7 @@ defaultRouter.addDefaultHandler(async ({ request, $, log, pushData }) => {
             description: ogDescription,
             type: ogType,
             siteName: ogSiteName,
-            publishedTime: ogPublishedTime,
+            publishedTime: normalizePublishedAt(ogPublishedTime),
         },
         crawledAt: new Date().toISOString(),
     });

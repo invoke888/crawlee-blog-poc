@@ -1,5 +1,6 @@
 import { createCheerioRouter, type CheerioCrawlingContext, Dataset } from 'crawlee';
 import * as cheerio from 'cheerio';
+import { normalizePublishedAt } from '../utils/normalize-date.js';
 
 export const mediumRouter = createCheerioRouter();
 
@@ -67,7 +68,7 @@ export async function fetchAndPushSubstack(
                         title: postTitle,
                         description: snippet,
                         author,
-                        publishedTime: pubDate,
+                        publishedTime: normalizePublishedAt(pubDate),
                         guid,
                         crawledAt: new Date().toISOString(),
                     }));

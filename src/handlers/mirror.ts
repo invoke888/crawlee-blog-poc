@@ -3,6 +3,7 @@
 // link 是 <link href="..."/> attr · 不是 <link>text</link>
 // 实测 curl 反爬严(403/429)· 用 ImpitHttpClient Chrome fingerprint 应能过
 import { createCheerioRouter, type CheerioCrawlingContext } from 'crawlee';
+import { normalizePublishedAt } from '../utils/normalize-date.js';
 
 export const mirrorRouter = createCheerioRouter();
 
@@ -60,7 +61,7 @@ mirrorRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
                 title: postTitle,
                 description: snippet,
                 author,
-                publishedTime: published,
+                publishedTime: normalizePublishedAt(published),
                 guid,
                 crawledAt: new Date().toISOString(),
             }));

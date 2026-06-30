@@ -1,4 +1,5 @@
 import type { CheerioCrawlingContext } from 'crawlee';
+import { normalizePublishedAt } from '../utils/normalize-date.js';
 
 function abs(base: string, maybeRelative: string | undefined): string {
     if (!maybeRelative) return '';
@@ -90,7 +91,7 @@ export async function heuristicHandler(ctx: CheerioCrawlingContext): Promise<voi
         title,
         description,
         image,
-        published_at: publishedAt,
+        published_at: normalizePublishedAt(publishedAt),
         rss_discovered: rssDiscovered,
         sample_article_links: sampleArticleLinks,
         crawledAt: new Date().toISOString(),
