@@ -135,7 +135,16 @@ export function isLikelyArticleUrl(url: string): boolean {
             'team', 'faq', 'docs', 'careers', 'pricing', 'security',
             'cookies', 'jobs', 'disclaimer', 'imprint', 'settings', 'support', 'help',
         ]);
+        // 🆕 2026-06-30 老板拍:URL 段命中白名单 → 直接 true · 跳过黑名单
+        // 防误伤真 article (例 AVAX `/about/blog/x` · 含 /blog/ 是真 article · 黑名单 about 会误杀)
+        const articleWhitePathSegments = new Set([
+            'blog', 'post', 'posts', 'article', 'articles', 'news', 'insights',
+            'stories', 'update', 'updates', 'entries', 'journal',
+            'release', 'releases',
+            'p', // substack 用 /p/<slug>
+        ]);
         const segs = path.split('/').filter(Boolean);
+        if (segs.some((s) => articleWhitePathSegments.has(s))) return true;
         if (segs.some((s) => blackPathSegments.has(s))) return false;
 
         const fileExt = /\.(jpg|jpeg|png|gif|pdf|zip|svg|webp|mp4|css|js)$/i;

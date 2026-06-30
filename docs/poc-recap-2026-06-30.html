@@ -234,18 +234,37 @@ const LANDING_SEGS = new Set([
   'page','search','archive','embed','team','faq','docs','careers','pricing',
   'security','cookies','jobs','disclaimer','imprint','settings','support','help'
 ]);
+// 🆕 2026-06-30 老板拍:URL 含明确白名单段 → 视为真 article · 即使同时命中 landing 段
+// 用于 AVAX /about/blog/x 这种 — /blog/ 优先级高于 /about/
+const ARTICLE_WHITELIST_SEGS = new Set([
+  'blog','post','posts','article','articles','news','insights','stories',
+  'update','updates','entries','journal','release','releases',
+  'p'  // substack 用 /p/<slug>
+]);
+function isWhitelistedArticle(url) {
+  try {
+    const segs = new URL(url).pathname.toLowerCase().split('/').filter(Boolean);
+    return segs.some(s => ARTICLE_WHITELIST_SEGS.has(s));
+  } catch { return false; }
+}
 function isLikelyLanding(url) {
   try {
     const u = new URL(url);
     const segs = u.pathname.toLowerCase().split('/').filter(Boolean);
+    // 白名单优先 · 命中白名单 → 不算 landing (老板 2026-06-30 拍:AVAX /about/blog/x 是真 article)
+    if (segs.some(s => ARTICLE_WHITELIST_SEGS.has(s))) return false;
     return segs.some(s => LANDING_SEGS.has(s));
   } catch { return false; }
 }
 
-// 老板 2026-06-30 拍:疑似 landing 不进示例 · 除非该源全是 landing 才回退
-// 抽函数 · renderArticles + filter 字段齐全度筛选都用
+// 老板 2026-06-30 拍:示例选取三级优先
+// 1. 白名单 (含 /blog/ /post/ etc) → 直接选 · 该源有白名单后其他都不进示例
+// 2. 非 landing (中性 URL) → 次选
+// 3. 全 landing → 回退第 1 篇
 function pickArticle(articles) {
   if (!articles || !articles.length) return null;
+  const whitelisted = articles.filter(a => a.url && isWhitelistedArticle(a.url));
+  if (whitelisted.length > 0) return whitelisted[0];
   const nonLanding = articles.filter(a => !(a.url && isLikelyLanding(a.url)));
   return nonLanding.length > 0 ? nonLanding[0] : articles[0];
 }
