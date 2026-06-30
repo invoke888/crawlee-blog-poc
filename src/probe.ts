@@ -12,7 +12,8 @@ function detectHostPlatform(url: string): string | null {
         if (h === 'mirror.xyz' || h.endsWith('.mirror.xyz')) return 'mirror';
         if (h.endsWith('.substack.com')) return 'substack';
         if (h.endsWith('.ghost.io')) return 'ghost';
-        if (h === 'paragraph.xyz' || h.endsWith('.paragraph.xyz')) return 'paragraph';
+        if (h === 'paragraph.xyz' || h.endsWith('.paragraph.xyz')
+            || h === 'paragraph.com' || h.endsWith('.paragraph.com')) return 'paragraph';
         if (h.includes('binance.com')) return 'binance';
         return null;
     } catch {

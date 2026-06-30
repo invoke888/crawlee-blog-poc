@@ -18,6 +18,23 @@ export function mediumToRss(url: string): string {
     }
 }
 
+// 🆕 2026-06-30 paragraph.com 走 RSS · 实测 endpoint: api.paragraph.com/blogs/rss/@handle
+// paragraph.com/@handle/rss 返回的是字符串提示(不是真 XML)· 真 feed 在 api 子域
+export function paragraphToRss(url: string): string {
+    try {
+        const u = new URL(url);
+        if (u.hostname === 'paragraph.com' || u.hostname.endsWith('.paragraph.com')) {
+            const handle = u.pathname.split('/').filter(Boolean)[0];
+            if (handle && handle.startsWith('@')) {
+                return `https://api.paragraph.com/blogs/rss/${handle}`;
+            }
+        }
+        return url;
+    } catch {
+        return url;
+    }
+}
+
 interface TokenAssoc { token_id: number; base_symbol: string; original_url: string }
 
 mediumRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
@@ -46,9 +63,11 @@ mediumRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
         const guid = $item.find('guid').text().trim();
 
         // bug 2 修复:1 RSS item × N tokens = N 条 dataset
+        // 🆕 2026-06-30 crawler 字段从 userData.crawler_label 读 · 默认 'medium' · 让 paragraph 复用同 router
+        const crawlerLabel = (request.userData?.crawler_label as string | undefined) ?? 'medium';
         for (const src of sourcesForUrl) {
             tasks.push(pushData({
-                crawler: 'medium',
+                crawler: crawlerLabel,
                 token_id: src.token_id,
                 base_symbol: src.base_symbol,
                 source_url: src.original_url,

@@ -2,7 +2,7 @@ import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
 import { CheerioCrawler, Dataset, Configuration, RequestQueue, Sitemap } from 'crawlee';
 
 import { defaultRouter } from './handlers/default.js';
-import { mediumRouter, mediumToRss } from './handlers/medium.js';
+import { mediumRouter, mediumToRss, paragraphToRss } from './handlers/medium.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl } from './config.js';
 
@@ -11,17 +11,20 @@ const SITEMAP_URLS_PER_SOURCE = Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20
 // 🆕 2026-06-30:过滤掉 blogpicker 自己标 paused/disabled 的源 · 58 个不应爬(Explore agent 调研)
 const sources = listSources({ limit: 5000 }).filter((s) => s.blogpicker_status === 'active');
 const mediumSources = sources.filter((s) => s.host_platform === 'medium');
+// 🆕 2026-06-30 paragraph 走 RSS(api.paragraph.com/blogs/rss/@h)· 复用 mediumRouter
+const paragraphSources = sources.filter((s) => s.host_platform === 'paragraph');
 const sitemapSources = sources.filter(
-    (s) => s.host_platform !== 'medium' && s.fetch_strategy === 'sitemap' && s.sitemap_url,
+    (s) => s.host_platform !== 'medium' && s.host_platform !== 'paragraph'
+        && s.fetch_strategy === 'sitemap' && s.sitemap_url,
 );
 // P3.4 · og=none 的源走 heuristic handler · 多重 fallback 抽 title/description/image/date + RSS auto-discovery
 const heuristicSources = sources.filter(
-    (s) => s.host_platform !== 'medium'
+    (s) => s.host_platform !== 'medium' && s.host_platform !== 'paragraph'
         && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
         && s.og_quality === 'none',
 );
 const otherSources = sources.filter(
-    (s) => s.host_platform !== 'medium'
+    (s) => s.host_platform !== 'medium' && s.host_platform !== 'paragraph'
         && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
         && s.og_quality !== 'none',
 );
@@ -36,6 +39,15 @@ for (const s of mediumSources) {
     mediumByRss.set(rss, list);
 }
 
+// 🆕 paragraph 同 medium 模式 · 同账号 1-to-N(8 个源现都是 paragraph.com/@xxx)
+const paragraphByRss = new Map<string, TokenAssoc[]>();
+for (const s of paragraphSources) {
+    const rss = paragraphToRss(s.blog_url);
+    const list = paragraphByRss.get(rss) ?? [];
+    list.push({ token_id: s.token_id, base_symbol: s.base_symbol, original_url: s.blog_url });
+    paragraphByRss.set(rss, list);
+}
+
 // P3.5 Bug A · 非 medium 源按 blog_url 维护 1-to-N(KLAC vs TTMI 共 ondo.finance/blog · 不丢数据)
 const blogUrlToTokens = new Map<string, TokenAssoc[]>();
 for (const s of [...sitemapSources, ...heuristicSources, ...otherSources]) {
@@ -46,6 +58,7 @@ for (const s of [...sitemapSources, ...heuristicSources, ...otherSources]) {
 
 console.log(`📊 source registry 总 ${sources.length} 条`);
 console.log(`   · medium    ${mediumSources.length} 源 → ${mediumByRss.size} unique RSS(1-to-N mapping)`);
+console.log(`   · paragraph ${paragraphSources.length} 源 → ${paragraphByRss.size} unique RSS(api.paragraph.com)`);
 console.log(`   · sitemap   ${sitemapSources.length} 源 → 每个取前 ${SITEMAP_URLS_PER_SOURCE} URL`);
 console.log(`   · heuristic ${heuristicSources.length} 源 → 多重 fallback 抽(og=none 兜底)`);
 console.log(`   · other     ${otherSources.length} 源 → 走首页 og`);
@@ -61,6 +74,11 @@ const generalQueue = await RequestQueue.open('general');
 const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
     url: rssUrl,
     userData: { sources_for_url: assoc },
+}));
+// paragraph 入同 mediumQueue · 复用 mediumRouter · userData 带 crawler_label='paragraph' 让 push 分类
+const paragraphReqs = Array.from(paragraphByRss.entries()).map(([rssUrl, assoc]) => ({
+    url: rssUrl,
+    userData: { sources_for_url: assoc, crawler_label: 'paragraph' as const },
 }));
 
 // 并发拉所有 sitemap · 取每个的前 N URL
@@ -125,7 +143,7 @@ const listReqs = Array.from(listUrlSet).map((url) => ({
 }));
 console.log(`   · LIST 入队 ${listReqs.length} unique URL(heuristic+other 去重前 ${heuristicSources.length + otherSources.length})`);
 
-await mediumQueue.addRequests(mediumReqs);
+await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs]);
 await generalQueue.addRequests([...listReqs, ...sitemapReqs]);
 
 // 混合方案(2026-06-29 老板拍板 · 等代理池来再调):
