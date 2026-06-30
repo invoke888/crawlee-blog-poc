@@ -102,15 +102,21 @@ export function isLikelyArticleUrl(url: string): boolean {
         const u = new URL(url);
         const path = u.pathname.toLowerCase();
 
-        const blackSegments = [
-            '/about', '/contact', '/privacy', '/terms', '/legal',
-            '/login', '/signup', '/register',
-            '/category/', '/categories/', '/tag/', '/tags/', '/author/',
-            '/feed', '/rss', '/sitemap',
-            '/page/', '/search', '/archive',
-            '/embed/',  // 🆕 2026-06-30
-        ];
-        if (blackSegments.some((s) => path.includes(s))) return false;
+        // 🆕 2026-06-30 改"段精确匹配" · path.includes 会误杀 `/blog/about-our-product`
+        // 实测 dataset 95/2940 (3%) 强杂质 · 都是 path 段命中 landing 关键词
+        // 段精确:URL 路径分段后 · 任一段命中即 reject(不影响 article 标题里含同字 slug)
+        const blackPathSegments = new Set([
+            'about', 'contact', 'privacy', 'terms', 'legal',
+            'login', 'signup', 'register',
+            'category', 'categories', 'tag', 'tags', 'author',
+            'feed', 'rss', 'sitemap',
+            'page', 'search', 'archive', 'embed',
+            // 🆕 dataset 杂质分析新加(team:20 / faq:15 / docs:15 / careers:13 / pricing:7 / security:6 / cookies:4 / jobs:2 / disclaimer:2 / imprint:1 / settings:1)
+            'team', 'faq', 'docs', 'careers', 'pricing', 'security',
+            'cookies', 'jobs', 'disclaimer', 'imprint', 'settings', 'support', 'help',
+        ]);
+        const segs = path.split('/').filter(Boolean);
+        if (segs.some((s) => blackPathSegments.has(s))) return false;
 
         const fileExt = /\.(jpg|jpeg|png|gif|pdf|zip|svg|webp|mp4|css|js)$/i;
         if (fileExt.test(path)) return false;
