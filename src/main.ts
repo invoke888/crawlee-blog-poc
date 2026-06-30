@@ -147,10 +147,15 @@ function isValidHttpUrl(u: string): boolean {
 
 let sitemapInvalidUrls = 0;
 let sitemapNonArticle = 0;
+// 🆕 2026-06-30 sitemap 失败 / 0 article URL 的源 · 降级走 LIST handler 抓首页
+// 原因:euler.finance/sitemap.txt 不存在但站返回首页 HTML(SPA fallback) · probe 误标
+const sitemapFallbackUrls = new Set<string>();
 const sitemapReqs = sitemapResults.flatMap((r, i) => {
+    const [sitemapUrl, srcs] = sitemapEntries[i];
     if (r.status === 'rejected') {
         sitemapFailed += 1;
-        console.warn(`   ⚠️ sitemap 失败 ${sitemapEntries[i][0]}(${sitemapEntries[i][1].length} 源关联)`);
+        console.warn(`   ⚠️ sitemap 失败 ${sitemapUrl}(${srcs.length} 源关联)· 降级 LIST`);
+        for (const s of srcs) sitemapFallbackUrls.add(s.blog_url);
         return [];
     }
     const { source, urls } = r.value;
@@ -160,6 +165,11 @@ const sitemapReqs = sitemapResults.flatMap((r, i) => {
         if (!isLikelyArticleUrl(url)) { sitemapNonArticle += 1; return false; }
         return true;
     });
+    if (articleUrls.length === 0) {
+        // 🆕 sitemap 解析成功但 0 article URL(probe 误标 sitemap)· 降级走 LIST
+        for (const s of srcs) sitemapFallbackUrls.add(s.blog_url);
+        return [];
+    }
     // P3.5 Bug A · userData 改用 sources_for_url 数组 · 1-to-N
     const sources_for_url = blogUrlToTokens.get(source.blog_url) ?? [];
     return articleUrls.slice(0, SITEMAP_URLS_PER_SOURCE).map((url) => ({
@@ -177,8 +187,10 @@ console.log(`   · sitemap 解析成功 ${sitemapByUrl.size - sitemapFailed} uni
 
 // P3.5 Bug A · heuristic + other 合并 · 按 blog_url 去重 · 1-to-N
 // 解决 KLAC vs TTMI 共用 blog_url 二号位拿不到数据 bug
+// 🆕 2026-06-30 加 sitemapFallbackUrls(sitemap 失败 / 0 article 降级)
 const listUrlSet = new Set<string>();
 for (const s of [...heuristicSources, ...otherSources]) listUrlSet.add(s.blog_url);
+for (const url of sitemapFallbackUrls) listUrlSet.add(url);
 const listReqs = Array.from(listUrlSet).map((url) => ({
     url,
     label: 'LIST',
