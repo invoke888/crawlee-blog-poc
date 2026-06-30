@@ -1,6 +1,6 @@
 import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
 import { createHash } from 'node:crypto';
-import { ARTICLE_GLOBS, NON_ARTICLE_GLOBS } from '../config.js';
+import { isLikelyArticleUrl } from '../config.js';
 
 interface TokenAssoc {
     token_id: number;
@@ -26,13 +26,18 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
     const extraTokens = sources.length > 1 ? ` +${sources.length - 1}` : '';
 
     try {
+        // 🆕 2026-06-30 大改:不用 ARTICLE_GLOBS 过滤 · 跟 isLikelyArticleUrl 同步"信任默认"逻辑
+        // 之前漏:bitcoincashnode /en/newsroom/<article> 不在 globs · 入队 0
+        // 新法:enqueueLinks same-domain · 用 transformRequestFunction 调 isLikelyArticleUrl 过滤(黑名单 + 根路径)
         const enqueued = await enqueueLinks({
             selector: 'a[href]',
             strategy: 'same-domain',
             label: 'DETAIL',
-            globs: ARTICLE_GLOBS,
-            exclude: NON_ARTICLE_GLOBS,
             limit: 30,
+            transformRequestFunction: (req) => {
+                if (!isLikelyArticleUrl(req.url)) return false;
+                return req;
+            },
             userData: { sources_for_url: sources, from_sitemap: false },
         });
         log.info(`📋 [LIST] ${label}${extraTokens} 入队 ${enqueued.processedRequests.length} article · 跳过 ${enqueued.unprocessedRequests.length} | ${request.url}`);
