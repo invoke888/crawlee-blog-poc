@@ -43,6 +43,25 @@ const crawler = new CheerioCrawler({
     persistCookiesPerSession: true,
     additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
     maxRequestRetries: 3,
+    // 🆕 2026-06-30 substack /feed 实测 curl chrome headers 200 + 232KB RSS
+    // ImpitHttpClient 默认 headers 不够 · cf 看 fetch metadata 缺失拦截 → 注入完整 chrome 浏览器同款
+    preNavigationHooks: [
+        async (_ctx, gotOptions) => {
+            const opts = gotOptions as { headers?: Record<string, string> };
+            opts.headers = {
+                ...(opts.headers ?? {}),
+                'Accept': 'application/rss+xml,application/xml;q=0.9,text/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Upgrade-Insecure-Requests': '1',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+            };
+        },
+    ],
 });
 
 console.log(`\n🚀 启动 · ${reqs.length} RSS`);
