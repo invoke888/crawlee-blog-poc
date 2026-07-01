@@ -1,4 +1,5 @@
 import { Dataset, Configuration } from 'crawlee';
+import { filterArticlesWhitelistFirst } from './utils/article-filter.js';
 
 // 关键!不清空 dataset · 否则 push.ts 启动时 main.ts 抓的数据就没了
 Configuration.getGlobalConfig().set('purgeOnStart', false);
@@ -38,11 +39,25 @@ async function main(): Promise<void> {
     const dataset = await Dataset.open();
     const { items } = await dataset.getData({ limit: 100000 });
 
-    const validItems = (items as DatasetItem[]).filter(
+    const baseValid = (items as DatasetItem[]).filter(
         (it) => it.token_id != null && it.base_symbol && it.url && it.title,
     );
 
-    console.log(`📤 准备推送 ${validItems.length}/${items.length} 条(过滤 token_id/url/title 缺失)`);
+    // 🆕 2026-07-01 数据级白名单过滤(老板拍 · 跟报告聚合同一语义 · utils/article-filter.ts):
+    // 按 token 分组 → 丢文件型 URL(sitemap.xml 等)→ 有白名单 article 只推白名单的
+    // 防 781 条 landing/文件噪音推进 hhwl 生产
+    const byToken = new Map<number, DatasetItem[]>();
+    for (const it of baseValid) {
+        const arr = byToken.get(it.token_id!) ?? [];
+        arr.push(it);
+        byToken.set(it.token_id!, arr);
+    }
+    const validItems: DatasetItem[] = [];
+    for (const arr of byToken.values()) {
+        validItems.push(...filterArticlesWhitelistFirst(arr));
+    }
+
+    console.log(`📤 准备推送 ${validItems.length}/${items.length} 条(基础过滤 ${baseValid.length} → 白名单数据级 ${validItems.length})`);
     console.log(`   · target: ${DRY_RUN ? 'DRY RUN 不真推' : PUSH_API_URL}`);
 
     let ok = 0;

@@ -26,7 +26,7 @@
         "push": "tsx src/push.ts",
         "start:prod-mem": "NODE_OPTIONS='--max-old-space-size=3072' tsx src/main.ts",
         "build": "tsc",
-        "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
+        "test": "TSX_TSCONFIG_PATH= node --import tsx --test \"test/**/*.test.ts\""
     },
     "author": "It's not you it's me",
     "license": "ISC"

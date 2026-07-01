@@ -4,6 +4,7 @@
 // 实测 curl 反爬严(403/429)· 用 ImpitHttpClient Chrome fingerprint 应能过
 import { createCheerioRouter, type CheerioCrawlingContext } from 'crawlee';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
+import { saveRawFeed } from './medium.js';
 
 export const mirrorRouter = createCheerioRouter();
 
@@ -22,8 +23,10 @@ export function mirrorToAtom(url: string): string {
 interface TokenAssoc { token_id: number; base_symbol: string; original_url: string }
 
 mirrorRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
-    const { request, $, log, pushData } = ctx;
+    const { request, $, log, pushData, body } = ctx;
     const sourcesForUrl = (request.userData?.sources_for_url ?? []) as TokenAssoc[];
+
+    await saveRawFeed(sourcesForUrl[0]?.token_id, request.loadedUrl ?? request.url, String(body));
 
     const channelTitle = $('feed > title').first().text().trim()
         || $('title').first().text().trim();

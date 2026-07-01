@@ -1,0 +1,24 @@
+{
+  "_comment": "article URL 过滤唯一真源 · TS(article-filter.ts) + python(scripts/aggregate-report.py) + HTML(经聚合 meta 注入)三层共用 · 改这里一处生效",
+  "whitelist_segments": [
+    "blog", "post", "posts", "article", "articles", "news", "insights",
+    "stories", "update", "updates", "entries", "journal",
+    "release", "releases", "p"
+  ],
+  "landing_segments": [
+    "about", "contact", "privacy", "terms", "legal",
+    "login", "signup", "register",
+    "category", "categories", "tag", "tags", "author",
+    "feed", "rss", "sitemap",
+    "page", "search", "archive", "embed",
+    "team", "faq", "docs", "careers", "pricing", "security",
+    "cookies", "jobs", "disclaimer", "imprint", "settings", "support", "help"
+  ],
+  "file_extensions": [
+    "jpg", "jpeg", "png", "gif", "pdf", "zip", "svg", "webp", "mp4",
+    "css", "js", "xml", "rss", "atom", "txt", "json", "csv"
+  ],
+  "host_blacklist": [
+    "gitbook.io", "github.com", "github.io"
+  ]
+}

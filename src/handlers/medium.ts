@@ -1,8 +1,27 @@
-import { createCheerioRouter, type CheerioCrawlingContext, Dataset } from 'crawlee';
+import { createCheerioRouter, type CheerioCrawlingContext, Dataset, KeyValueStore } from 'crawlee';
 import * as cheerio from 'cheerio';
+import { createHash } from 'node:crypto';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 
 export const mediumRouter = createCheerioRouter();
+
+// 🆕 2026-07-01 RSS/Atom XML 也存 raw-html KV(同 article.ts 模式 · 最新一份覆盖)
+// 用于回放调试解析 bug · 不用重抓真站(memory project-save-raw-html)
+let _rawStore: KeyValueStore | null = null;
+async function rawStore(): Promise<KeyValueStore> {
+    if (!_rawStore) _rawStore = await KeyValueStore.open('raw-html');
+    return _rawStore;
+}
+
+export async function saveRawFeed(tokenId: number | undefined, url: string, xml: string): Promise<void> {
+    try {
+        const kv = await rawStore();
+        const urlHash = createHash('sha1').update(url).digest('hex').slice(0, 16);
+        await kv.setValue(`${tokenId ?? 'x'}-${urlHash}`, xml, { contentType: 'text/xml; charset=utf-8' });
+    } catch {
+        // 存失败不影响主流程
+    }
+}
 
 // 🆕 2026-06-30 substack fetch + parse · 不走 Crawlee crawler 框架(ImpitHttpClient TLS 被 cf 拉黑)
 // 共享给 main.ts 跑 substack 流 + run-substack.ts 单独测
@@ -42,6 +61,7 @@ export async function fetchAndPushSubstack(
                 return;
             }
             const xml = await res.text();
+            await saveRawFeed(assoc[0]?.token_id, rssUrl, xml);
             const $ = cheerio.load(xml, { xmlMode: true });
             const channelTitle = $('channel > title').first().text().trim();
             let itemCount = 0;
@@ -135,8 +155,10 @@ export function paragraphToRss(url: string): string {
 interface TokenAssoc { token_id: number; base_symbol: string; original_url: string }
 
 mediumRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
-    const { request, $, log, pushData } = ctx;
+    const { request, $, log, pushData, body } = ctx;
     const sourcesForUrl = (request.userData?.sources_for_url ?? []) as TokenAssoc[];
+
+    await saveRawFeed(sourcesForUrl[0]?.token_id, request.loadedUrl ?? request.url, String(body));
 
     const channelTitle = $('channel > title').first().text().trim();
 
