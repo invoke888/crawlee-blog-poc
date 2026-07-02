@@ -11,6 +11,7 @@ import {
     isValidHttpUrl,
     filterArticlesWhitelistFirst,
     getThrottleGroup,
+    isDcBannedHost,
 } from '../src/utils/article-filter.js';
 import { normalizePublishedAt } from '../src/utils/normalize-date.js';
 import { mediumToRss, paragraphToRss, substackToRss } from '../src/handlers/medium.js';
@@ -134,14 +135,19 @@ test('getThrottleGroup · 限频域分组(2026-07-03 独立池分流)', () => {
     // medium 生态 → 池 B
     assert.equal(getThrottleGroup('https://medium.com/feed/pivx'), 'medium');
     assert.equal(getThrottleGroup('https://trueusd.medium.com/some-post'), 'medium');
-    // 403 四强 → 池 C
-    assert.equal(getThrottleGroup('https://quant.network/news/x'), 'slow403');
-    assert.equal(getThrottleGroup('https://blog.celestia.org/x'), 'slow403');
-    assert.equal(getThrottleGroup('https://litecoin.com/blog/x'), 'slow403');
-    assert.equal(getThrottleGroup('https://minaprotocol.com/blog/x'), 'slow403');
     // 主力池
     assert.equal(getThrottleGroup('https://chromia.com/blog/x'), null);
     assert.equal(getThrottleGroup('not-a-url'), null);
+});
+
+test('isDcBannedHost · DC-ban 四强(2026-07-03 老板拍 b · 住宅代理后恢复)', () => {
+    assert.equal(isDcBannedHost('https://quant.network/news/x'), true);
+    assert.equal(isDcBannedHost('https://blog.celestia.org/x'), true);
+    assert.equal(isDcBannedHost('https://litecoin.com/blog/x'), true);
+    assert.equal(isDcBannedHost('https://minaprotocol.com/blog/x'), true);
+    assert.equal(isDcBannedHost('https://chromia.com/blog/x'), false);
+    // DC-ban 域从 throttled 移除后 · getThrottleGroup 应返回 null
+    assert.equal(getThrottleGroup('https://quant.network/news/x'), null);
 });
 
 test('平台 URL → feed 转换', () => {

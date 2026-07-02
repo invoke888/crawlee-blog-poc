@@ -21,9 +21,12 @@
   "host_blacklist": [
     "gitbook.io", "github.com", "github.io"
   ],
-  "_throttled_comment": "限频域分流(2026-07-03 老板拍 · 独立代理池 + 低速队列)· medium=池B · slow403=池C · 数据来源 2026-07-02 全量实测 429/403 分布",
+  "_throttled_comment": "限频域分流(2026-07-03 老板拍 · 独立代理池 + 低速队列)· medium=池B · 数据来源 2026-07-02 全量实测 429/403 分布",
   "throttled_domains": {
-    "medium": ["medium.com"],
-    "slow403": ["quant.network", "blog.celestia.org", "litecoin.com", "minaprotocol.com"]
-  }
+    "medium": ["medium.com"]
+  },
+  "_dc_banned_comment": "2026-07-03 老板拍 b:这些站把 AWS 数据中心 IP 段整段 ban(池 A/C 全 403)· 暂停采集 · 🔴 住宅代理接入后从这里移回 throttled_domains 恢复",
+  "dc_banned_hosts": [
+    "quant.network", "blog.celestia.org", "litecoin.com", "minaprotocol.com"
+  ]
 }

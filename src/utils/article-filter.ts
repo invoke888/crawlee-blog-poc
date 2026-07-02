@@ -15,6 +15,7 @@ const cfg = require('./filter-config.json') as {
     file_extensions: string[];
     host_blacklist: string[];
     throttled_domains: Record<string, string[]>;
+    dc_banned_hosts: string[];
 };
 
 export const WHITELIST_SEGMENTS = new Set(cfg.whitelist_segments);
@@ -88,6 +89,21 @@ export function isLikelyArticleUrl(url: string): boolean {
         if (FILE_EXT_RE.test(path)) return false;
         if (path === '/' || path === '') return false;
         return true;
+    } catch {
+        return false;
+    }
+}
+
+// 🆕 2026-07-03 DC-ban 名单(老板拍 b):AWS 段被整段 ban 的站(池 A/C 全 403)· 暂停采集
+// 住宅代理接入后:filter-config.json 把域移回 throttled_domains 即恢复
+const DC_BANNED = new Set(cfg.dc_banned_hosts);
+export function isDcBannedHost(url: string): boolean {
+    try {
+        const h = new URL(url).hostname.toLowerCase();
+        for (const domain of DC_BANNED) {
+            if (h === domain || h.endsWith(`.${domain}`)) return true;
+        }
+        return false;
     } catch {
         return false;
     }

@@ -6,7 +6,7 @@ import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushS
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
-import { isValidHttpUrl, getThrottleGroup } from './utils/article-filter.js';
+import { isValidHttpUrl, getThrottleGroup, isDcBannedHost } from './utils/article-filter.js';
 
 // 🆕 2026-07-02 crash 教训:crawlee addRequests 的异步 batch 验证失败 = unhandledRejection = 全进程死
 // (实测 22:29 全量跑 · 某 LIST 源抽出非法 request · 进程直接退 · dataset 半途 1472 条)
@@ -25,9 +25,14 @@ const RUN_SALT = `run-${Date.now()}`;
 // 🆕 2026-06-30:过滤 blogpicker paused/disabled + hhwl 误判主域(gitbook/github)
 const sourcesRaw = listSources({ limit: 5000 }).filter((s) => s.blogpicker_status === 'active');
 const sourcesBlocked = sourcesRaw.filter((s) => isBlacklistedHost(s.blog_url));
-const sources = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url));
+// 🆕 2026-07-03 老板拍 b:DC-ban 四强(quant/celestia/litecoin/mina)暂停 · 住宅代理来了恢复
+const sourcesDcBanned = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && isDcBannedHost(s.blog_url));
+const sources = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url));
 if (sourcesBlocked.length > 0) {
     console.log(`⊘ 黑名单过滤 ${sourcesBlocked.length} 源(${sourcesBlocked.map(s => s.base_symbol).join(', ')})`);
+}
+if (sourcesDcBanned.length > 0) {
+    console.log(`⊘ DC-ban 挂起 ${sourcesDcBanned.length} 源(${sourcesDcBanned.map(s => s.base_symbol).join(', ')})· 住宅代理后恢复`);
 }
 const mediumSources = sources.filter((s) => s.host_platform === 'medium');
 const paragraphSources = sources.filter((s) => s.host_platform === 'paragraph');
@@ -215,10 +220,12 @@ console.log(`   · LIST 入队 ${listReqs.length} unique URL(heuristic+other 去
 // 主力队列不再被限频站的 retry/session-rotation 拖垮(实测 RPM 76 → 预期 300+)
 const generalReqs: typeof listReqs = [];
 const slowReqs: typeof listReqs = [];
+let dcBannedDropped = 0;
 for (const req of [...listReqs, ...sitemapReqs]) {
+    if (isDcBannedHost(req.url)) { dcBannedDropped += 1; continue; } // 兜底:跨源链接指向 DC-ban 域也 drop
     (getThrottleGroup(req.url) ? slowReqs : generalReqs).push(req as (typeof listReqs)[number]);
 }
-console.log(`   · 分流:general ${generalReqs.length} · slow(限频域)${slowReqs.length}`);
+console.log(`   · 分流:general ${generalReqs.length} · slow(限频域)${slowReqs.length}${dcBannedDropped ? ` · DC-ban drop ${dcBannedDropped}` : ''}`);
 
 const slowQueue = await RequestQueue.open('slow');
 await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs]);
