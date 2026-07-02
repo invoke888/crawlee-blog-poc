@@ -1,7 +1,119 @@
 {
- "_comment": "per-source 文章 URL 规则(2026-07-03 · 17 agent 审计 205 嫌疑源产出 · 证据 docs/research/)· 只有 confidence=high 强制过滤 · mid/low 仅报告标注",
+ "_comment": "per-source 文章 URL 规则(2026-07-03 · 17 agent 审计 205 嫌疑源 · 全 17 片到齐)· 只有 confidence=high 强制过滤",
  "_modes": "include_prefixes: path 段级前缀(带尾斜杠) · include_regex: 日期型等正则 · exclude_prefixes: 语言变体/子栏目排除",
  "rules": {
+  "ACM": {
+   "confidence": "mid",
+   "exclude_prefixes": [
+    "/blog/",
+    "/cdn-cgi/",
+    "/governance/",
+    "/why-chiliz-chain/",
+    "/vision2030/",
+    "/careers/",
+    "/events/",
+    "/glossary/",
+    "/privacy-policy/",
+    "/cookies-policy/",
+    "/terms-and-conditions/",
+    "/security/",
+    "/sustainability/",
+    "/the-chiliz-group/",
+    "/key-features/",
+    "/fan-token-network/",
+    "/become-a-validator/",
+    "/staking-risks-disclosure/",
+    "/documentation/",
+    "/recruitment-privacy-policy/",
+    "/wp-json/",
+    "/feed/",
+    "/comments/"
+   ]
+  },
+  "ADA": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/news/"
+   ],
+   "exclude_prefixes": [
+    "/de/",
+    "/es/",
+    "/ja/",
+    "/vi/"
+   ]
+  },
+  "ALGO": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/blog/"
+   ],
+   "exclude_prefixes": [
+    "/blog/tag/",
+    "/blog/page/"
+   ]
+  },
+  "ANKR": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/blog/"
+   ],
+   "exclude_prefixes": [
+    "/blog/page/"
+   ]
+  },
+  "ARDR": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/news/"
+   ],
+   "exclude_prefixes": [
+    "/es/",
+    "/ko/",
+    "/zh-hans/"
+   ]
+  },
+  "ARKM": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/research/"
+   ]
+  },
+  "ASTR": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/blog/post/"
+   ],
+   "exclude_prefixes": [
+    "/ja/",
+    "/ko/"
+   ]
+  },
+  "AUDM": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/resources/"
+   ]
+  },
+  "AVA": {
+   "confidence": "mid",
+   "exclude_prefixes": [
+    "/news/",
+    "/about/",
+    "/community/",
+    "/governance/",
+    "/privacy-policy/",
+    "/terms-of-use/",
+    "/resources/",
+    "/ecosystem-partners/",
+    "/ava-token/",
+    "/ava-smart-program/",
+    "/ava-rewards-terms-and-conditions/",
+    "/ava-utility-token-disclaimer/",
+    "/nft-sale-and-purchase-agreement/",
+    "/wp-json/",
+    "/xmlrpc.php/"
+   ]
+  },
   "AXL": {
    "confidence": "high",
    "include_prefixes": [
