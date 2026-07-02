@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 把报告 JSON 嵌进 HTML(本地跑)
 # 用法: python3 scripts/embed-report.py [json 路径] [html 路径]
-# 默认: docs/poc-report-data.json → docs/poc-recap-2026-06-30.html
+# 默认: docs/poc-report-data.json → docs/poc-report.html
 #
 # 步骤(历史教训固化):
 #   1. reload + json.dumps 重 dump — 强制 escape 所有 control char(修过 raw \n 让浏览器 JSON.parse 挂的 bug)
@@ -11,7 +11,7 @@ import json, os, re, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JSON_PATH = sys.argv[1] if len(sys.argv) > 1 else os.path.join(REPO, 'docs/poc-report-data.json')
-HTML_PATH = sys.argv[2] if len(sys.argv) > 2 else os.path.join(REPO, 'docs/poc-recap-2026-06-30.html')
+HTML_PATH = sys.argv[2] if len(sys.argv) > 2 else os.path.join(REPO, 'docs/poc-report.html')
 
 data = json.loads(open(JSON_PATH).read())
 clean = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
