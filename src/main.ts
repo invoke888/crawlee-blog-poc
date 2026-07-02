@@ -6,6 +6,14 @@ import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushS
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
+import { isValidHttpUrl } from './utils/article-filter.js';
+
+// 🆕 2026-07-02 crash 教训:crawlee addRequests 的异步 batch 验证失败 = unhandledRejection = 全进程死
+// (实测 22:29 全量跑 · 某 LIST 源抽出非法 request · 进程直接退 · dataset 半途 1472 条)
+// 爬虫长任务不许单点杀全进程 · log 出错误继续跑 · enqueue 侧已加 isValidHttpUrl 严格验证双保险
+process.on('unhandledRejection', (reason) => {
+    console.error('⚠️ unhandledRejection(已兜底不杀进程):', reason instanceof Error ? reason.message : reason);
+});
 
 const SITEMAP_URLS_PER_SOURCE = Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20);
 
@@ -136,14 +144,6 @@ const sitemapResults = await Promise.allSettled(
     }),
 );
 let sitemapFailed = 0;
-function isValidHttpUrl(u: string): boolean {
-    try {
-        const parsed = new URL(u);
-        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-    } catch {
-        return false;
-    }
-}
 
 let sitemapInvalidUrls = 0;
 let sitemapNonArticle = 0;

@@ -65,6 +65,17 @@ export function isBlacklistedHost(url: string): boolean {
     }
 }
 
+// 严格 http/https 验证 · crawlee Request 只收这两种 protocol
+// (isLikelyArticleUrl 的 new URL 太宽松 · mailto:/ipfs: 也能过 · 2026-07-02 LIST enqueue crash 教训)
+export function isValidHttpUrl(url: string): boolean {
+    try {
+        const u = new URL(url);
+        return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
 // sitemap URL 过滤主判定(给 main.ts sitemap 流用)
 export function isLikelyArticleUrl(url: string): boolean {
     try {

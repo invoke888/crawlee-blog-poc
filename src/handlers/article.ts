@@ -1,6 +1,7 @@
 import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
 import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
+import { isValidHttpUrl } from '../utils/article-filter.js';
 
 interface TokenAssoc {
     token_id: number;
@@ -35,6 +36,8 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
             label: 'DETAIL',
             limit: 30,
             transformRequestFunction: (req) => {
+                // 🆕 2026-07-02 严格 http 验证 · 防非法 URL 进 addRequests 异步 batch 炸全进程
+                if (!isValidHttpUrl(req.url)) return false;
                 if (!isLikelyArticleUrl(req.url)) return false;
                 return req;
             },
