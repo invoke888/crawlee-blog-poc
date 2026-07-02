@@ -8,6 +8,7 @@ import {
     isLandingUrl,
     isNonArticleFile,
     isBlacklistedHost,
+    isValidHttpUrl,
     filterArticlesWhitelistFirst,
 } from '../src/utils/article-filter.js';
 import { normalizePublishedAt } from '../src/utils/normalize-date.js';
@@ -67,6 +68,20 @@ test('isLandingUrl · 白名单优先抑制 landing 判定', () => {
     assert.equal(isLandingUrl('https://www.avax.network/about/blog/x'), false); // 白名单赢
     assert.equal(isLandingUrl('https://flow.com/faq'), true);
     assert.equal(isLandingUrl('https://example.com/some-article'), false); // 中性
+});
+
+test('isValidHttpUrl · 非 http 协议(2026-07-02 LIST enqueue crash 回归)', () => {
+    // crash 真因:a[href] 抽出非 http 链接 · isLikelyArticleUrl 的 new URL 不挑协议放行
+    // → crawlee addRequests 异步 batch 验证 url 失败 → unhandledRejection → 全进程死
+    assert.equal(isValidHttpUrl('javascript:void(0)'), false);
+    assert.equal(isValidHttpUrl('mailto:hi@example.com'), false);
+    assert.equal(isValidHttpUrl('tel:+1234567890'), false);
+    assert.equal(isValidHttpUrl('ipfs://QmHash/article'), false);
+    assert.equal(isValidHttpUrl('not-a-url'), false);
+    assert.equal(isValidHttpUrl('https://example.com/blog/x'), true);
+    assert.equal(isValidHttpUrl('http://example.com'), true);
+    // isLikelyArticleUrl 对这些确实放行(白名单段命中)· 所以必须 isValidHttpUrl 前置双保险
+    assert.equal(isLikelyArticleUrl('ipfs://gateway/blog/x'), true);
 });
 
 test('isNonArticleFile', () => {
