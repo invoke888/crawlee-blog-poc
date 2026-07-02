@@ -6,8 +6,11 @@ import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
 import { CheerioCrawler, Configuration, RequestQueue, Dataset } from 'crawlee';
 import { mediumRouter, paragraphToRss } from './handlers/medium.js';
 import { listSources } from './registry/db.js';
+import { loadSeen, persistSeen } from './utils/seen-store.js';
 
 Configuration.getGlobalConfig().set('purgeOnStart', false);
+
+await loadSeen();
 
 const sources = listSources({ limit: 5000 }).filter(
     (s) => s.host_platform === 'paragraph' && s.blogpicker_status === 'active',
@@ -62,3 +65,6 @@ for (const it of paragraphItems) {
 for (const [sym, n] of Object.entries(bySymbol).sort((a, b) => b[1] - a[1])) {
     console.log(`   · ${sym.padEnd(8)} ${n}`);
 }
+
+await persistSeen();
+process.exit(0);

@@ -2,6 +2,7 @@ import { createCheerioRouter, type CheerioCrawlingContext, Dataset, KeyValueStor
 import * as cheerio from 'cheerio';
 import { createHash } from 'node:crypto';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
+import { isSeen, markSeen } from '../utils/seen-store.js';
 
 export const mediumRouter = createCheerioRouter();
 
@@ -77,6 +78,8 @@ export async function fetchAndPushSubstack(
                 const pubDate = $item.find('pubDate').first().text().trim();
                 const guid = $item.find('guid').first().text().trim();
                 for (const src of assoc) {
+                    if (isSeen(src.token_id, postUrl)) continue; // 🆕 article 级 dedupe(老板拍 a)
+                    markSeen(src.token_id, postUrl);
                     tasks.push(dataset.pushData({
                         crawler: 'substack',
                         token_id: src.token_id,
@@ -185,6 +188,8 @@ mediumRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
         // 🆕 2026-06-30 crawler 字段从 userData.crawler_label 读 · 默认 'medium' · 让 paragraph 复用同 router
         const crawlerLabel = (request.userData?.crawler_label as string | undefined) ?? 'medium';
         for (const src of sourcesForUrl) {
+            if (isSeen(src.token_id, postUrl)) continue; // 🆕 article 级 dedupe(老板拍 a)
+            markSeen(src.token_id, postUrl);
             tasks.push(pushData({
                 crawler: crawlerLabel,
                 token_id: src.token_id,
@@ -197,7 +202,8 @@ mediumRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
                 description: snippet,
                 author,
                 categories,
-                publishedTime: pubDate,
+                // 🆕 2026-07-03 修漏:normalize 落地时 replace_all 因缩进差异漏掉本处(dataset 原始一直 RFC-2822)
+                publishedTime: normalizePublishedAt(pubDate),
                 guid,
                 crawledAt: new Date().toISOString(),
             }));

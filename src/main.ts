@@ -7,6 +7,7 @@ import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
 import { isValidHttpUrl, getThrottleGroup, isDcBannedHost } from './utils/article-filter.js';
+import { loadSeen, persistSeen } from './utils/seen-store.js';
 
 // 🆕 2026-07-02 crash 教训:crawlee addRequests 的异步 batch 验证失败 = unhandledRejection = 全进程死
 // (实测 22:29 全量跑 · 某 LIST 源抽出非法 request · 进程直接退 · dataset 半途 1472 条)
@@ -122,6 +123,9 @@ console.log(`   · other     ${otherSources.length} 源 → 走首页 og`);
 // purgeOnStart=false · 避免跟 named queue race(已观察到 ENOENT mkdir lock)
 // 外部 SSH 命令前 rm -rf storage/datasets storage/request_queues 控制 purge 时机
 Configuration.getGlobalConfig().set('purgeOnStart', false);
+
+// 🆕 2026-07-03 RSS 流 article 级 dedupe(老板拍 a)· 跑前加载已见清单
+await loadSeen();
 
 // 每个 Crawler 用 named RequestQueue · 避免共享 default queue 出 race condition
 const mediumQueue = await RequestQueue.open('medium');
@@ -389,6 +393,8 @@ const byCrawler = items.reduce<Record<string, number>>((a, it) => {
 
 console.log(`\n✅ 总耗时 ${dt} 秒 · dataset ${count} 条`);
 for (const [k, v] of Object.entries(byCrawler)) console.log(`   · ${k}: ${v}`);
+
+await persistSeen();
 
 // 🆕 2026-07-03 并行化后 event loop 残留 keep-alive/定时器 · 统计打完进程挂着不退(实测挂 19min+)
 // 批处理任务标准做法:显式退出

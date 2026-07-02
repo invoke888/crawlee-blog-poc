@@ -5,6 +5,7 @@
 import { createCheerioRouter, type CheerioCrawlingContext } from 'crawlee';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { saveRawFeed } from './medium.js';
+import { isSeen, markSeen } from '../utils/seen-store.js';
 
 export const mirrorRouter = createCheerioRouter();
 
@@ -53,6 +54,8 @@ mirrorRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
         const guid = $entry.find('id').first().text().trim();
 
         for (const src of sourcesForUrl) {
+            if (isSeen(src.token_id, postUrl)) continue; // 🆕 article 级 dedupe(老板拍 a)
+            markSeen(src.token_id, postUrl);
             tasks.push(pushData({
                 crawler: 'mirror',
                 token_id: src.token_id,

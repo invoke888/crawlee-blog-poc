@@ -7,8 +7,11 @@ import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
 import { CheerioCrawler, Configuration, RequestQueue, Dataset, ProxyConfiguration } from 'crawlee';
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources } from './registry/db.js';
+import { loadSeen, persistSeen } from './utils/seen-store.js';
 
 Configuration.getGlobalConfig().set('purgeOnStart', false);
+
+await loadSeen();
 
 // 2026-07-01 代理池 · PROXY_URL 在服务器 .env.local · 不进 git
 const PROXY_URL = process.env.PROXY_URL ?? '';
@@ -69,3 +72,6 @@ for (const it of mirrorItems) {
 for (const [sym, n] of Object.entries(bySymbol).sort((a, b) => b[1] - a[1])) {
     console.log(`   · ${sym.padEnd(8)} ${n}`);
 }
+
+await persistSeen();
+process.exit(0);
