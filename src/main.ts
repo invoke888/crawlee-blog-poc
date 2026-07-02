@@ -1,12 +1,13 @@
 import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
-import { CheerioCrawler, Dataset, Configuration, RequestQueue, Sitemap, ProxyConfiguration } from 'crawlee';
+import { CheerioCrawler, Dataset, Configuration, RequestQueue, ProxyConfiguration } from 'crawlee';
+import { parseSitemap } from '@crawlee/utils';
 
 import { defaultRouter } from './handlers/default.js';
 import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushSubstack } from './handlers/medium.js';
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
-import { isValidHttpUrl, getThrottleGroup, isDcBannedHost } from './utils/article-filter.js';
+import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost } from './utils/article-filter.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
 
 // 🆕 2026-07-02 crash 教训:crawlee addRequests 的异步 batch 验证失败 = unhandledRejection = 全进程死
@@ -28,14 +29,18 @@ const RUN_SALT = `run-${Date.now()}`;
 // 实锤:medibloc.com/blog 被标 paused 但博文丰富。采集范围由自有判定管:黑名单/DC-ban/(agent 调研中的死站清单)
 const sourcesRaw = listSources({ limit: 5000 });
 const sourcesBlocked = sourcesRaw.filter((s) => isBlacklistedHost(s.blog_url));
-// 🆕 2026-07-03 老板拍 b:DC-ban 四强(quant/celestia/litecoin/mina)暂停 · 住宅代理来了恢复
+// 🆕 2026-07-03 老板拍 b/c:挂起名单(反爬/JS壳 · 方案就绪恢复)+ 永久放弃名单(死站/非博客)
 const sourcesDcBanned = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && isDcBannedHost(s.blog_url));
-const sources = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url));
+const sourcesDead = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url) && isDeadHost(s.blog_url));
+const sources = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url) && !isDeadHost(s.blog_url));
 if (sourcesBlocked.length > 0) {
     console.log(`⊘ 黑名单过滤 ${sourcesBlocked.length} 源(${sourcesBlocked.map(s => s.base_symbol).join(', ')})`);
 }
 if (sourcesDcBanned.length > 0) {
-    console.log(`⊘ DC-ban 挂起 ${sourcesDcBanned.length} 源(${sourcesDcBanned.map(s => s.base_symbol).join(', ')})· 住宅代理后恢复`);
+    console.log(`⊘ 挂起 ${sourcesDcBanned.length} 源(反爬/JS壳 · 住宅代理或 Playwright 后恢复)`);
+}
+if (sourcesDead.length > 0) {
+    console.log(`⊘ 永久放弃 ${sourcesDead.length} 源(死站/非博客 · agent 实测判死)`);
 }
 const mediumSources = sources.filter((s) => s.host_platform === 'medium');
 const paragraphSources = sources.filter((s) => s.host_platform === 'paragraph');
@@ -154,12 +159,19 @@ const mirrorReqs = Array.from(mirrorByAtom.entries()).map(([atomUrl, assoc]) => 
 }));
 
 // 并发拉所有 unique sitemap · 取每个的前 N URL(去重后)
+// 🆕 2026-07-03 换 parseSitemap 拿 lastmod · 修 GLMR 实锤 bug:
+// sitemap 不按时间排序 + 截断取前 N → 前 N 全是营销页 · 真文章(带 lastmod 的新文章)被截掉
 console.log(`\n📍 并发拉 ${sitemapByUrl.size} 个 unique sitemap...`);
 const sitemapEntries = Array.from(sitemapByUrl.entries());
 const sitemapResults = await Promise.allSettled(
     sitemapEntries.map(async ([sitemapUrl, srcs]) => {
-        const { urls } = await Sitemap.load(sitemapUrl);
-        return { source: srcs[0], urls };
+        const items: { loc: string; lastmod?: Date }[] = [];
+        for await (const item of parseSitemap([{ type: 'url', url: sitemapUrl }])) {
+            items.push({ loc: item.loc, lastmod: item.lastmod });
+        }
+        // lastmod 降序(无 lastmod 的排最后 · 保持原序)· 新文章天然靠前
+        items.sort((a, b) => (b.lastmod?.getTime() ?? 0) - (a.lastmod?.getTime() ?? 0));
+        return { source: srcs[0], urls: items.map((i) => i.loc) };
     }),
 );
 let sitemapFailed = 0;
@@ -177,7 +189,7 @@ const sitemapReqs = sitemapResults.flatMap((r, i) => {
         for (const s of srcs) sitemapFallbackUrls.add(s.blog_url);
         return [];
     }
-    const { source, urls } = r.value;
+    const { urls } = r.value;
     // P3.5 · 用 isLikelyArticleUrl 过滤 article-only · 再取前 N
     const articleUrls = (urls as string[]).filter((url) => {
         if (!isValidHttpUrl(url)) { sitemapInvalidUrls += 1; return false; }
@@ -189,8 +201,18 @@ const sitemapReqs = sitemapResults.flatMap((r, i) => {
         for (const s of srcs) sitemapFallbackUrls.add(s.blog_url);
         return [];
     }
-    // P3.5 Bug A · userData 改用 sources_for_url 数组 · 1-to-N
-    const sources_for_url = blogUrlToTokens.get(source.blog_url) ?? [];
+    // 🆕 2026-07-03 修 SUI/DEEP 归属 bug(agent 实锤):共用 sitemap 的源 blog_url 可能不同 ·
+    // 之前只查 srcs[0] 的 blog_url → 其他 token 挂零。改为合并全部 srcs 的 tokens(去重)
+    const seenTokens = new Set<number>();
+    const sources_for_url: TokenAssoc[] = [];
+    for (const s of srcs) {
+        for (const t of blogUrlToTokens.get(s.blog_url) ?? []) {
+            if (!seenTokens.has(t.token_id)) {
+                seenTokens.add(t.token_id);
+                sources_for_url.push(t);
+            }
+        }
+    }
     return articleUrls.slice(0, SITEMAP_URLS_PER_SOURCE).map((url) => ({
         url,
         label: 'DETAIL',
@@ -246,7 +268,13 @@ await mirrorQueue.addRequests(mirrorReqs);
 const PROXY_URL = process.env.PROXY_URL ?? '';
 const PROXY_URL_MEDIUM = process.env.PROXY_URL_MEDIUM || PROXY_URL;
 const PROXY_URL_SLOW = process.env.PROXY_URL_SLOW || PROXY_URL;
-const proxyConfiguration = PROXY_URL ? new ProxyConfiguration({ proxyUrls: [PROXY_URL] }) : undefined;
+// 🆕 2026-07-03 老板拍 b:direct_hosts(steemit 等)代理被单独挑战 · 直连正常 → newUrlFunction 返 null 跳过代理
+const proxyConfiguration = PROXY_URL ? new ProxyConfiguration({
+    newUrlFunction: (_sessionId, options) => {
+        const url = options?.request?.url ?? '';
+        return url && isDirectHost(url) ? null : PROXY_URL;
+    },
+}) : undefined;
 const mediumProxyConfiguration = PROXY_URL_MEDIUM ? new ProxyConfiguration({ proxyUrls: [PROXY_URL_MEDIUM] }) : undefined;
 // slow 队列混两组域 · 按 request 域动态选池(medium 域 → 池 B · 403 四强 → 池 C)
 const slowProxyConfiguration = PROXY_URL ? new ProxyConfiguration({

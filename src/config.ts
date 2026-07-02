@@ -74,6 +74,13 @@ export const ARTICLE_GLOBS = [
 // key = base_symbol(因为 token_id 难记) · value = 正确 blog_url
 export const URL_OVERRIDES: Record<string, string> = {
     MEW: 'https://mew.xyz/news', // 老板指出:hhwl 给的是 /media · 真实是 /news
+    // 🆕 2026-07-03 agent 大调研修正(老板拍 a)· 证据在 docs/research/
+    UMA: 'https://blog.uma.xyz', // 站方 sitemap 写错自己域名(uma.blog.xyz 不存在)
+    USDT: 'https://tether.to/en/blog/', // 原配置路径错 · 照抄同公司 XAUT(实测 24 篇)
+    BANK: 'https://lorenzo-protocol.ghost.io', // 真身 Ghost CMS · 原 www.lorenzo-protocol.xyz 是 JS 壳
+    FARTCOIN: 'https://www.infinitebackrooms.com/', // 原配置指到单篇叶子页 · 根路径直出 102 条
+    CRO: 'https://blog.cronos.com', // 项目迁移 · 新博客是 Substack(旧 blog.cronos.org cf 1014)
+    PLAY: 'https://playsout.com/news.html', // www 子域证书失效 + 缺 .html(注:内容是三方聚合 · 老板知悉)
 };
 
 // 非 article URL 黑名单(glob 风格)· 长期迭代

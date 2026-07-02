@@ -12,6 +12,8 @@ import {
     filterArticlesWhitelistFirst,
     getThrottleGroup,
     isDcBannedHost,
+    isDeadHost,
+    isDirectHost,
 } from '../src/utils/article-filter.js';
 import { normalizePublishedAt } from '../src/utils/normalize-date.js';
 import { mediumToRss, paragraphToRss, substackToRss } from '../src/handlers/medium.js';
@@ -148,6 +150,17 @@ test('isDcBannedHost · DC-ban 四强(2026-07-03 老板拍 b · 住宅代理后�
     assert.equal(isDcBannedHost('https://chromia.com/blog/x'), false);
     // DC-ban 域从 throttled 移除后 · getThrottleGroup 应返回 null
     assert.equal(getThrottleGroup('https://quant.network/news/x'), null);
+});
+
+test('isDeadHost / isDirectHost · agent 大调研名单(2026-07-03 老板拍 b/c)', () => {
+    // dead:永久放弃(死站/非博客)
+    assert.equal(isDeadHost('https://cheems.pet/blog'), true);
+    assert.equal(isDeadHost('https://illuvium.medium.com/post'), true); // 子域精确 · 不连坐 medium.com
+    assert.equal(isDeadHost('https://medium.com/feed/pivx'), false); // medium 主域受保护
+    assert.equal(isDeadHost('https://chromia.com/blog/x'), false);
+    // direct:跳过代理(steemit 代理被单独挑战 · 直连正常)
+    assert.equal(isDirectHost('https://steemit.com/@steemitblog/post'), true);
+    assert.equal(isDirectHost('https://chromia.com/blog/x'), false);
 });
 
 test('平台 URL → feed 转换', () => {

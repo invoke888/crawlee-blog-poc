@@ -16,7 +16,33 @@ const cfg = require('./filter-config.json') as {
     host_blacklist: string[];
     throttled_domains: Record<string, string[]>;
     dc_banned_hosts: string[];
+    dead_hosts: string[];
+    direct_hosts: string[];
 };
+
+function hostMatches(url: string, domains: Iterable<string>): boolean {
+    try {
+        const h = new URL(url).hostname.toLowerCase();
+        for (const d of domains) {
+            if (h === d || h.endsWith(`.${d}`)) return true;
+        }
+        return false;
+    } catch {
+        return false;
+    }
+}
+
+// 🆕 2026-07-03 老板拍 c:永久放弃名单(非博客/死站/停更/平台封号 · agent 实测)
+const DEAD_HOSTS = new Set(cfg.dead_hosts);
+export function isDeadHost(url: string): boolean {
+    return hostMatches(url, DEAD_HOSTS);
+}
+
+// 🆕 2026-07-03 老板拍 b:跳过代理直连名单(代理池 IP 在该域被单独挑战 · 直连正常)
+const DIRECT_HOSTS = new Set(cfg.direct_hosts);
+export function isDirectHost(url: string): boolean {
+    return hostMatches(url, DIRECT_HOSTS);
+}
 
 export const WHITELIST_SEGMENTS = new Set(cfg.whitelist_segments);
 export const LANDING_SEGMENTS = new Set(cfg.landing_segments);
