@@ -2,6 +2,7 @@ import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
 import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
 import { isValidHttpUrl } from '../utils/article-filter.js';
+import { checkSourceRuleMulti } from '../utils/source-rules.js';
 import { extractH1, extractJsonLdMeta, extractNextDataDate } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 
@@ -41,6 +42,8 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
                 // 🆕 2026-07-02 严格 http 验证 · 防非法 URL 进 addRequests 异步 batch 炸全进程
                 if (!isValidHttpUrl(req.url)) return false;
                 if (!isLikelyArticleUrl(req.url)) return false;
+                // 🆕 2026-07-03 per-source 规则(17 agent 审计 · SPACE 类同域跑歪根治)
+                if (!checkSourceRuleMulti(sources.map((s) => s.base_symbol), req.url)) return false;
                 return req;
             },
             userData: { sources_for_url: sources, from_sitemap: false },

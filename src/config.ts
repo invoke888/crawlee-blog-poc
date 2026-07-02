@@ -81,6 +81,13 @@ export const URL_OVERRIDES: Record<string, string> = {
     FARTCOIN: 'https://www.infinitebackrooms.com/', // 原配置指到单篇叶子页 · 根路径直出 102 条
     CRO: 'https://blog.cronos.com', // 项目迁移 · 新博客是 Substack(旧 blog.cronos.org cf 1014)
     PLAY: 'https://playsout.com/news.html', // www 子域证书失效 + 缺 .html(注:内容是三方聚合 · 老板知悉)
+    // 🆕 2026-07-03 第二批(17 agent pattern 审计 · 证据 docs/research/)
+    DEEP: 'https://blog.sui.io/', // 原记成一篇具体文章 · prefix_ratio 假阳性根因
+    PROS: 'https://www.pharos.xyz/blog', // 原 /resources 是资源页 · 真文章在 /blog(已采 14/26 命中)
+    HYPER: 'https://www.hyperlane.xyz/blog-posts-new', // 旧 /blog 零文章 · 73 篇已迁 /blog-posts-new
+    SPURS: 'https://www.tottenhamhotspur.com/news', // 原 /media 301 失效 · 真新闻 /news/<id>/<slug>
+    LYN: 'https://everlyn.ai/posts/', // 原采样全落姊妹域 everlyn.app 工具页 · 真博客 everlyn.ai/posts
+    PEAQ: 'https://www.peaq.xyz/learn/blog', // 原 /community/blog 301 · 已迁 /learn/blog
 };
 
 // 非 article URL 黑名单(glob 风格)· 长期迭代

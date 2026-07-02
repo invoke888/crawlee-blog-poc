@@ -8,6 +8,7 @@ import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
 import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost } from './utils/article-filter.js';
+import { checkSourceRuleMulti } from './utils/source-rules.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
 
 // 🆕 2026-07-02 crash 教训:crawlee addRequests 的异步 batch 验证失败 = unhandledRejection = 全进程死
@@ -191,9 +192,12 @@ const sitemapReqs = sitemapResults.flatMap((r, i) => {
     }
     const { urls } = r.value;
     // P3.5 · 用 isLikelyArticleUrl 过滤 article-only · 再取前 N
+    // 🆕 2026-07-03 per-source 规则(17 agent 审计):高置信源强制 pattern 过滤(SPACE 类跑歪根治)
+    const chunkSyms = srcs.map((s) => s.base_symbol);
     const articleUrls = (urls as string[]).filter((url) => {
         if (!isValidHttpUrl(url)) { sitemapInvalidUrls += 1; return false; }
         if (!isLikelyArticleUrl(url)) { sitemapNonArticle += 1; return false; }
+        if (!checkSourceRuleMulti(chunkSyms, url)) { sitemapNonArticle += 1; return false; }
         return true;
     });
     if (articleUrls.length === 0) {
