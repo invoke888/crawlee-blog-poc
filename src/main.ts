@@ -389,3 +389,7 @@ const byCrawler = items.reduce<Record<string, number>>((a, it) => {
 
 console.log(`\n✅ 总耗时 ${dt} 秒 · dataset ${count} 条`);
 for (const [k, v] of Object.entries(byCrawler)) console.log(`   · ${k}: ${v}`);
+
+// 🆕 2026-07-03 并行化后 event loop 残留 keep-alive/定时器 · 统计打完进程挂着不退(实测挂 19min+)
+// 批处理任务标准做法:显式退出
+process.exit(0);
