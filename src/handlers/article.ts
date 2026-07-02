@@ -84,6 +84,23 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         return;
     }
 
+    // 🆕 2026-07-03 P0#3 外链拦截(体检实锤 49 条:MET 采到 google.com · redirect 追踪后落到外域)
+    // loadedUrl 根域 ≠ 任一 source 根域 → skip(POKT pocket/pokt 迁移类由 URL_OVERRIDES 解决 · 不在这放行)
+    const rootDomain = (h: string | null): string => {
+        const parts = (h ?? '').toLowerCase().replace(/^www\./, '').split('.');
+        return parts.length >= 2 ? parts.slice(-2).join('.') : (h ?? '');
+    };
+    try {
+        const loadedRoot = rootDomain(new URL(loaded).hostname);
+        const sourceRoots = new Set(sources.map((s) => {
+            try { return rootDomain(new URL(s.original_url).hostname); } catch { return ''; }
+        }));
+        if (loadedRoot && !sourceRoots.has(loadedRoot)) {
+            log.info(`⊘ [DETAIL] 外链拦截 ${loadedRoot} ∉ 源域 | ${loaded}`);
+            return;
+        }
+    } catch { /* URL 解析失败走后续流程 */ }
+
     // 🆕 2026-06-30 大改:取消"6 证据 isArticle"二次验证
     // 老板实测发现:dinari/coredao 这些站 og:type='website' 但正文真的在 HTML 里 · 被误杀
     // 信任 URL 已过 isLikelyArticleUrl + sitemap · 都尝试抽数据 · 抽不到 title 才丢(下面 title 判定)
@@ -105,10 +122,30 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         h1Text ||
         $('title').first().text().trim() ||
         '';
-    const description =
+
+    // 🆕 2026-07-03 P0#2 错误页拦截(体检实锤 13 条 "404 | STBL" / "Page not found" 入库)
+    const BAD_TITLE_RE = /(^|\s|\|)(404|page not found|not found|access denied|just a moment|error)(\s|\||$)/i;
+    if (BAD_TITLE_RE.test(title)) {
+        log.info(`⊘ [DETAIL] 错误页 title 跳过 "${title.slice(0, 50)}" | ${loaded}`);
+        return;
+    }
+
+    // 🆕 2026-07-03 P1#8 desc 质量 fallback(体检:desc==title 35 条 · <30 字符 150 条)
+    // 梯队:og/meta → json-ld description → article/main 首个有意义 <p>(轻量 · 不是全文抽取)
+    const metaDesc =
         $('meta[property="og:description"]').attr('content')?.trim() ||
         $('meta[name="description"]').attr('content')?.trim() ||
         '';
+    let description = metaDesc;
+    if (!description || description.length < 30 || description === title) {
+        const jd = (jsonLdMeta.description || '').trim();
+        if (jd && jd.length >= 30 && jd !== title) {
+            description = jd;
+        } else {
+            const firstP = $('article p, main p').filter((_, el) => $(el).text().trim().length >= 30).first().text().trim();
+            if (firstP) description = firstP.replace(/\s+/g, ' ').slice(0, 280);
+        }
+    }
     const image =
         $('meta[property="og:image"]').attr('content') ||
         $('meta[name="twitter:image"]').attr('content') ||
@@ -127,6 +164,10 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('meta[name="pubdate"]').attr('content')?.trim() ||
         jsonLdMeta.datePublished ||
         extractNextDataDate($) ||
+        // 🆕 2026-07-03 P1#7 itemprop 微数据元素级(体检:65 条有 schema 标记但 pub 空 · 非 meta 形态)
+        $('[itemprop="datePublished"]').first().attr('datetime')?.trim() ||
+        $('[itemprop="datePublished"]').first().attr('content')?.trim() ||
+        $('[itemprop="datePublished"]').first().text().trim() ||
         '';
     const author =
         $('meta[property="article:author"]').attr('content')?.trim() ||

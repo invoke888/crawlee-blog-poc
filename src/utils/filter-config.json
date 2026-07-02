@@ -12,7 +12,8 @@
     "feed", "rss", "sitemap",
     "page", "search", "archive", "embed",
     "team", "faq", "docs", "careers", "pricing", "security",
-    "cookies", "jobs", "disclaimer", "imprint", "settings", "support", "help"
+    "cookies", "jobs", "disclaimer", "imprint", "settings", "support", "help",
+    "events", "event", "webinar", "webinars"
   ],
   "file_extensions": [
     "jpg", "jpeg", "png", "gif", "pdf", "zip", "svg", "webp", "mp4",
