@@ -1,5 +1,5 @@
 import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
-import { CheerioCrawler, Dataset, Configuration, RequestQueue, Sitemap } from 'crawlee';
+import { CheerioCrawler, Dataset, Configuration, RequestQueue, Sitemap, ProxyConfiguration } from 'crawlee';
 
 import { defaultRouter } from './handlers/default.js';
 import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushSubstack } from './handlers/medium.js';
@@ -205,18 +205,26 @@ await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs]);
 await generalQueue.addRequests([...listReqs, ...sitemapReqs]);
 await mirrorQueue.addRequests(mirrorReqs);
 
-// 混合方案(2026-06-29 老板拍板 · 等代理池来再调):
+// 🆕 2026-07-01 代理池接入(老板提供 · socks5 每请求轮换出口 IP · 实测 AWS 东京池)
+// PROXY_URL 只放服务器 ~/.env.local(EnvironmentFile)· 不进 git
+// 有代理 = 单域压力分散 → 提速参数自动生效;无代理 = 保持原保守配置(向后兼容)
+const PROXY_URL = process.env.PROXY_URL ?? '';
+const proxyConfiguration = PROXY_URL ? new ProxyConfiguration({ proxyUrls: [PROXY_URL] }) : undefined;
+console.log(PROXY_URL
+    ? '🌐 代理池已接入(每请求轮换 IP)· 提速配置生效'
+    : '⚠️ 无代理(PROXY_URL 未设)· 保守限速');
+
+// 混合方案(2026-06-29 老板拍板 · 2026-07-01 代理池落地调优):
 // - sameDomainDelaySecs=0: 真 bug 修复(queue 全同域 reclaim thrashing · 之前 60 秒/req)
 // - useSessionPool=true: medium 实测对 RSS 也限速(IP 维度) · SessionPool 保留反爬韧性
-// - maxRPM=60 + concurrency=3: 保守 · 不触发限速
-// - retries=2: 反爬偶发 · 多重试一次
-// 代理池接入后:升 RPM + 配 ProxyConfiguration + per-source interval
+// - 无代理 RPM=60/并发 3 保守;有代理 RPM=300/并发 10(轮换 IP 分散压力)
 const mediumCrawler = new CheerioCrawler({
     requestQueue: mediumQueue,
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mediumRouter,
-    maxRequestsPerMinute: 60,
-    maxConcurrency: 3,
+    proxyConfiguration,
+    maxRequestsPerMinute: PROXY_URL ? 300 : 60,
+    maxConcurrency: PROXY_URL ? 10 : 3,
     sameDomainDelaySecs: 0,
     useSessionPool: true,
     persistCookiesPerSession: true,
@@ -229,19 +237,23 @@ const generalCrawler = new CheerioCrawler({
     requestQueue: generalQueue,
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: defaultRouter,
-    maxRequestsPerMinute: 300,
-    maxConcurrency: 10,
-    sameDomainDelaySecs: 1,
+    proxyConfiguration,
+    // 有代理:每请求换 IP · 同域串行限制没必要 → delay 0 + 并发/RPM 拉高(实测 65 min 瓶颈就在这)
+    maxRequestsPerMinute: PROXY_URL ? 600 : 300,
+    maxConcurrency: PROXY_URL ? 20 : 10,
+    sameDomainDelaySecs: PROXY_URL ? 0 : 1,
     useSessionPool: true,
     persistCookiesPerSession: true,
     maxRequestRetries: 2,
 });
 
 // 🆕 2026-06-30 mirror 独立 crawler · Atom feed · cf 反爬严 · sessionPool 高 retry
+// 2026-07-01 挂代理(curl+代理仍 cf challenge · 但 impit TLS 指纹 + 新 IP 组合待真验)
 const mirrorCrawler = new CheerioCrawler({
     requestQueue: mirrorQueue,
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mirrorRouter,
+    proxyConfiguration,
     maxRequestsPerMinute: 60,
     maxConcurrency: 3,
     sameDomainDelaySecs: 2,

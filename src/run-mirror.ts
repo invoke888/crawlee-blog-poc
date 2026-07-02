@@ -4,11 +4,16 @@
 // mirror.xyz cf 反爬严 · 用 ImpitHttpClient Chrome fingerprint + sessionPool 试错
 
 import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
-import { CheerioCrawler, Configuration, RequestQueue, Dataset } from 'crawlee';
+import { CheerioCrawler, Configuration, RequestQueue, Dataset, ProxyConfiguration } from 'crawlee';
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources } from './registry/db.js';
 
 Configuration.getGlobalConfig().set('purgeOnStart', false);
+
+// 2026-07-01 代理池 · PROXY_URL 在服务器 .env.local · 不进 git
+const PROXY_URL = process.env.PROXY_URL ?? '';
+const proxyConfiguration = PROXY_URL ? new ProxyConfiguration({ proxyUrls: [PROXY_URL] }) : undefined;
+console.log(PROXY_URL ? '🌐 代理池已接入' : '⚠️ 无代理直连');
 
 const sources = listSources({ limit: 5000 }).filter(
     (s) => s.host_platform === 'mirror' && s.blogpicker_status === 'active',
@@ -37,6 +42,7 @@ const crawler = new CheerioCrawler({
     requestQueue: queue,
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mirrorRouter,
+    proxyConfiguration,
     maxRequestsPerMinute: 60,
     maxConcurrency: 3,
     sameDomainDelaySecs: 2,
