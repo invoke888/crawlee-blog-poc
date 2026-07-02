@@ -23,6 +23,27 @@ LANDING = set(FC['landing_segments'])
 BAD_EXT = re.compile(r'\.(' + '|'.join(FC['file_extensions']) + r')$', re.I)
 
 
+def host_in(url, domains):
+    try:
+        h = (urlparse(url).hostname or '').lower()
+        return any(h == d or h.endswith('.' + d) for d in domains)
+    except Exception:
+        return False
+
+
+# 处置状态(2026-07-03 老板要求:挂起/放弃必须在报告源表行级可见)
+def disposition(blog_url):
+    if host_in(blog_url, FC.get('host_blacklist', [])):
+        return 'blacklist', '误判非博客(gitbook/github 类)'
+    if host_in(blog_url, FC.get('dc_banned_hosts', [])):
+        return 'suspended', '挂起:反爬双路403/JS壳 · Playwright/住宅代理后恢复'
+    if host_in(blog_url, FC.get('dead_hosts', [])):
+        return 'dead', '永久放弃:站上无博客/域名死/账号封/停更多年(agent 实测)'
+    if host_in(blog_url, FC.get('direct_hosts', [])):
+        return 'direct', '直连采集(代理被该站单独挑战)'
+    return 'active', ''
+
+
 def path_segs(url):
     try:
         return [s for s in urlparse(url).path.lower().split('/') if s]
@@ -126,6 +147,9 @@ for s in sources:
         s['dataset_count'] = 0
         s['crawlers'] = []
         s['articles'] = []
+    d, reason = disposition(s['blog_url'])
+    s['disposition'] = d
+    s['disposition_reason'] = reason
 
 summary = {
     'total': len(sources),
