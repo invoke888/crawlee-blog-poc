@@ -9,7 +9,7 @@
 #   3. published_at 统一 ISO-8601(RFC-2822 / 带时区 都转 UTC Z)
 # 输出 meta.filter_config → HTML 客户端从 data 读清单 · 不再硬编码
 import json, glob, sqlite3, os, re, sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 from urllib.parse import urlparse
 
@@ -132,6 +132,10 @@ summary = {
     'have_data': sum(1 for s in sources if s['dataset_count'] > 0),
     'dataset_total': sum(s['dataset_count'] for s in sources),
 }
+# 🆕 一致性自检:probe 状态 vs 采集事实矛盾(有数据但 probe=-1)· 提醒 probe 快照过时 · 别拿它说事
+stale_probe = sum(1 for s in sources if s['dataset_count'] > 0 and s.get('http_status') == -1)
+if stale_probe:
+    print(f'⚠️ {stale_probe} 源 probe 状态(-1)与采集事实(有数据)矛盾 · probe 是历史快照 · 报告状态列已改以采集为准')
 out = {
     'sources': sources,
     'summary': summary,
@@ -140,6 +144,8 @@ out = {
         'dropped_file_urls': dropped_file,
         'dropped_non_whitelist': dropped_non_white,
         'whitelist_hit_sources': white_hit_sources,
+        # 生成时间(北京)· HTML 标题/落款动态渲染用 · 修"报告日期不同步"问题
+        'generated_at': datetime.now(timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M'),
     },
 }
 with open(OUT, 'w') as fh:
