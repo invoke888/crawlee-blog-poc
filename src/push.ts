@@ -27,6 +27,7 @@ interface DatasetItem {
     title?: string;
     description?: string;
     publishedTime?: string;
+    published_at?: string; // article-detail/heuristic 用这个键(RSS 系用 publishedTime)
     crawledAt?: string;
 }
 
@@ -69,7 +70,9 @@ async function main(): Promise<void> {
             post_url: it.url!,
             title: it.title!,
             content: it.description ?? '',
-            published_at: it.publishedTime || undefined,
+            // 🆕 2026-07-03 A1 agent 发现:article-detail/heuristic 的键是 published_at ·
+            // 之前只读 publishedTime → 3700+ 条 detail 的时间推送时全丢
+            published_at: it.publishedTime || it.published_at || undefined,
             fetched_at: it.crawledAt ?? new Date().toISOString(),
         };
 

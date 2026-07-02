@@ -2,6 +2,8 @@ import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
 import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
 import { isValidHttpUrl } from '../utils/article-filter.js';
+import { extractH1, extractJsonLdMeta, extractNextDataDate } from '../utils/date-extract.js';
+import { normalizePublishedAt } from '../utils/normalize-date.js';
 
 interface TokenAssoc {
     token_id: number;
@@ -93,9 +95,14 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         if (/"@type"\s*:\s*"(BlogPosting|Article|NewsArticle)"/i.test(txt)) hasJsonLdArticle = true;
     });
 
+    // 🆕 2026-07-03 published_at/description 抽取梯队增强(修 208 源缺 published_at 问题)
+    // + og:title/og:description 站级复读误报维度(h1/jsonld_description 单独存 · 不做判定 · 聚合层切换)
+    const jsonLdMeta = extractJsonLdMeta($);
+    const h1Text = extractH1($);
+
     const title =
         $('meta[property="og:title"]').attr('content')?.trim() ||
-        $('h1').first().text().trim() ||
+        h1Text ||
         $('title').first().text().trim() ||
         '';
     const description =
@@ -118,6 +125,8 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('meta[name="date"]').attr('content')?.trim() ||
         $('meta[name="publish_date"]').attr('content')?.trim() ||
         $('meta[name="pubdate"]').attr('content')?.trim() ||
+        jsonLdMeta.datePublished ||
+        extractNextDataDate($) ||
         '';
     const author =
         $('meta[property="article:author"]').attr('content')?.trim() ||
@@ -146,9 +155,11 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
             source_url: src.original_url,
             url: loaded,
             title,
+            h1: h1Text,
             description,
+            jsonld_description: jsonLdMeta.description,
             image,
-            published_at: publishedAt,
+            published_at: normalizePublishedAt(publishedAt),
             author,
             og_type: ogType,
             has_schema_blogposting: hasArticleSchema || hasJsonLdArticle,
