@@ -19,9 +19,9 @@ const proxyConfiguration = PROXY_URL ? new ProxyConfiguration({ proxyUrls: [PROX
 console.log(PROXY_URL ? '🌐 代理池已接入' : '⚠️ 无代理直连');
 
 const sources = listSources({ limit: 5000 }).filter(
-    (s) => s.host_platform === 'mirror' && s.blogpicker_status === 'active',
+    (s) => s.host_platform === 'mirror',
 );
-console.log(`📊 mirror 源 ${sources.length} 个(active only)`);
+console.log(`📊 mirror 源 ${sources.length} 个(blogpicker 状态不可信 · 全量)`);
 for (const s of sources) console.log(`   · ${s.base_symbol.padEnd(8)} | ${s.blog_url}`);
 
 interface TokenAssoc { token_id: number; base_symbol: string; original_url: string }

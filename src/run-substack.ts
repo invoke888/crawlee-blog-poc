@@ -12,9 +12,9 @@ Configuration.getGlobalConfig().set('purgeOnStart', false);
 await loadSeen();
 
 const sources = listSources({ limit: 5000 }).filter(
-    (s) => s.host_platform === 'substack' && s.blogpicker_status === 'active',
+    (s) => s.host_platform === 'substack',
 );
-console.log(`📊 substack 源 ${sources.length} 个(active only)`);
+console.log(`📊 substack 源 ${sources.length} 个(blogpicker 状态不可信 · 全量)`);
 for (const s of sources) console.log(`   · ${s.base_symbol.padEnd(8)} | ${s.blog_url}`);
 
 const byRss = new Map<string, FeedSourceAssoc[]>();

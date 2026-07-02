@@ -24,7 +24,9 @@ const SITEMAP_URLS_PER_SOURCE = Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20
 const RUN_SALT = `run-${Date.now()}`;
 
 // 🆕 2026-06-30:过滤 blogpicker paused/disabled + hhwl 误判主域(gitbook/github)
-const sourcesRaw = listSources({ limit: 5000 }).filter((s) => s.blogpicker_status === 'active');
+// 🆕 2026-07-03 老板明确拍:blogpicker 状态不可信 · 不再按 active 过滤(74 个 paused/disabled 全部入池)
+// 实锤:medibloc.com/blog 被标 paused 但博文丰富。采集范围由自有判定管:黑名单/DC-ban/(agent 调研中的死站清单)
+const sourcesRaw = listSources({ limit: 5000 });
 const sourcesBlocked = sourcesRaw.filter((s) => isBlacklistedHost(s.blog_url));
 // 🆕 2026-07-03 老板拍 b:DC-ban 四强(quant/celestia/litecoin/mina)暂停 · 住宅代理来了恢复
 const sourcesDcBanned = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && isDcBannedHost(s.blog_url));
