@@ -1,0 +1,3639 @@
+{
+ "0G": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": null,
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://0g.ai/partners",
+   "https://0g.ai/privacy-policy",
+   "https://0g.ai/brandkit"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理 403 + 直连 403(Vercel 'Forbidden hnd1::' 边缘防火墙封数据中心 IP)。已采 9 条全是导航页。真 pattern 疑似 /blog/<slug> 但不可验证。",
+  "_chunk": 1
+ },
+ "4": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": null,
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://x.com/MalikA51544",
+   "https://x.com/hashtag/MemeCoin",
+   "https://x.com/MalikA51544/status/2062161054327791895/photo/1"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 是 X(Twitter)社区 · 非博客。已采全是用户主页/hashtag/推文页。HTTP 爬虫不适用 · 建议摘除(采推文走 Twitter API)。",
+  "_chunk": 1
+ },
+ "ACM": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/blog/",
+   "/cdn-cgi/",
+   "/governance/",
+   "/why-chiliz-chain/",
+   "/vision2030/",
+   "/careers/",
+   "/events/",
+   "/glossary/",
+   "/privacy-policy/",
+   "/cookies-policy/",
+   "/terms-and-conditions/",
+   "/security/",
+   "/sustainability/",
+   "/the-chiliz-group/",
+   "/key-features/",
+   "/fan-token-network/",
+   "/become-a-validator/",
+   "/staking-risks-disclosure/",
+   "/documentation/",
+   "/recruitment-privacy-policy/",
+   "/wp-json/",
+   "/feed/",
+   "/comments/"
+  ],
+  "bad_samples": [
+   "https://www.chiliz.com/why-chiliz-chain/",
+   "https://www.chiliz.com/governance/",
+   "https://docs.chiliz.com/develop/developers-faq"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": null,
+  "note": "WordPress 文章在根路径 /<slug>/(实测 /chz-burn-report-may2026/ og:type=article)。/blog/ 只有分类列表。纯前缀分不开 → 建议只从 /blog/* 列表上下文 enqueue 或用 RSS https://www.chiliz.com/feed/。",
+  "_chunk": 1
+ },
+ "ADA": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [
+   "/de/",
+   "/es/",
+   "/ja/",
+   "/vi/"
+  ],
+  "bad_samples": [
+   "https://cardano.org/insights/transactions/",
+   "https://cardano.org/governance/treasury/",
+   "https://cardano.org/events/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "文章 /news/<YYYY-MM-DD-slug>/。语言变体 de/es/ja/vi 为同内容多语言 · 只留主语言。/insights /governance 是看板/站点页。",
+  "_chunk": 1
+ },
+ "ALGO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/tag/",
+   "/blog/page/"
+  ],
+  "bad_samples": [
+   "https://algorand.co/agentic-commerce/x402/developers",
+   "https://algorand.co/solutions/agentic-commerce",
+   "https://algorand.co/developers/workshops"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "文章 /blog/<slug>。tag/page 是列表。另有 RSS /blog/rss.xml 可直接吃。",
+  "_chunk": 1
+ },
+ "ANKR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/page/"
+  ],
+  "bad_samples": [
+   "https://www.ankr.com/case-studies/bnb/",
+   "https://www.ankr.com/bitcoin-secured-infrastructure/",
+   "https://www.ankr.com/case-studies/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog/ 301→/blog/page/1/(列表)。文章 /blog/<slug>/。已采 10 条 6 条是 /case-studies/ · 全歪。",
+  "_chunk": 1
+ },
+ "ARC": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": null,
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.arc.fun/prologue",
+   "https://www.arc.fun/architecture",
+   "https://www.arc.fun/tokenomics"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理 403 + 直连 403(Vercel 同 0G)。已采是文档/介绍页。pattern 不可验证。",
+  "_chunk": 1
+ },
+ "ARDR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [
+   "/es/",
+   "/ko/",
+   "/zh-hans/"
+  ],
+  "bad_samples": [
+   "https://www.jelurida.com/ko/ardor/downloads",
+   "https://www.jelurida.com/es/ardor/downloads",
+   "https://www.jelurida.com/ardor/downloads"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "文章在 /news/<slug>(如 /news/weekly-update-2026-06-15 · 实测真文章)· 不在 /news/ardor/ 前缀下。/news/ardor|ignis|nxt 及 /news/ardor/articles 等是分类列表(发现入口)。语言变体 es/ko/zh-hans 排除。",
+  "_chunk": 1
+ },
+ "ARKM": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/research/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://info.arkm.com/learn",
+   "https://info.arkm.com/editorial-guidelines/our-mission",
+   "https://info.arkm.com/affiliate-program-agreement"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "文章 /research/<slug>(列表页实见 5 条)。/learn /media /announcements 是其他板块。",
+  "_chunk": 1
+ },
+ "ASTER": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": null,
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.asterdex.com/en/stage2/leaderboard",
+   "https://www.asterdex.com/en/trade/pro/futures/BTCUSDT",
+   "https://www.asterdex.com/en/stage0/leaderboard"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "公告页是 Next.js 壳 · 公告经 API 客户端渲染(__next_f 只见 announcement-news-api-placeholder / popup-title i18n key)· 静态 HTML 无任何公告详情 URL → 不存在可采文章 pattern。已采 10 条全是交易/排行榜页。建议摘除 · 要采需逆向公告 API。",
+  "_chunk": 1
+ },
+ "ASTR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/post/"
+  ],
+  "exclude_prefixes": [
+   "/ja/",
+   "/ko/"
+  ],
+  "bad_samples": [
+   "https://astar.network/brand-asset-kit/",
+   "https://astar.network/products/",
+   "https://portal.astar.network/astar/assets"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "文章 URL 形态 /blog/post/?slug=<slug>(query 型)。⚠️ 正文客户端渲染('Loading post…')· HTTP 只能拿壳;列表静态 HTML 仅露 1 条链接 · 发现能力弱 · 完整采集需 JS 渲染。ja/ko 为语言变体。",
+  "_chunk": 1
+ },
+ "AUDM": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/resources/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.macropod.com/checkout",
+   "https://www.macropod.com/developers",
+   "https://www.macropod.com/paypal-checkout"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "macropod.com/resources 301→www.macropod.com/resources(title 'Blog - Macropod' · Webflow)。文章 /resources/<slug>(列表实见 20+ 条)。采集以 www 域为准。",
+  "_chunk": 1
+ },
+ "AVA": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/news/",
+   "/about/",
+   "/community/",
+   "/governance/",
+   "/privacy-policy/",
+   "/terms-of-use/",
+   "/resources/",
+   "/ecosystem-partners/",
+   "/ava-token/",
+   "/ava-smart-program/",
+   "/ava-rewards-terms-and-conditions/",
+   "/ava-utility-token-disclaimer/",
+   "/nft-sale-and-purchase-agreement/",
+   "/wp-json/",
+   "/xmlrpc.php"
+  ],
+  "bad_samples": [],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": null,
+  "note": "⚠️ 机器扫描误报:已采样本实测全是真文章(/weekly-ava-update-26-jun-26/ og:type=article)· prefix_ratio=0 只因 WordPress 文章在根路径而 blog_url=/news/。发现入口 /news/ + /news/page/N/。根路径分不开 → 建议列表上下文 enqueue 或 WordPress /feed/。",
+  "_chunk": 1
+ },
+ "AVAX": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.avax.network/institutions",
+   "https://www.avax.network/community-hub/newsletter",
+   "https://www.avax.network/nft",
+   "https://build.avax.network/console"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "listing/sitemap.xml/3 sample 全部代理+直连均 403(Vercel bot,body='Forbidden' 59 字节,x-vercel-mitigated: deny),非代理IP问题。未验证不强给 pattern。结构性推测(未验证):blog_url 前缀 /about/blog 本身可能是对的,已采样本 research-grants-avalanche-network-economics 就在这个前缀下;build.avax.network/console 是完全不同子域被误扫,属子域扫入 bug。",
+  "_chunk": 2
+ },
+ "AXL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.axelar.network/enterprise",
+   "https://www.axelar.network/its",
+   "https://www.axelar.network/layer2",
+   "https://www.axelar.network/terms-of-use",
+   "https://www.axelar.network/whitepaper"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing+sitemap 确认 40+ 篇 /blog/<slug> 真文章,抽样标题对应确认。坏样本是顶层产品/法务页,og:type=website。",
+  "_chunk": 2
+ },
+ "AZTEC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/zh/",
+   "/ja/",
+   "/ko/"
+  ],
+  "bad_samples": [
+   "https://aztec.network/ko/noir",
+   "https://aztec.network/ja/noir",
+   "https://aztec.network/developers",
+   "https://aztec.network/ko",
+   "https://aztec.network/ko/developers"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 确认 /blog/<slug> 真文章,抽样标题对应。站点整体三语言镜像(zh/ja/ko),坏样本全部是这些语言前缀下的非文章页。",
+  "_chunk": 2
+ },
+ "BABY": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://babylonlabs.io/ecosystem",
+   "https://babylonlabs.io/podcasts",
+   "https://babylonlabs.io/institutional-staking",
+   "https://babylonlabs.io/finality-providers",
+   "https://babylonlabs.io/stakers"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing+sitemap 确认 100+ 篇 /blog/<slug> 真文章,抽样标题精确对应。坏样本是顶层产品页,og:type=website。",
+  "_chunk": 2
+ },
+ "BAT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://basicattentiontoken.org/user-terms-of-service/",
+   "https://basicattentiontoken.org/publisher-terms-of-service/",
+   "https://basicattentiontoken.org/advertiser-terms-of-service/",
+   "https://basicattentiontoken.org/referral-terms-of-service/",
+   "https://basicattentiontoken.org/terms-and-conditions/",
+   "https://basicattentiontoken.org/growth/",
+   "https://basicattentiontoken.org/team/",
+   "https://basicattentiontoken.org/faq/"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": null,
+  "note": "站上真有 28 篇真文章(2017-2018 历史公告),但真文章和垃圾页 URL 形状完全一样(根路径单段 slug),无 path 前缀可区分。可靠做法:用 https://basicattentiontoken.org/post-sitemap.xml(28 条真文章,已核实标题+发布时间)做文章清单,https://basicattentiontoken.org/page-sitemap.xml(18 条)是黑名单参照。注意 terms-and-conditions 页 og:type 也被标 article,元数据在此源不可信。",
+  "_chunk": 2
+ },
+ "BILL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/ko/"
+  ],
+  "bad_samples": [
+   "https://billions.network/ko/affiliate-t-c",
+   "https://billions.network/use-cases",
+   "https://billions.network/ko/terms-conditions/1-0",
+   "https://billions.network/ko",
+   "https://billions.network/ko/cookie-policy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing+sitemap 确认 70+ 篇 /blog/<slug> 真文章,抽样标题对应。坏样本 4/5 是韩语 /ko/ 前缀页。",
+  "_chunk": 2
+ },
+ "BIO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog-posts/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.bio.xyz/desci-playbook",
+   "https://www.bio.xyz/scientists",
+   "https://www.bio.xyz/talk-to-us",
+   "https://www.bio.xyz/components"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 给的 /blog 是错的入口(仅导航链接)。真文章在 /blog-posts/<slug>,listing+sitemap 确认 90+ 篇,抽样标题对应。/blog-posts 目前不在 whitelist_segments 名单,需新增(复合词冷门,误伤风险低)。",
+  "_chunk": 2
+ },
+ "BRL1": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/projects/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://brl1.io/seguranca_compliance",
+   "https://brl1.io/como_funciona",
+   "https://brl1.io/en/",
+   "https://brl1.io/en/caso_de_uso",
+   "https://brl1.io/en/contact"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url(https://brl1.io/en/)完全指错,只是语言首页,站上没有 /blog。真实新闻栏目在 /projects/<slug>(新闻标题式 slug),sitemap_en.xml 干净分离 13 条 /projects/ vs 5 条静态页,和原已采样本对应。站点纯前端 SPA,curl 拿到的每页 <title> 都是首页默认标题,无法内容级二次核实,结论主要靠 sitemap 结构+slug 语义支撑,故 confidence=mid。'projects' 是通用词,若 whitelist_segments 全局共享,加入有跨源误伤风险,建议 per-source 加。",
+  "_chunk": 2
+ },
+ "BROCCOLIF3B": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://firstbroccoli.com/holding/",
+   "https://firstbroccoli.com/ecosystem/",
+   "https://firstbroccoli.com/academy/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 本身配置错误,存的是 WP page-sitemap 文件(wp-sitemap-posts-page-1.xml)不是文章列表。内容只有 4 条静态页(首页+holding+ecosystem+academy)。站点根 wp-sitemap.xml 索引只有这一个子 sitemap,证明站上从未用 post 类型发过文章,3 个抽样均无文章元数据。",
+  "_chunk": 2
+ },
+ "BTC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/en/posts/"
+  ],
+  "exclude_prefixes": [
+   "/uk/",
+   "/hi/",
+   "/it/",
+   "/sl/",
+   "/da/",
+   "/ca/",
+   "/de/",
+   "/es/",
+   "/fr/",
+   "/id/",
+   "/ru/",
+   "/ja/",
+   "/ko/",
+   "/zh_cn/",
+   "/zh_tw/"
+  ],
+  "bad_samples": [
+   "https://bitcoin.org/uk/about-us",
+   "https://bitcoin.org/hi/about-us",
+   "https://bitcoin.org/it/chi-siamo",
+   "https://bitcoin.org/sl/o-nas",
+   "https://bitcoin.org/da/om-os"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/en/blog 是真实列表页,但文章本体在 /en/posts/<slug>,listing 明确列出十几篇,抽样标题精确对应('Bitcoin.org is 10 Years Old!')。站点有 40+ 语言前缀各自复制一份 about-us 等页,坏样本都是别语言版页面,exclude_prefixes 只列出本次样本实际出现的,完整规则是排除所有非 /en/ 语言段。博客本身很不活跃(最新约2017年)但 pattern 可靠。",
+  "_chunk": 2
+ },
+ "CFG": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://centrifuge.io/data-privacy-policy",
+   "https://centrifuge.io/investing"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing+sitemap 确认 100+ 篇 /blog/<slug> 真文章,抽样标题对应。另观察到 /case-study/ 和 /fixing-finance/ 各 1 条长文样本,样本量太小未纳入 pattern,建议人工判断是否额外收录。",
+  "_chunk": 2
+ },
+ "CGPT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/",
+   "/guides/"
+  ],
+  "exclude_prefixes": [
+   "/ko/"
+  ],
+  "bad_samples": [
+   "https://www.chaingpt.org/privacy-policy",
+   "https://www.chaingpt.org/ko/tos",
+   "https://www.chaingpt.org/ko",
+   "https://www.chaingpt.org/giveaway"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 确认 /blog/<slug>(7篇,抽样标题精确对应)和 /guides/<slug>(6篇 how-to 教程,抽样页 <title> 解析异常为空但 h1 确认真实内容)。坏样本主体是韩语 /ko/ 前缀(原9样本6个韩语)。",
+  "_chunk": 2
+ },
+ "CHZ": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.chiliz.com/why-chiliz-chain/",
+   "https://www.chiliz.com/privacy-policy/",
+   "https://docs.chiliz.com/learn/about-validators"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "/blog/ 下只有3个分类聚合页,不是文章本体。真文章在根路径单段slug,post-sitemap.xml 核实364篇真文章(og:type=article+发布时间确认),但根路径同时有10+静态产品页同形,无 path 前缀可区分。可靠做法:直接用 post-sitemap.xml 做文章清单。另发现 docs.chiliz.com 子域被误扫入,代理+直连都403(与主站无关,主站全部200),建议整体排除该子域。proxy_blocked_direct_ok=false 专指这次子域反爬对照。",
+  "_chunk": 2
+ },
+ "CORE": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://coredao.org/initiatives/BTCfiSummerHackathon",
+   "https://coredao.org/initiatives/core-hacker-house",
+   "https://coredao.org/core-starter-program"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 页是 Next.js 客户端渲染 · HTML 里无文章链接 · 靠 sitemap.xml 确认 200/257 条是 /blog/<slug> · 附带 /core-academy/* 43 条疑似教程类文章未纳入 pattern(超出 blog_url 范围)",
+  "_chunk": 3
+ },
+ "CSPR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.casper.network/casper-whitepaper",
+   "https://www.casper.network/community",
+   "https://www.casper.network/suspended/ecosystem"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 页 /news/<slug> 命中 33 次 · /newsletter 因无斜杠不会被 /news/ 前缀误伤",
+  "_chunk": 3
+ },
+ "CTC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/tag/",
+   "/blog/page/",
+   "/blog/rss/",
+   "/blog/webmentions/",
+   "/blog/assets/",
+   "/blog/public/"
+  ],
+  "bad_samples": [
+   "https://creditcoin.org/Fund",
+   "https://creditcoin.org/Credal",
+   "https://creditcoin.org/Apps",
+   "https://creditcoin.org/Community",
+   "https://creditcoin.org/SwapCTC"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "根 sitemap.xml 只有 9 条 URL 且与 bad_samples 逐条对上 · 证实爬虫读了根 sitemap/首页导航而非 /blog/ · 博客引擎是 Ghost 需排除系统路径",
+  "_chunk": 3
+ },
+ "CVC": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.civic.com/field-notes/field-guide-go-to-market",
+   "https://www.civic.com/field-notes/why-we-narrowed",
+   "https://www.civic.com/field-notes/version-controlling-your-go-to-market"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "listing+samples 代理/直连均 403(Vercel x-vercel-mitigated:deny · HKG 节点)· 弱信号:9/10 样本集中在 /field-notes/<slug> 且 slug 像真博文标题 · 怀疑 civic.com 把 blog 改名成 field-notes 但因 403 无法核实 · 不敢按 pattern 给",
+  "_chunk": 3
+ },
+ "CYBER": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://cyber.co/bridge",
+   "https://cyber.co/ecosystem",
+   "https://cyber.co/restaking"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "listing+samples 代理/直连均 403(Vercel x-vercel-mitigated:deny · HKG 节点)· 原样本是产品功能页 · 无 pattern 假设可给",
+  "_chunk": 3
+ },
+ "DASH": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/",
+   "/news/"
+  ],
+  "exclude_prefixes": [
+   "/blog/page/"
+  ],
+  "bad_samples": [
+   "https://www.dash.org/contributing/",
+   "https://www.dash.org/roadmap/",
+   "https://www.dash.org/documentation/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "双前缀源:/blog/ 16条 + /news/ 4条(已抽查确认有 article:published_time meta 是真实编辑内容)· /blog/page/187 说明分页很深",
+  "_chunk": 3
+ },
+ "DEEP": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/about/",
+   "/author/",
+   "/tag/",
+   "/contribute-an-article/",
+   "/rss/",
+   "/webmentions/",
+   "/assets/",
+   "/public/",
+   "/file/"
+  ],
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "误报非真跑歪:blog_url 被记成了一篇具体文章(deep-token-deepbook-governance)而非博客首页 · 5个 sampled_urls 经 sitemap-posts.xml 核实全部是真文章 · prefix_ratio=0 只是算法拿文章路径互相比前缀导致的假阳性 · Ghost 博客 slug 挂在域名根路径 · 建议直接把 blog_url 改成 https://blog.sui.io/ 比改 pattern 更治本",
+  "_chunk": 3
+ },
+ "DOGE": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/fr/",
+   "/de/",
+   "/he/",
+   "/zh-cn/",
+   "/pt/",
+   "/no/",
+   "/th/",
+   "/zh-tw/",
+   "/id/",
+   "/es/"
+  ],
+  "bad_samples": [
+   "https://foundation.dogecoin.com/pt/blog/2025-04-10-devblog/",
+   "https://foundation.dogecoin.com/fr/blog/2025-04-10-devblog/",
+   "https://foundation.dogecoin.com/zh-cn/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 页纯客户端渲染 HTML 里 0 个 href · 靠 /en/sitemap.xml 确认默认语言(无前缀)文章在 /blog/<slug>/ · 其余 10 种语言是同内容镜像",
+  "_chunk": 3
+ },
+ "DRIFT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/updates/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.drift.trade/statement",
+   "https://www.drift.trade/cyber-samurai-trading-competition",
+   "https://www.drift.trade/driftmascompetitionrules",
+   "https://www.drift.trade/referrals-competition",
+   "https://www.drift.trade/countdown"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/updates/<slug> 命中155次去重77条 · 已核实5个 bad_samples 一个都不在这77条里 · 它们是域名根路径的旧活动/公告落地页 · 不是 /updates/ 的别名",
+  "_chunk": 3
+ },
+ "DYDX": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.dydx.foundation/validators/get-in-touch",
+   "https://www.dydx.foundation/brand",
+   "https://www.dydx.foundation/terms-of-use"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog/<slug> 命中205次去重100条纯净文章路径 · 无tag/page污染",
+  "_chunk": 3
+ },
+ "EUR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/press/blog/date/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.ecb.europa.eu/mopo/strategy/strategy-review/html/index.en.html",
+   "https://www.ecb.europa.eu/mopo/html/index.en.html",
+   "https://www.ecb.europa.eu/mopo/intro/html/index.en.html"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "真博文在 /press/blog/date/<year>/html/ecb.blog<id>~<hash>.<lang>.html · 命中638次 · /mopo/* 是货币政策科普页非博文已确认 · ⚠️语言过滤是文件名后缀(.en.html)不是路径前缀 · exclude_prefixes 机制表达不了 · 下游需单独写后缀过滤逻辑保留 .en.html",
+  "_chunk": 3
+ },
+ "EURI": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [
+   "/news/page/"
+  ],
+  "bad_samples": [
+   "https://www.eurite.com/tag/article/",
+   "https://www.eurite.com/about-us/",
+   "https://www.eurite.com/download-our-whitepaper-thank-you/",
+   "https://www.eurite.com/contact-us/",
+   "https://www.eurite.com/privacy-policy/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/news/<slug>/ 命中10条真实新闻稿 · 有/news/page/2 说明还有更多 · /newsroom/ 是独立hub页不带斜杠延续不会被误伤",
+  "_chunk": 3
+ },
+ "FIDA": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.bonfida.org/telegram",
+   "https://www.bonfida.org/build-with-us",
+   "https://www.bonfida.org/twitter"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "listing+samples 代理/直连均 403(Vercel x-vercel-mitigated:deny · HKG 节点)· 原样本是社交链接且 n_urls=3 明显偏少 · 无 pattern 假设可给 · 站点可能已不活跃维护但无法证实",
+  "_chunk": 3
+ },
+ "LQTY": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.liquity.org/earn",
+   "https://www.liquity.org/borrow",
+   "https://www.liquity.org/liquity-v1",
+   "https://www.liquity.org/frontend-operators",
+   "https://www.liquity.org/multiply"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "Webflow 站,列表页直接给出 27+ 篇 /blog/<slug> 文章链接;/blog-all /blog-v1 是旧版栏目未深查。",
+  "_chunk": 5
+ },
+ "LYN": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/posts/"
+  ],
+  "exclude_prefixes": [
+   "/ja/",
+   "/zh/",
+   "/ko/",
+   "/de/",
+   "/fr/",
+   "/it/",
+   "/es/",
+   "/pt/"
+  ],
+  "bad_samples": [
+   "https://everlyn.app/es",
+   "https://everlyn.app/video-effects/ai-kissing",
+   "https://everlyn.app/ja",
+   "https://everlyn.app/de",
+   "https://everlyn.app/video-effects/ai-hug"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "现采样本全部落在姊妹域名 everlyn.app(工具/落地页),不是 blog_url 声明的 everlyn.ai。真文章在 everlyn.ai/posts/<slug>,已 curl 验活 200。爬虫域名应锁死 everlyn.ai。",
+  "_chunk": 5
+ },
+ "M": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://memecore.com/build",
+   "https://memecore.com/verify",
+   "https://memecore.com/ecosystem"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "sitemap.xml 穷举仅 4 条 URL 无文章;/announcements 页面链接全部指向站外媒体报道;/announcements/* 引用均为图片资源文件名。",
+  "_chunk": 5
+ },
+ "MANA": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/announcements/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://decentraland.org/download"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "纯客户端渲染 SPA,curl 拿不到链接;sitemap.xml 代理/直连均返回同一个混淆 JS 假 404(非代理专属问题)。用 Google site: 搜索反查文章 URL 后逐条 curl 验活确认 200。/blog/project-updates、/blog/community-highlights 是同级栏目未逐条验证。",
+  "_chunk": 5
+ },
+ "MED": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/2023/",
+   "/2025/",
+   "/2026/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "假警报:WordPress 日期型 permalink /YYYY/MM/DD/slug/,现采 5 个样本本身就是真文章,只是不在 blog_url=/blog/ 前缀下才被误判。correct_patterns 是年份举例,实际应用正则 ^/[0-9]{4}/[0-9]{2}/[0-9]{2}/ 匹配,不是固定前缀。现有数据不用清。",
+  "_chunk": 5
+ },
+ "MEGA": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.megaeth.com/builder",
+   "https://www.megaeth.com/brand-kit",
+   "https://www.megaeth.com/thefluffle",
+   "https://www.megaeth.com/token",
+   "https://www.megaeth.com/privacy-policy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "UA-only 代理直连均 403(同一 Cloudflare 拦截 body,非代理专属),补 Accept/Accept-Language 头后变 200。sitemap.xml 穷举 14 条全是顶层页无文章;/blog-news 页面只有同页锚点链接(#mega-drip #videos),是单页滚动栏目非分篇文章。提醒:该域名 UA-only 会被 403,建议核实生产爬虫请求头配置,否则可能整域采不到数据。",
+  "_chunk": 5
+ },
+ "METIS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.metis.io/builders",
+   "https://www.metis.io/businesses",
+   "https://www.metis.io/contact-us",
+   "https://www.metis.io/governance",
+   "https://www.metis.io/ceg"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "Webflow 站(同 LQTY 模板),首次 curl 即拿到 25 篇 /blog/<slug> 文章链接。",
+  "_chunk": 5
+ },
+ "MEW": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://mew.xyz/shorts/",
+   "https://mew.xyz/collabs/",
+   "https://mew.xyz/gifs/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 指错栏目:/media 是视频/gif 画廊(子栏目在根路径、无文字内容)。真正文字新闻在 /news/<slug>,已 curl 验活确认 Nuxt SSR 真实内容。建议 blog_url 从 /media 改成 /news。",
+  "_chunk": 5
+ },
+ "MNT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/ja/",
+   "/ru/",
+   "/zh/"
+  ],
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "UA-only 代理直连均 403(非代理专属),补 Accept 头后 200。真文章是 /blog/<category>/<slug> 三段式,光两段是分类页。现采样本本身已命中 /blog/ 或 /<lang>/blog/,不用清,按 exclude_prefixes 去重语言版本即可。下游建议限制路径深度 >=3。",
+  "_chunk": 5
+ },
+ "MOCA": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://moca.network/cn",
+   "https://moca.network/en",
+   "https://moca.network/tr",
+   "https://moca.network/kr"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "WordPress 博客子站,列表页给出大量 /blog/<slug>/ 文章链接。现采样本是主站根路径语言首页(和 /blog/ 子站无关)。建议同时排除 /blog/category/ /blog/author/ /blog/page/ /blog/wp-content/ /blog/wp-json/ /blog/feed/ /blog/comments/ /blog/xmlrpc.php。",
+  "_chunk": 5
+ },
+ "MOVE": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/article/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.movementnetwork.xyz/ecosystem-guide",
+   "https://www.movementnetwork.xyz/ecosystem",
+   "https://www.movementnetwork.xyz/terms-of-service",
+   "https://www.movementnetwork.xyz/yield",
+   "https://www.movementnetwork.xyz/guides"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "UA-only 代理直连均 403(非代理专属),补 Accept 头后 200。列表在 /blog,真文章在 /article/<slug>,sitemap.xml 印证现采样本都是顶层营销页。",
+  "_chunk": 5
+ },
+ "MOVR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "假警报:blog_url=/blog 现在 301 永久重定向到 /news/,现采 10 个样本 100% 命中 /news/ 且全部真文章,不用清。建议把 blog_url 字段更新为 https://moonbeam.network/news/。",
+  "_chunk": 5
+ },
+ "NEAR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.near.org/blockchain",
+   "https://www.near.org/collection/Blockchain%20for%20AI",
+   "https://www.near.org/ai",
+   "https://www.near.org/roadmap-history",
+   "https://www.near.org/terms-of-use"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "near.org/blog 307 到 www.near.org/blog;列表页纯客户端取数,curl 挖不到文章链接。用 Google site: 搜索反查 /blog/<slug> 真文章后逐条 curl 验活确认 200。现采样本全是顶部导航/产品页。",
+  "_chunk": 5
+ },
+ "OG": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://ogs.gg/dexsport/",
+   "https://ogs.gg/players/",
+   "https://ogs.gg/partners/"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": null,
+  "note": "WordPress 扁平 permalink，文章与非文章页同在根路径，无可靠前缀。已用 wp-json/wp/v2/posts 确认真实文章存在于根路径，建议改用该 REST API 枚举文章而非 path 前缀过滤。",
+  "_chunk": 6
+ },
+ "OGN": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.originprotocol.com/os",
+   "https://www.originprotocol.com/governance",
+   "https://www.originprotocol.com/arm"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog 为 JS 渲染，静态 HTML 无链接；sitemap.xml 确认 810/823 条在 /blog 前缀下，无 category/tag/page 噪音。",
+  "_chunk": 6
+ },
+ "OL": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://about.openloot.com/mystery-boxes",
+   "https://about.openloot.com/primary-sales",
+   "https://about.openloot.com/airdrops-giveaways"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": null,
+  "note": "sitemap 仅 17 条静态页零文章;/news 正文是未渲染的 Lorem-ipsum 骨架屏;页内唯一 blog 形态链接指向外部 chainplay.gg;疑似真实内容(如有)在 medium.com/@openloot 而非自有域名。",
+  "_chunk": 6
+ },
+ "ON": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/category/"
+  ],
+  "bad_samples": [
+   "https://orochi.network/orocle",
+   "https://orochi.network/contact-us",
+   "https://orochi.network/blog/category/about-zkdatabase"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "19/31 同域链接在 /blog/ 下，slug 清晰；/blog/category/ 是分类归档页需排除，历史样本已证实误采过。",
+  "_chunk": 6
+ },
+ "OP": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/case-studies/"
+  ],
+  "bad_samples": [
+   "https://optimism.io/case-studies/velodrome-aerodrome",
+   "https://optimism.io/payments",
+   "https://optimism.io/case-studies/world"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "166/186 同域链接在 /blog/，样本文章 title 直接验证匹配；/case-studies/ 是独立营销栏目非博文，一并排除。",
+  "_chunk": 6
+ },
+ "OPEN": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.openledger.xyz/product",
+   "https://www.openledger.xyz/open-circle",
+   "https://www.openledger.xyz/terms-conditions"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "www.openledger.xyz/blog 正常 200 加载，但页面正文明确写着 'Openledger Blogs No blog posts found.'——站方自证当前无博文。另 blog_url(无www) 301 重定向丢 path 到首页，属配置问题。",
+  "_chunk": 6
+ },
+ "ORBS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [],
+  "exclude_prefixes": [
+   "/liquidity-hub/",
+   "/faq/",
+   "/dtwap/",
+   "/dlimit/",
+   "/policy/"
+  ],
+  "bad_samples": [
+   "https://www.orbs.com/brand-assets/",
+   "https://www.orbs.com/liquidity-hub/",
+   "https://www.orbs.com/notifications/"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog 页面正文含 456 篇真实文章(标题+作者+日期)，但链接以 <li data-url=\"../slug\"> 形式给出，实际落地在站点根路径(已 curl 验证 200+title 匹配)，与产品页共享根命名空间无法用简单前缀区分。建议直接解析 /blog 页面的 data-url 属性取全量 slug 列表，而非前缀规则；exclude_prefixes 仅为已知非文章根页，非穷举。",
+  "_chunk": 6
+ },
+ "PAXG": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.paxos.com/company",
+   "https://www.paxos.com/2023-crypto-survey",
+   "https://www.paxos.com/busd"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "样本文章 title 直接验证匹配；sitemap 里另有 119 条 /newsroom/* 但实测 3/3 全部 404，是死链，不要用。",
+  "_chunk": 6
+ },
+ "PEAQ": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.peaq.xyz/learn/media",
+   "https://www.peaq.xyz/test/join-peaq",
+   "https://www.peaq.xyz/learn/community-hub"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url(/community/blog) 301 重定向到 /learn/blog，同一页面；25/49 同域链接在 /blog/ 下 slug 清晰。建议把 DB 的 blog_url 更新为 https://www.peaq.xyz/learn/blog。",
+  "_chunk": 6
+ },
+ "PHA": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": null,
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "blog_url 及 3 个样本 URL，代理与直连(服务器出口)双路均 403(Fastly Forbidden + hnd1:: ray id)，非代理特有问题，疑似数据中心 IP 段被整体拦截。弱信号:历史采集样本 10/10 落在 /learn/ 前缀且标题像博文，但无法验证，不写入 correct_patterns。",
+  "_chunk": 6
+ },
+ "PHAROS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.pharos.xyz/devhub",
+   "https://www.pharos.xyz/terms-of-service",
+   "https://www.pharos.xyz/resources?250193ed_page=2"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url(/resources) 是聚合页非文章列表；14/27 同域链接在 /blog/ 下 slug 清晰。机器给的 prefix_ratio=0.04 是拿 /resources 当参照系算的，按 /blog/ 算历史样本其实已有 2/5 正确。",
+  "_chunk": 6
+ },
+ "PLAY": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": null,
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "blog_url、3 个样本 URL、乃至站点首页，代理与直连全部 403，与 PHA 同款 Fastly 特征，判定整站级拦截。历史样本从未出现 news/article 形状 URL，本来就有 NO_REAL_BLOG 嫌疑，但因打不开无法坐实，需解封后人工复核。",
+  "_chunk": 6
+ },
+ "PLUME": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://plume.org/terms-of-service",
+   "https://plume.org/pusd",
+   "https://plume.org/goons-circle"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "102/115 同域链接在 /blog/ 下，slug 干净无噪音，与背景描述的 SPACE 案例同款问题(根路径导航页被误采)。",
+  "_chunk": 6
+ },
+ "POL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://polygon.technology/payments",
+   "https://polygon.technology/trails",
+   "https://polygon.technology/open-money-stack",
+   "https://polygon.technology/polygon-pos",
+   "https://polygon.technology/stablecoins"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页直接暴露 /blog/<slug> 真文章;5个样本全是产品/方案页",
+  "_chunk": 7
+ },
+ "PORTO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/blog/",
+   "/fr/"
+  ],
+  "bad_samples": [
+   "https://docs.chiliz.com/chiliz-chain-changelog/governance-proposals-and-decisions/august-2025-pepper8-proposal",
+   "https://www.chiliz.com/blog/announcements/",
+   "https://www.chiliz.com/vision2030/",
+   "https://www.chiliz.com/staking-risks-disclosure/"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": null,
+  "note": "WordPress扁平根路径,真文章(如/blockchain-security-primitives/ og:type=article)和30+个静态营销页共用同一路径空间,URL前缀结构性无法区分;post-sitemap.xml里还混了/case-study-here-1到5这类占位内容。建议用post-sitemap.xml增量比对或逐URL查og:type=article,不要用前缀过滤。docs.chiliz.com是完全不同子域(文档非博客)",
+  "_chunk": 7
+ },
+ "POWR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/media/"
+  ],
+  "exclude_prefixes": [
+   "/category/",
+   "/20"
+  ],
+  "bad_samples": [
+   "https://powerledger.io/platform-features/tracex/",
+   "https://powerledger.io/category/articles/",
+   "https://powerledger.io/for-brokers-and-traders/",
+   "https://powerledger.io/powerledger-ventures/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/YYYY/MM/DD/ 形态链接经核实是WP日期归档页(如/2026/04/28/标题只是当天日期),非单篇文章,归入排除",
+  "_chunk": 7
+ },
+ "PRCL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://parcl.co/integrations/pulse",
+   "https://parcl.co/products/research",
+   "https://parcl.co/integrations/orbit",
+   "https://parcl.co/404",
+   "https://parcl.co/integrations/flow"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "站点对不存在路径返回软404(HTTP 200),/404样本本身即证据",
+  "_chunk": 7
+ },
+ "PROM": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "首页与/blog代理和直连均403(Cloudflare风格拦截),非代理IP专属问题,是该服务器出口整体被拦,需要能过JS挑战的浏览器环境才能判断,本次审计范围内无法确定pattern",
+  "_chunk": 7
+ },
+ "PROS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/resources",
+   "/ecosystem"
+  ],
+  "bad_samples": [
+   "https://www.pharos.xyz/ecosystem",
+   "https://www.pharos.xyz/resources?250193ed_page=2"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url元数据本身指错(/resources应为/blog);26条已采URL里已有14条落在/blog下,给定样本里已有3/5是真文章,建议顺带把该源blog_url字段改正",
+  "_chunk": 7
+ },
+ "PYTH": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/mediaroom",
+   "/publishers",
+   "/events"
+  ],
+  "bad_samples": [
+   "https://www.pyth.network/publishers",
+   "https://www.pyth.network/events",
+   "https://www.pyth.network/mediaroom",
+   "https://www.pyth.network/mediaroom/news",
+   "https://www.pyth.network/mediaroom/videos"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/mediaroom/news页内链接全部指向外部媒体(cointelegraph/bitcoin.com/etf.com等第三方报道汇总),不是自有文章",
+  "_chunk": 7
+ },
+ "PYUSD": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.paypal.com/us/digital-wallet/manage-money/crypto/pyusd/zh/blog"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url硬404(路径中/zh/位置可疑,像拼接错误)。PYUSD落地页(去掉/zh/blog后)可200打开,页内唯一新闻入口是跨域的newsroom.paypal-corp.com(PayPal全公司通稿新闻室,非PYUSD专属,非本站CMS),不建议直接接入,已超出URL pattern修复范畴",
+  "_chunk": 7
+ },
+ "QTUM": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/test2"
+  ],
+  "bad_samples": [
+   "https://qtum.org/download",
+   "https://qtum.org/tech",
+   "https://qtum.org/ecosystem",
+   "https://qtum.org/qtum-ai",
+   "https://qtum.org/test2"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "文章列表不在静态HTML也不在官方sitemap.xml(客户端Next.js渲染),需通过客户端接口/api/articles拿到真实slug列表,再验证/blog/<slug>可200访问(已实测introducing-the-qtum-ai-router成功);/test2是sitemap里的遗留垃圾页现已404。附带发现:抽查文章正文提到GPT-5.4-mini/DeepSeek-v4-pro/Kimi-k2.6/MiniMax-M2.5等可疑模型名,疑似AI生成内容,超出本次范围仅供参考",
+  "_chunk": 7
+ },
+ "RAD": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/t/"
+  ],
+  "exclude_prefixes": [
+   "/u/",
+   "/c/"
+  ],
+  "bad_samples": [
+   "https://community.radworks.org/u/sllyllyd"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "Discourse论坛,真帖子在/t/<slug>/<id>,原始top_paths显示29条里19条已是/t/、9条是/u/用户主页噪音",
+  "_chunk": 7
+ },
+ "REQ": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/blog/",
+   "/privacy-policy/",
+   "/legal-notice/",
+   "/accept-crypto/",
+   "/contact/",
+   "/whitepaper/",
+   "/send-crypto/",
+   "/about-us/",
+   "/cookie-policy/",
+   "/api-terms-and-conditions/",
+   "/req-token/",
+   "/category/",
+   "/wp-json/",
+   "/xmlrpc.php"
+  ],
+  "bad_samples": [
+   "https://request.network/category/news/",
+   "https://request.network/cookie-policy/"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": null,
+  "note": "WordPress扁平根路径,和PORTO同类问题,但该站规模小,用post-sitemap.xml(6篇真文章)+page-sitemap.xml(11个静态页)拿到当前时点完整清单,靠排除法可行;新增静态页不会自动进排除清单,建议定期用sitemap重新同步而非写死",
+  "_chunk": 7
+ },
+ "RESOLV": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://resolv.xyz/old-home",
+   "https://resolv.xyz/grants",
+   "https://resolv.xyz/journey-part2",
+   "https://resolv.xyz/rlp",
+   "https://resolv.xyz/journey"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页暴露30+篇真文章,清一色./blog/<slug>;old-home标题确认是旧版落地页",
+  "_chunk": 7
+ },
+ "RLS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/event"
+  ],
+  "bad_samples": [
+   "https://www.rayls.com/testnet",
+   "https://www.rayls.com/privacy-policy",
+   "https://www.rayls.com/use-cases/onchain-financial-services",
+   "https://www.rayls.com/developers",
+   "https://www.rayls.com/event-evolution-of-rayls"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页暴露16篇真文章,清一色/blog/<slug>;event-evolution-of-rayls标题确认是活动页非文章",
+  "_chunk": 7
+ },
+ "ROSE": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://oasis.net/thank-you",
+   "https://oasis.net/get-in-touch",
+   "https://oasis.net/community-hub",
+   "https://oasis.net/privacy-policy",
+   "https://oasis.net/ai-agents"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 页(oasis.net/blog)抓到 12 篇真文章全部在 /blog/<slug>。5 个采样 URL 全是站内导航页(感谢页/联系表单/生态页/法律页/产品页),0 命中真文章。",
+  "_chunk": 8
+ },
+ "SAHARA": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/ko/",
+   "/ru/",
+   "/zh/"
+  ],
+  "bad_samples": [
+   "https://saharaai.com/solutions/use-cases/ai-for-personal",
+   "https://saharaai.com/learn/litepaper",
+   "https://saharaai.com/solutions/use-cases/for-model-developers",
+   "https://saharaai.com/solutions/use-cases/for-app-developers",
+   "https://saharaai.com/solutions/use-cases/for-compute-partners"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 页抓到 90+ 篇真文章,相对路径 ./blog/<slug> 解析后即 /blog/<slug>。5 个采样 URL 全是 /solutions/use-cases/* 产品页或 /learn/litepaper 白皮书页,0 命中真文章。站内 nav 有 /ko/blog /ru/blog /zh/blog 语言入口,未逐条验证子页,exclude 为 mid 置信预防性建议。",
+  "_chunk": 8
+ },
+ "SANTOS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/fr/"
+  ],
+  "bad_samples": [
+   "https://www.chiliz.com/why-chiliz-chain/",
+   "https://www.chiliz.com/governance/",
+   "https://www.chiliz.com/staking-risks-disclosure/"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": null,
+  "note": "WordPress 站,post-sitemap.xml 364 篇真文章与 page-sitemap.xml 32 个静态页 URL 形态完全相同(都是根路径单段 /<slug>/),纯前缀无法区分。/blog/ 本身只是分类导航页(3 个分类),不是文章容器。内容侧信号:真文章有 article:published_time + JSON-LD Article,静态页没有,但超出 URL pattern 范畴。强烈建议改用 post-sitemap.xml 做白名单增量比对而非前缀匹配。发现 /fr/ 法语首页,建议排除。",
+  "_chunk": 8
+ },
+ "SAPIEN": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.sapien.io/glossary/a",
+   "https://www.sapien.io/glossary/e",
+   "https://www.sapien.io/glossary/f",
+   "https://www.sapien.io/glossary/c",
+   "https://www.sapien.io/glossary/d"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 页抓到 24 篇真文章全部在 /blog/<slug>。5 个采样 URL 100% 是 /glossary/<字母> 术语表页,0 命中真文章,疑似从 blog 页 nav/footer 跳到 glossary 栏目连续误采。",
+  "_chunk": 8
+ },
+ "SCR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://portal.scroll.io/bridge",
+   "https://portal.scroll.io/sessions",
+   "https://scroll.io/developer-nft/mint",
+   "https://scroll.io/portal",
+   "https://scroll.io/rollupscan"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "默认 header(仅 UA)代理+直连都 403(Fastly WAF,ray id 前缀 hnd1::);补 Accept/Accept-Language/Sec-Fetch-* 后代理+直连都 200,说明是请求头指纹拦截而非 IP 问题。sitemap.xml 确认 21 篇真文章在 /blog/<slug>。5 个采样 URL 全是 bridge/portal/rollupscan/developer-nft 等产品工具页(部分在 portal.scroll.io 子域),0 命中真文章。",
+  "_chunk": 8
+ },
+ "SCRT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://scrt.network/confidential-computing-layer",
+   "https://scrt.network/career-workshop",
+   "https://scrt.network/coming-soon-page",
+   "https://scrt.network/media-package",
+   "https://scrt.network/ecosystem/exchanges/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 308 重定向到 /blog/。Framer 站,listing 页服务端渲染出真文章标题,文章链接为相对路径 ./<slug>,在 /blog/ 下解析即 /blog/<slug>。5 个采样 URL 全是站内其他栏目页,0 命中真文章。",
+  "_chunk": 8
+ },
+ "SLX": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/ko",
+   "/zh"
+  ],
+  "bad_samples": [
+   "https://solstice.finance/vaults/strcusx",
+   "https://solstice.finance/usx",
+   "https://solstice.finance/solstream",
+   "https://solstice.finance/vaults/eusx",
+   "https://solstice.finance/super-app"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 页抓到 10 篇真文章全部在 /blog/<slug>。5 个采样 URL 全是 /vaults/* 金库产品页或 /usx /solstream /super-app 产品页,0 命中真文章。根路径有 /ko /zh 语言切换,只验证到首页级别,exclude 为 mid 置信。",
+  "_chunk": 8
+ },
+ "SNT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://status.app/snt/exchanges",
+   "https://status.app/brand",
+   "https://status.app/keycard",
+   "https://status.app/snt/release-schedule",
+   "https://status.app/apps"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "与 SCR 同款反爬:默认 header 代理+直连都 403(同一 Fastly,hnd1::),补齐浏览器标准头后都 200。sitemap.xml 确认 543 篇真文章全部在 /blog/<slug>,无语言前缀污染。5 个采样 URL 全是 /snt/* 代币页、/brand /keycard /apps 产品页,0 命中真文章。",
+  "_chunk": 8
+ },
+ "SOL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [
+   "/ar/",
+   "/de/",
+   "/el/",
+   "/es/",
+   "/fi/",
+   "/fr/",
+   "/id/",
+   "/it/",
+   "/ja/",
+   "/ko/",
+   "/nl/",
+   "/pl/",
+   "/pt/",
+   "/ru/",
+   "/tr/",
+   "/uk/",
+   "/vi/",
+   "/zh/"
+  ],
+  "bad_samples": [
+   "https://solana.com/el/breakpoint",
+   "https://solana.com/ar/breakpoint",
+   "https://solana.com/ja/breakpoint",
+   "https://solana.com/fi/breakpoint",
+   "https://solana.com/id/breakpoint"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "同款反爬:默认 header 全 403,补浏览器标准头后 200。sitemap.xml 确认 293 篇真文章在 /news/<slug>,站点做了 18 种语言全量镜像(293x19=5567 精确对上 sitemap 条数)。5 个采样 URL 全是 /breakpoint 大会页的语言变体,不在 /news/ 下,0 命中真文章,建议排除 18 个语言前缀只留英文主站。",
+  "_chunk": 8
+ },
+ "SONY": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://dinari.com/get-started",
+   "https://dinari.com/transparency",
+   "https://dinari.com/launch",
+   "https://dinari.com/terms-conditions-usdplus-stusdplus-tokens",
+   "https://dinari.com/us"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "listing 页(标题 Blog)抓到 60+ 篇真文章全部在 /blog/<slug>。5 个采样 URL 全是产品/法务页,0 命中真文章。",
+  "_chunk": 8
+ },
+ "SPACE": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://spacecoin.org/satellite-tracker",
+   "https://penguinbase.com/airdrops/spacecoin",
+   "https://spacecoin.org/launches"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "老板举的原始问题案例。sitemap.xml 实证全站只有 5 个 URL(首页/satellite-tracker/airdrop/team/launches),无 /blog 任何形式。站点是 Vite SPA,服务端对所有路径(含 /blog)返回同一份首页 shell HTML。特殊发现:采样 URL 里有一条 https://penguinbase.com/airdrops/spacecoin 是完全不同域名,说明除了同域路径过宽,还存在跨域串出问题,建议单独排查 enqueue 链路。",
+  "_chunk": 8
+ },
+ "SPORTFUN": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.sport.fun/free",
+   "https://www.sport.fun/pro",
+   "https://www.sport.fun/football",
+   "https://www.sport.fun/nfl"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "sitemap.xml 实证全站只有 15 个 URL(首页/football/nfl/free/pro/legal 系列/security),无 /blog。站点是 React/Vite SPA(body 只有 <div id=root>),sport.fun 本质是 fantasy sports trading app 不是内容站。",
+  "_chunk": 8
+ },
+ "SPURS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.tottenhamhotspur.com/teams/u18s-mens/matches",
+   "https://www.tottenhamhotspur.com/teams/mens/stats",
+   "https://www.tottenhamhotspur.com/teams/u18s-mens/standings",
+   "https://www.tottenhamhotspur.com/teams/u21s-mens/matches",
+   "https://www.tottenhamhotspur.com/teams/mens/latest"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "记录的 blog_url(/media)301 重定向到首页,路径已失效非反爬。首页大量链接到 /news/<id>/<slug>(数十条实例),确认真实新闻 pattern。5 个采样 URL 全是 /teams/<队伍>/matches|stats|standings 赛程页,0 命中新闻文章。次要:视频内容在 /spursplay/video/<id>/<slug>,是否纳入需老板定。建议把该源 blog_url 字段从 /media 改成 /news。",
+  "_chunk": 8
+ },
+ "SSV": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://ssv.network/incentivized-mainnet-terms-and-conditions/",
+   "https://ssv.network/incentivized-mainnet-faq",
+   "https://ssv.network/get-funded",
+   "https://ssv.network/operate-eigenpods",
+   "https://ssv.network/incentivized-mainnet"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页 href 直接挖到 11 篇真文章,均在 /blog/<slug>。已采 5 样本全是根路径产品/活动页,prefix_ratio=0.0 吻合。纯英文站,无语言变体问题。",
+  "_chunk": 9
+ },
+ "STEEM": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/@steemitblog/"
+  ],
+  "exclude_prefixes": [
+   "/@steemitblog",
+   "/@steemitblog/followers",
+   "/privacy.html"
+  ],
+  "bad_samples": [
+   "https://steemit.com/@steemitblog/followers",
+   "https://steemit.com/privacy.html"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": true,
+  "note": "代理 curl 全部 403(Cloudflare JS challenge),直连 200 正常,判定该代理 IP 被 CF 拉黑而非站点反爬。直连验证 steemitchallenge/@steemitblog/steemit-update-june-14th-2026-... 是真文章(title 含日期+主题)。Steemit URL 规则是 /<可变tag>/@steemitblog/<slug>,tag 随发帖分类变化(样本中出现 steemitchallenge、steem 两种),不是固定前缀——correct_patterns 需按 contains(路径含 /@steemitblog/ 且后面还有 slug 段)而非 startswith 解读,不能直接当字符串前缀用。/@steemitblog 本身(无 slug)和 /@steemitblog/followers 等 profile 子页需排除。mid 置信:核心结论已验证,但表达成 exclude_prefixes/correct_patterns 的字段语义打了折扣。",
+  "_chunk": 9
+ },
+ "STORJ": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog-posts/"
+  ],
+  "bad_samples": [
+   "https://www.storj.io/partner/resellers",
+   "https://www.storj.io/partner/service-providers",
+   "https://www.storj.io/use-cases/cloud-backup-storage",
+   "https://www.storj.io/object-storage/reduce-carbon"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页 href 挖到 17+ 篇真文章 /blog/<slug>。已采样本全是 partner/use-cases/object-storage 等不同顶层栏目。/blog-posts/all 是索引页非文章,且裸字符串前缀 '/blog' 会误吃 '/blog-posts'——下游匹配必须按路径段(带尾部斜杠)比对,这是活教材。",
+  "_chunk": 9
+ },
+ "STX": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog-categories/"
+  ],
+  "bad_samples": [
+   "https://www.stacks.co/build/contribute",
+   "https://www.stacks.co/learn/features",
+   "https://www.stacks.co/explore/get-stx",
+   "https://www.stacks.co/explore/find-a-wallet",
+   "https://www.stacks.co/build/starting-stacks"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页 href 挖到 15+ 篇真文章 /blog/<slug>。已采样本全是 build/learn/explore 顶部导航栏目页,与博文无关。/blog-categories/<cat> 是分类筛选页非文章。",
+  "_chunk": 9
+ },
+ "SWELL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/post/"
+  ],
+  "exclude_prefixes": [
+   "/category/",
+   "/legal/"
+  ],
+  "bad_samples": [
+   "https://www.swellnetwork.io/media-kit"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "已采 5 样本里 4 个(/post/3-things-you-need-to-know-about-rsweth-v2 等)title 确认是真文章,只是路径前缀跟 blog_url 期待的 /blog 不符,真实文章前缀是 /post/。列表页页脚自身链接(/post/deep-dive-april-16th、/post/fee-flow 等)进一步印证。案例(b):列表在 /blog,文章在别的 path。唯一坏样本是 /media-kit。",
+  "_chunk": 9
+ },
+ "SXT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.spaceandtime.io/nft-consensus",
+   "https://www.spaceandtime.io/foundation",
+   "https://www.spaceandtime.io/ccpa-privacy-policy",
+   "https://www.spaceandtime.io/brandkit",
+   "https://www.spaceandtime.io/privacy-policy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页 href 挖到 5 篇真文章(clarity-compliance 系列),均在 /blog/<slug>。已采样本全是根路径静态/法务页。备注:该源博文体量很小(目前仅 5 篇同专题),非过滤问题,是产出量本身少。",
+  "_chunk": 9
+ },
+ "TRA": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.trabzonspor.org.tr/en/blog",
+   "https://www.trabzonspor.org.tr/en",
+   "https://www.trabzonspor.org.tr/en/online-islemler/elini-cebine-at-liste",
+   "https://www.trabzonspor.org.tr/en/match-area"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "TRA 是 Trabzonspor 足球俱乐部粉丝代币,官网域名匹配合理但站上无可抓取博客/新闻栏目。/blog 与 /en/blog 返回完全相同的通用壳 title(等同首页),对该页全部 52 个唯一 href 做 haber/news/blog/duyuru/medya/basin 关键词扫描零命中。原始 HTML 里的'blog'字样是 Next.js 内部路由状态,把 /blog 当通用兜底 slug 页面渲染,非真实新闻模板。建议整源判死,已排查全部导航无新闻类路径存在。",
+  "_chunk": 9
+ },
+ "TRIA": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理和直连均返回 403 Forbidden,59 字节极短 body,Fastly 风格 ray id(代理 hnd1::t2qrw-...,直连 hkg1::xbnw9-...)——响应体完全一致但节点不同,说明是边缘 WAF 基于非浏览器特征(UA/TLS 指纹)统一拦截自动化请求,不是代理 IP 被拉黑,换代理大概率无解。无法通过 curl 拿到任何内容验证 pattern。结构性旁证(未验证,仅供参考):5 个已采样本均为 /<语言>/blogs/<slug> 形态(ja/id/pt/th/es 五种语言,主语言应为 en 对应 blog_url 的 /en/blogs),若属实则该源'跑歪'主因是多语言重复而非采到非文章页,但没有真实内容验证不敢按 PATTERN_FOUND 出,confidence 定 low。",
+  "_chunk": 9
+ },
+ "TWLO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/en-us/blog/"
+  ],
+  "exclude_prefixes": [
+   "/en-us/lp/"
+  ],
+  "bad_samples": [
+   "https://www.twilio.com/fr-fr/lp/be-a-builder",
+   "https://www.twilio.com/es-mx/lp/diagnostico-madurez-whatsapp",
+   "https://www.twilio.com/de-de/lp/be-a-builder",
+   "https://www.twilio.com/en-us/lp/be-a-builder"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页是 AEM+客户端渲染(疑似 Algolia),静态 HTML 搜不到文章链接,但已采样本 en-us/blog/products/compliance-toolkit-generally-available 直接验证是真文章(title 独立、229KB 正文)。其余坏样本全是 /lp/ 落地页,注意 en-us/lp/be-a-builder 与真文章共享同一级路径 /en-us,必须用两段前缀 /en-us/blog/ 才能区分,单段 /en-us 不够。仅验证单个真样本,未能拿到列表页完整文章清单(JS 渲染限制)。",
+  "_chunk": 9
+ },
+ "TWT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/converter/",
+   "/ko/"
+  ],
+  "bad_samples": [
+   "https://trustwallet.com/ko/converter/btc/krw",
+   "https://trustwallet.com/ko/converter/btc/php",
+   "https://trustwallet.com/ko/converter/btc/jpy",
+   "https://trustwallet.com/ko/converter/btc/chf"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "已采 4 样本 100% 是韩语汇率换算工具页(/ko/converter/btc/*),top_paths 显示 10/10 全在 /ko 下,完全跑歪。列表页 href 挖到真文章 /blog/Announcements/trust-wallet-agent-kit-...。额外验证:/blog/Announcements/...(大写)与 /en/blog/announcements/...(带语言前缀)均 30x 重定向到同一 canonical https://trustwallet.com/blog/announcements/...(无语言前缀、小写)。若下游按重定向前 URL 入库,建议一并排除语言前缀变体防重复。",
+  "_chunk": 9
+ },
+ "USDC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.circle.com/pt-br/usdc",
+   "https://www.circle.com/es/eurc",
+   "https://www.circle.com/fr/eurc",
+   "https://www.circle.com/fr/usdc",
+   "https://www.circle.com/pt-br/eurc"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页 href 挖到 10 篇真文章 /blog/<slug>。已采样本全是 USDC/EURC 多语言产品介绍页,与 blog 无关,prefix_ratio=0.0、top_paths 显示大量语言前缀污染。站上另有 /es/blog、/fr/blog 等他语言博客列表,但两段前缀 /blog/ 本身就不会匹配 /es/blog/...(一级路径不同),无需额外 exclude。",
+  "_chunk": 9
+ },
+ "USDG": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/newsroom/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://globaldollar.com/brand",
+   "https://globaldollar.com/referral",
+   "https://globaldollar.com/about-usdg",
+   "https://globaldollar.com/build-with-usdg",
+   "https://globaldollar.com/first-break"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页自身 href 就藏着 24 篇真新闻稿 /newsroom/<slug>(25-members-network-milestone、okx-joins-global-dollar-network-... 等)。已采样本全是品牌/推荐/关于等顶层营销页,完全没进 /newsroom 路径——典型'过滤没生效'案例:blog_url 自己的前缀 /newsroom 下就趴着真文章,采集器却去采了同域其他顶层页,不是猜错 blog_url。",
+  "_chunk": 9
+ },
+ "USDP": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.paxos.com/regulation-and-transparency/",
+   "https://www.paxos.com/mint-and-redeem",
+   "https://www.paxos.com/itbit",
+   "https://www.paxos.com/2025-enterprise-digital-asset-adoption-report/",
+   "https://www.paxos.com/2023-crypto-survey"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页 href 挖到 8 篇真文章 /blog/<slug>。已采样本里 regulation-and-transparency/mint-and-redeem/itbit 是公司产品页;2025-enterprise-digital-asset-adoption-report、2023-crypto-survey 是两份行业报告独立落地页(非 blog post),确认不在 /blog 列表页自身链接集合里,属于另一内容类型,被 /blog/ 前缀天然排除。",
+  "_chunk": 9
+ },
+ "USDT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "https://tether.io/blog/",
+   "https://tether.io/news/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://tether.to/en/transparency/?tab=usdt",
+   "https://tether.to/contact-us/why-use-tether/",
+   "https://tether.to/en/about-us/",
+   "https://tether.to/en/whitepaper/",
+   "https://tether.to/en/channels/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url(tether.to/en/blog/)是Gatsby纯前端SPA空壳,curl拿到首页内容,0个文章链接。真实文章在完全不同的域名tether.io(WordPress),/blog/和/news/都有真文章,已抽样验证。需要换整个域名,不只是path。",
+  "_chunk": 10
+ },
+ "USELESS": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://theuselesscoin.com/dex",
+   "https://theuselesscoin.com/swap",
+   "https://theuselesscoin.com/community",
+   "https://theuselesscoin.com/whitepaper",
+   "https://theuselesscoin.com/buy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "sitemap.xml列出全站仅9个页面,无/insights,无任何文章型URL。meme币站没有博客栏目。",
+  "_chunk": 10
+ },
+ "USUAL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/",
+   "/updates/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://usual.money/404",
+   "https://usual.money/form/contact-us"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog/列表页实测75条真文章链接。/updates/是另一个真实栏目(协议更新公告),已抽验2条均真实,不是跑偏。",
+  "_chunk": 10
+ },
+ "WBTC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/resources/blog/"
+  ],
+  "exclude_prefixes": [
+   "/en-eu/",
+   "/en/",
+   "/es-mx/",
+   "/ja-jp/",
+   "/ko-kr/",
+   "/pt-br/",
+   "/uk/",
+   "/resources/blog/page/"
+  ],
+  "bad_samples": [
+   "https://www.bitgo.com/en-eu/resources/blog/2017/",
+   "https://www.bitgo.com/uk/resources/blog/2016/",
+   "https://www.bitgo.com/pt-br/resources/blog/2016/",
+   "https://www.bitgo.com/uk/resources/blog/2017/",
+   "https://www.bitgo.com/resources/blog/2016/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "真文章确认(唯一title),但年份归档页/分类页(announcements/product/engineering/industry/release-notes/product-release-notes)title通用,同样落在/resources/blog/下,光靠prefix限制过滤不掉,需业务侧补分类slug黑名单。另有7种语言前缀重复。",
+  "_chunk": 10
+ },
+ "WLD": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://world.org/id-id",
+   "https://world.org/ja-jp",
+   "https://world.org/de-de",
+   "https://world.org/es-es",
+   "https://world.org/ko-kr"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "初次代理+直连都403(仅带UA header),补Accept/Accept-Language header后代理+直连都200。非IP封锁,是WAF对精简header的拦截,建议统一补全请求header。真pattern:/blog/<category>/<slug>。",
+  "_chunk": 10
+ },
+ "XAUT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "https://tether.io/blog/",
+   "https://tether.io/news/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://tether.to/en/faqs/?search=How-often-does-Tether-provide-its-transparency-information&only-questions=true",
+   "https://tether.to/en/why-tether/",
+   "https://tether.to/en/transparency/?tab=usdt",
+   "https://tether.to/en/bug-bounty/",
+   "https://tether.to/en/fees/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "与USDT是同一个blog_url(tether.to/en/blog/),判定与证据完全一致,见USDT条目。",
+  "_chunk": 10
+ },
+ "XCH": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "^/\\d{4}/\\d{2}/\\d{2}/"
+  ],
+  "exclude_prefixes": [
+   "/blog/",
+   "/chia-signer/",
+   "/ip-trademarks/"
+  ],
+  "bad_samples": [
+   "https://www.chia.net/chia-signer/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "特殊发现:基本没跑偏(8条已采6条是真文章)。文章在根路径/YYYY/MM/DD/<slug>/,不在/blog/下,prefix_ratio对此有方法论盲区。correct_patterns是正则不是字符串前缀,千万别直接拿/blog/当pattern会把真文章全滤掉。/blog/本身是列表分页页。",
+  "_chunk": 10
+ },
+ "XMR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "^/\\d{4}/\\d{2}/\\d{2}/"
+  ],
+  "exclude_prefixes": [
+   "/blog/"
+  ],
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "特殊发现:100%假警报,已采10条全部是真文章。文章在根路径/YYYY/MM/DD/<slug>.html,不在/blog/下,prefix_ratio方法论盲区,建议标记方法论误报。correct_patterns是正则不是字符串前缀。/blog/本身是列表分页页,10个语言版列表页未发现独立翻译文章树。",
+  "_chunk": 10
+ },
+ "XNO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/en/blog/"
+  ],
+  "exclude_prefixes": [
+   "/en/blog/author/",
+   "/en/blog/category/",
+   "/en/blog/rss"
+  ],
+  "bad_samples": [
+   "https://nano.org/en/nano-foundation",
+   "https://nano.org/en/currency",
+   "https://nano.org/en/accept-nano",
+   "https://nano.org/en/news-resources",
+   "https://nano.org/en/blog-article"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "真文章slug以--[8位hex]结尾(强正则信号),列表页枚举15条。原采样4条是/en/一级导航页(不在/en/blog/下),1条(blog-article)实测404死链。",
+  "_chunk": 10
+ },
+ "XPL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/company/blog/"
+  ],
+  "exclude_prefixes": [
+   "/es/",
+   "/ja/",
+   "/ko/",
+   "/pt/",
+   "/tr/",
+   "/vi/",
+   "/zh/"
+  ],
+  "bad_samples": [
+   "https://www.plasma.org/pt/company/blog/aave-plasma-global-credit-layer",
+   "https://www.plasma.org/ko/company/blog/aave-plasma-global-credit-layer",
+   "https://www.plasma.org/ja/company/blog/aave-plasma-global-credit-layer",
+   "https://www.plasma.org/es/company/blog/aave-plasma-global-credit-layer"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "初次代理+直连都403,补Accept/Accept-Language header后都200(同WLD,非真封锁)。内容没跑偏,是同一篇文章被7种语言(es/ja/ko/pt/tr/vi/zh)重复收录,需exclude_prefixes去重。",
+  "_chunk": 10
+ },
+ "XRP": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://xrpl.org/.claude/rules/code-guide",
+   "https://xrpl.org/community/report-a-scam",
+   "https://xrpl.org/resources",
+   "https://xrpl.org/.claude/claude",
+   "https://xrpl.org/styles/readme"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url带尾斜杠301重定向到/blog,正常redirect。真pattern:/blog/<year>/<slug>,覆盖2014年至今。原采样5条(含离谱的/.claude/AI配置文件)在/blog列表页里完全没出现过,证实是站内其他地方抓的,印证'同域全放'问题。",
+  "_chunk": 10
+ },
+ "XUSD": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog-post/"
+  ],
+  "exclude_prefixes": [
+   "/blog-category/"
+  ],
+  "bad_samples": [
+   "https://www.straitsx.com/xsgd",
+   "https://www.straitsx.com/platform/accept-and-send",
+   "https://www.straitsx.com/platform",
+   "https://www.straitsx.com/xusd",
+   "https://www.straitsx.com/platform/card-issuance"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog是列表页,真文章在/blog-post/<slug>(13条),分类归档在/blog-category/<cat>(8条,需排除)。原采样5条全是稳定币产品页。",
+  "_chunk": 10
+ },
+ "ZAMA": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/post/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.zama.org/rozenn-new-pages/hubspot-form-styles",
+   "https://www.zama.org/the-state-of-fhe-report",
+   "https://www.zama.org/shielded",
+   "https://www.zama.org/nft/og-nft-link",
+   "https://www.zama.org/events"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog页面title正确但链接的真文章在/post/<slug>(8条),不是/blog/<slug>。原采样5条全是根路径独立营销落地页。",
+  "_chunk": 10
+ },
+ "ZORA": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://zora.co/conversations/agent",
+   "https://zora.co/conversations",
+   "https://zora.co/connect",
+   "https://zora.co/app",
+   "https://zora.co/debug-autosell-receipt"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "blog_url 与全部 3 样本 + sitemap 代理/直连双路同 403(59B, 'Forbidden Forbidden hnd1::...'),疑似 WAF/edge 挡 curl 指纹非代理IP问题。原样本全是 SPA app 内路由(/conversations /connect /app),零 blog 信号,疑似同 SPACE 案例(LIST 爬虫掉进 App 壳),但因站点被挡无法取证确认真实 pattern。",
+  "_chunk": 11
+ },
+ "ZRX": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/post/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://0x.org/products/cross-chain",
+   "https://0x.org/products/solana"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "0x.org/blog 列表页 200 · 直接列出9篇 /post/<slug> 真文章。/reports/* 3篇长文报告是灰色地带(内容像文章但不在/post/下),未强行归类,留人工判断。/products/ /solution/ 是产品页确认误抓。",
+  "_chunk": 11
+ },
+ "我踏马来了": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://x.com/Scarlet_Crypt/status/2064016364822765573",
+   "https://x.com/TarkErd31787236/status/2062937933590483206",
+   "https://x.com/MollaSohaib/status/2068145509882020054",
+   "https://x.com/MollaSohaib/status/2068145509882020054/quotes",
+   "https://x.com/TarkErd31787236/status/2062937933590483206/quotes"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 本身是 X community 链接非项目方blog · 已采样本是社区随机用户喊单推文与项目方无关 · 直连vs代理都200字节数几乎一样(156625/156661)证明不是反爬是SPA壳+源头配置错(数据源问题不是过滤逻辑问题)。",
+  "_chunk": 11
+ },
+ "龙虾": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://x.com/i/jf/onboarding/web?mode=login",
+   "https://x.com/en/tos",
+   "https://x.com/i/communities/2027552765266870491/members",
+   "https://x.com/i/jf/onboarding/web?mode=signup"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 同样是 X community 链接 · 已采样本是X自己的登录/条款/成员列表UI页非内容 · 直连vs代理都200字节数几乎一样(91540/91575)证明不是反爬是源头配置错。",
+  "_chunk": 11
+ },
+ "ACX": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://across.to/transfers?status=all&page=0",
+   "https://across.to/rewards"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "blog_url与3样本代理/直连双路同403(同ZORA格式) · pattern基于原始chunk样本推断未live复核:top_paths /blog占比最大(3/8)且3个/blog/ slug命名像真文章,/transfers /rewards是产品功能页。",
+  "_chunk": 11
+ },
+ "AIO": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://olaxbt.xyz/pricing.html",
+   "https://nexus.olaxbt.xyz/app/",
+   "https://olaxbt.xyz/chat"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "首页完整渲染确认导航栏只有Home/Pricing/Nexus Portal无blog入口 · 猜测/blog /news /updates /sitemap.xml均返回S3原生AccessDenied XML(对象不存在的权威信号,非反爬)· 纯S3静态站无CMS。",
+  "_chunk": 11
+ },
+ "ALAB": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/blog/",
+   "/learn/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "blog_url与3样本代理/直连双路同403 · filter-config.json的dc_banned_hosts已收录同公司子域blog.ondo.finance(反爬双路403)· 本次把结论扩展到ondo.finance主域。pattern基于原始5个样本推断(3个/learn/*+2个/blog/*标题均像真实内容,无明显误抓样本)未live复核。",
+  "_chunk": 11
+ },
+ "ANTHROPIC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/p/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "newsletter.prestocks.com是Substack newsletter · 唯一样本/p/prestocks-are-live-trade-spacex-openai代理200 · og:type=article + datePublished齐全 · 正文确认真文章。此源目前未跑歪,n_urls=1只是文章少,大概率是prefix_ratio算不出比值被误标嫌疑。",
+  "_chunk": 11
+ },
+ "ATOM": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://cosmos.network/technology",
+   "https://cosmos.network/explore",
+   "https://cosmos.network/ibc-interoperability",
+   "https://cosmos.network/solutions"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "blog_url与样本代理/直连双路同403(同ZORA/ACX/ALAB格式)。pattern基于原始chunk样本推断未live复核:top_paths /blog占比最大(3/9)且样本slug像真文章,其余4个样本是产品/技术介绍页。",
+  "_chunk": 11
+ },
+ "AUDF": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.forteaud.com/how-audf-works",
+   "https://www.forteaud.com/transparency",
+   "https://www.forteaud.com/legal-regulatory"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "官方sitemap.xml代理200完整列出全站仅5个URL(根路径+how-audf-works+transparency+legal-regulatory+contact),穷举证明无博客系统,证据权威扎实。",
+  "_chunk": 11
+ },
+ "BABYDOGE": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://legacy.babydoge.com/pages/terms-conditions",
+   "https://babydoge.com/socials",
+   "https://swap.babydoge.com/swap",
+   "https://legacy.babydoge.com/pages/privacy-policy",
+   "https://babydoge.com/partners"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "首页导航无blog/news入口 · sitemap.xml 404 · legacy子域是Shopify建站(/pages/*路径)· 补测Shopify惯例/blogs/news及/blog /news均404 · 主域+legacy穷举均无博客证据充分。",
+  "_chunk": 11
+ },
+ "BANK": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [],
+  "exclude_prefixes": [
+   "/page/",
+   "/rss/",
+   "/tag/",
+   "/author/",
+   "/portal",
+   "/webmentions/"
+  ],
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "Ghost CMS博客,文章在根路径无统一前缀(如/lorenzo-letter-15-.../),correct_patterns给空数组、改用exclude_prefixes排除Ghost系统路径。2样本代理200确认og:type=article+署名+日期+阅读时长,100%真文章。src/config.ts的URL_OVERRIDES已记录此源之前被人工修过(www.lorenzo-protocol.xyz JS壳→本ghost.io真身),chunk-11给的blog_url已是修复后地址,prefix_ratio=null是技术空值不代表跑歪,属于机器扫描假阳性,无需处理。",
+  "_chunk": 11
+ },
+ "BARD": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.lombard.finance/mica/",
+   "https://www.lombard.finance/products/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "lombard.finance/blog/列表页代理200直接列出10篇/blog/<slug>真文章 · 样本正文确认有日期+阅读时长 · /mica是合规白皮书页 /products是产品页确认误抓。",
+  "_chunk": 11
+ },
+ "BCH": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/en/newsroom/"
+  ],
+  "exclude_prefixes": [
+   "/zh/",
+   "/es/",
+   "/ja/",
+   "/ko/",
+   "/de/",
+   "/fr/",
+   "/it/",
+   "/nl/",
+   "/no/"
+  ],
+  "bad_samples": [
+   "https://bitcoincashnode.org/fr/",
+   "https://bitcoincashnode.org/it/",
+   "https://bitcoincashnode.org/nl/",
+   "https://bitcoincashnode.org/zh/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "语言首页镜像(en/zh/es/ja/ko/de/fr/it/nl/no)被同域宽松规则误抓,真文章都在/en/newsroom/下,已用/fr/实测确认(192词纯导航,无文章内容)",
+  "_chunk": 12
+ },
+ "CAP": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": null,
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://capnetwork.io/tokenomics",
+   "https://capnetwork.io/capverse"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url裸域名无path,主动探测/blog /news均404,站上无blog板块,已采2条都是产品介绍单页",
+  "_chunk": 12
+ },
+ "COLLECT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://collectfoundation.xyz/collect",
+   "https://collectfoundation.xyz/terms-of-service",
+   "https://collectfoundation.xyz/privacy-policy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "全站仅2篇真文章都在/blog/下,已采5条里3条是站点导航页(collect/terms/privacy)",
+  "_chunk": 12
+ },
+ "CTR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/page/",
+   "/rss/",
+   "/webmentions/"
+  ],
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url本身是独立Ghost博客子域,文章挂在子域根路径,无更细前缀可用(prefix_ratio=null的原因)。已采5条样本全部确认为真文章,无坏样本。Ghost惯例还有/tag//author/归档页本次未直接观测到,建议下游一并防御性排除",
+  "_chunk": 12
+ },
+ "CTSI": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/",
+   "/contributor-hub/"
+  ],
+  "exclude_prefixes": [
+   "/blog/category/",
+   "/contributor-hub/category/"
+  ],
+  "bad_samples": [
+   "https://cartesi.io/linux/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "contributor-hub是官方贡献者专栏长文,与主blog并列都是真内容,已用execution-layer-meets-data-availability实测确认(1786词+article标签+作者+日期);category/聚合页需排除",
+  "_chunk": 12
+ },
+ "ENS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/post/"
+  ],
+  "exclude_prefixes": [
+   "/blog/author/"
+  ],
+  "bad_samples": [
+   "https://ens.domains/blog/author/enslabs.eth",
+   "https://ens.domains/ecosystem",
+   "https://ens.domains/ensv2"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "真文章比blog_url深一级,在/blog/post/下而非/blog/直接子级",
+  "_chunk": 12
+ },
+ "EWZ": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/defi/decentralized-finance-explained",
+   "https://ondo.finance/learn/tokenized-rwas/tokenized-stocks-and-etfs",
+   "https://ondo.finance/learn/stablecoins/what-are-stablecoins"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理与直连curl均403(edge拦截,与代理IP无关,proxy_blocked_direct_ok=false代表两路都被拦不是代理专属问题),现场无法确认内容,pattern基于blog_url指向/blog + 已采样本URL命名结构(/blog/<slug>新闻标题体裁 vs /learn/<cat>/<slug>科普专栏体裁两套体系)推断,建议用浏览器指纹方式复核",
+  "_chunk": 12
+ },
+ "FARTCOIN": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": null,
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.infinitebackrooms.com/scenarios/opus-3-meet-4",
+   "https://www.infinitebackrooms.com/dreams/conversation-1721448408-scenario-terminal-of-truths-txt"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url指向的是与代币项目无关的第三方AI实验展示站(infinite backrooms, experiment by @andyayrey),内容是AI对话记录/场景说明,非新闻博文体裁,blog_url字段赋值本身有问题而非pattern抓歪",
+  "_chunk": 12
+ },
+ "FOGO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/old/"
+  ],
+  "bad_samples": [
+   "https://www.fogo.io/old/portfolio-test",
+   "https://www.fogo.io/fogo-sessions"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/old/portfolio-test是站点遗留死页面(53词,内容基本是重复导航项)",
+  "_chunk": 12
+ },
+ "FORT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://forta.org/firewall",
+   "https://forta.org/privacy-policy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "已用/blog/2022-retrospective(913词+日期)和/firewall(503词产品页确认非文章)双向验证",
+  "_chunk": 12
+ },
+ "GENIUS": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": null,
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://docs.tradegenius.com/account-set-up/account-creation",
+   "https://docs.tradegenius.com/spot-markets/overview"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "blog_url指向docs.子域,代理/直连均403(docs.子域边缘拦截hnd1::/hkg1::格式 + 主域tradegenius.com触发Cloudflare人机验证Just a moment),但从URL结构(嵌套文档分类:account-set-up/spot-markets/rewards)已可判断这是GitBook式产品文档站不是博客,blog_url从源头配错,建议下游换浏览器指纹复核tradegenius.com主站是否另有真blog",
+  "_chunk": 12
+ },
+ "GRASS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/learn/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.grass.io/media-kit",
+   "https://www.grass.io/privacy-policy",
+   "https://www.grass.io/download"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页是CSR(Next.js)静态HTML拿不到文章链接,改用单篇抽样(/learn/grass-puts-privacy-and-security-first,1061词有日期)直接确认真文章",
+  "_chunk": 12
+ },
+ "GWEI": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://www.ethgas.com/mica-whitepaper",
+   "https://www.ethgas.com/terms-of-service",
+   "https://www.ethgas.com/privacy-policy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "mica-whitepaper是监管白皮书静态文档(7171词但无日期无作者),非博文",
+  "_chunk": 12
+ },
+ "HBAR": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/tag/",
+   "/blog/event-type/",
+   "/blog/category/",
+   "/blog/hedera-metrics/"
+  ],
+  "bad_samples": [
+   "https://hedera.com/case-study/sentx/",
+   "https://hedera.com/dapp-directory/",
+   "https://hedera.com/blog/tag/featured/",
+   "https://hedera.com/blog/event-type/conference/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "WordPress+Yoast, post-sitemap.xml 确认 576 篇真文章都在 /blog/<slug>/。case-study/learning/category/tag/event-type 各有独立 sitemap,证明是不同内容类型。hedera_metrics 只有 1 篇,打开发现标题是实时时间戳(与 URL 日期不符),疑似动态看板非静态文章,保守排除。",
+  "_chunk": 13
+ },
+ "HYPER": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog-posts-new/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.hyperlane.xyz/ecosystem",
+   "https://www.hyperlane.xyz/privacy-policy",
+   "https://www.hyperlane.xyz/hyperlane-as-a-service"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 停在旧路径 /blog(该页本身零子文章),真实文章已迁移到 /blog-posts-new/<slug>。href 提取 73 唯一链接 + sitemap.xml 复核(/blog-posts-new/ 精确73条,/blog/<slug> 精确0条),证据一致。",
+  "_chunk": 13
+ },
+ "IMX": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/",
+   "/resources/insights/",
+   "/resources/guides/"
+  ],
+  "exclude_prefixes": [
+   "/resources/free-steam-tools/"
+  ],
+  "bad_samples": [
+   "https://www.immutable.com/resources/free-steam-tools/steam-capsule-analyzer"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": null,
+  "note": "sitemap.xml(全站仅47条)显示/resources下细分insights(3)/guides(3)/free-steam-tools(2)。实测标题确认insights和guides是真文章(og:type=article),free-steam-tools是交互工具(标题明确写Audit Your...,注意og:type在该站不可信,工具页也被打上了article标签)。",
+  "_chunk": 13
+ },
+ "IP": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/category/",
+   "/blog/page/",
+   "/blog/rss.xml"
+  ],
+  "bad_samples": [
+   "https://www.datafdn.org/gateway",
+   "https://docs.datafdn.org/foundation/governance"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": "both_blocked_until_full_headers_added",
+  "note": "href提取21个/blog/*路径,8篇真文章+分类/分页/rss噪音。docs.datafdn.org是完全不同子域(文档站),同域广采漏采跨子域,建议host锁定www.datafdn.org。listing页默认curl 403,补完整浏览器头后200,与代理无关(直连同样403→200)。",
+  "_chunk": 13
+ },
+ "IRYS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://irys.xyz/ecosystem",
+   "https://irys.xyz/connect-hub",
+   "https://irys.xyz/report-abuse"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": "both_blocked_until_full_headers_added",
+  "note": "listing页是Next.js RSC流式渲染,静态curl抓到的HTML里href提取为0,必须靠sitemap.xml兜底:17篇真文章全在/blog/<slug>,与原始2个正确样本(what-is-a-datachain等)完全对上。robots.txt额外发现Disallow: /easy-blog,未强行访问,仅记录。",
+  "_chunk": 13
+ },
+ "ISRG": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/tokenized-rwas/real-world-asset-tokenization",
+   "https://ondo.finance/learn/stablecoins/what-are-stablecoins",
+   "https://ondo.finance/learn/defi/decentralized-lending-borrowing"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": "both_blocked_until_full_headers_added",
+  "note": "sitemap.xml确认130+篇真文章(2021-2026连续更新)全在/blog/<slug>。/learn/<category>/<slug>仅6条,lastmod全部挤在同一批次时间戳,是百科型知识库非新闻博客,与ISRG/KLAC/LRCX三个token共用同一站点同一判定。",
+  "_chunk": 13
+ },
+ "JELLYJELLY": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://jellyjelly.com/social-media-detox",
+   "https://jellyjelly.com/tiktok-alternative",
+   "https://jellyjelly.com/what-is-brain-rot",
+   "https://jellyjelly.com/new-social-media-apps"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": "both_blocked_until_full_headers_added",
+  "note": "全站sitemap仅24条URL,精确穷举:真文章仅3篇(/blog/week-of-YYYY-MM-DD周报),其余18条是根路径SEO落地页,且未被/blog listing页链接到,是同域广采漏采的典型样本。",
+  "_chunk": 13
+ },
+ "KERNEL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://blogs.kerneldao.com/gain",
+   "https://blogs.kerneldao.com/kernel"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url库里记的是裸域名(无/blog path,这也是prefix_ratio=null的原因)。listing页(即域名根页)href提取直接拿到147个唯一/blog/<slug>真文章链接,证据充分无需sitemap。建议后续把blog_url字段改成.../blog(仅供参考,不在本次任务范围)。",
+  "_chunk": 13
+ },
+ "KLAC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/defi/decentralized-lending-borrowing",
+   "https://ondo.finance/learn/defi/decentralized-exchange-dex",
+   "https://ondo.finance/learn/tokenized-rwas/what-are-tokenized-treasuries"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": "both_blocked_until_full_headers_added",
+  "note": "与ISRG/LRCX共用ondo.finance/blog同一站点同一判定,详见ISRG条目note。",
+  "_chunk": 13
+ },
+ "LIT": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://lighter.xyz/mobile-app-privacy-policy",
+   "https://lighter.xyz/brand-kit",
+   "https://lighter.xyz/lighter-apps",
+   "https://lighter.xyz/404",
+   "https://lighter.xyz/mobile"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "三重证据confirm无博客:①sitemap.xml全站仅8条URL(/, /faq, /brand-kit, /mobile, /lighter-apps, /terms, /404, /mobile-app-privacy-policy),站方自己把/404都收录进sitemap;②直接curl /blog返回404;③全文60万字节大小写不敏感搜索blog命中0次。5个已采样本精确对应sitemap全部内容,不是过滤宽松,是站点本身没有博客可采。",
+  "_chunk": 13
+ },
+ "LRCX": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/defi/decentralized-exchange-dex",
+   "https://ondo.finance/learn/tokenized-rwas/tokenized-stocks-and-etfs",
+   "https://ondo.finance/learn/stablecoins/what-are-stablecoins"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": "both_blocked_until_full_headers_added",
+  "note": "与ISRG/KLAC共用ondo.finance/blog同一站点同一判定,详见ISRG条目note。",
+  "_chunk": 13
+ },
+ "MENGO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/blog/",
+   "/blog-category/",
+   "/legal-hub/",
+   "/wp-json/",
+   "/feed/",
+   "/comments/",
+   "/it/",
+   "/es/",
+   "/pt-br/",
+   "/pt-pt/",
+   "/uk/",
+   "/teams/",
+   "/how-it-works/",
+   "/fan-tokens/",
+   "/rewards/",
+   "/security/",
+   "/campus/",
+   "/sustainability/",
+   "/cookies-policy/"
+  ],
+  "bad_samples": [
+   "https://www.socios.com/national-team-fan-tokens-staking/",
+   "https://www.socios.com/pt-pt/national-team-fan-tokens-staking/",
+   "https://www.socios.com/pt-br/national-team-fan-tokens-staking/",
+   "https://www.socios.com/blog-category/partners/"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": null,
+  "note": "⚠️path前缀方案本质上解决不了这个站:post-sitemap.xml+post-sitemap2.xml=919篇真文章 和 page-sitemap.xml=101个静态产品页,两者URL形状完全相同(根路径单段slug,如/fan-tokens/ vs /top-10-esports-moments-of-2018/),没有path规则能区分。已采坏样本national-team-fan-tokens-staking实测确认在page-sitemap清单里(非文章)。给的correct_patterns=/ 只是兜底,精度有限;建议后续改用sitemap白名单比对而非path前缀(不在本次任务范围,仅供参考)。5种语言前缀(it/es/pt-br/pt-pt/uk)已列入排除。",
+  "_chunk": 13
+ },
+ "MINIMAX": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/",
+   "/news/"
+  ],
+  "exclude_prefixes": [
+   "/models/"
+  ],
+  "bad_samples": [
+   "https://platform.minimax.io/contact-us"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "href提取:/blog/ 11条、/news/ 4条、/models/ 6条(产品页)。实测/news/minimax-hailuo-23标题含'- MiniMax News',/blog/minimax-m2-en-...标题含'- MiniMax Research',均为真编辑内容,两栏目都算数。platform.minimax.io是完全不同子域(联系页),跨子域漏采,建议host锁定www.minimax.io。姊妹域名minimaxi.com的sitemap-0.xml是坏文件(仅2条自引用URL),未采用,判定完全基于www.minimax.io/blog页面本身的直接DOM证据。",
+  "_chunk": 13
+ },
+ "MOG": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://mogcoin.xyz/memes"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 本身是根域名;全站仅 3 个内部链接(首页/memes图集/白皮书PDF),/memes 是meme图集下载页非文章,无任何博客栏目",
+  "_chunk": 14
+ },
+ "NIGHT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://midnight.network/ecosystem",
+   "https://midnight.network/website-terms-of-use",
+   "https://midnight.network/aliit"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "canonical确认blog_url有效;列表页解析出10个/blog/<slug>真文章;实测2篇正文887/425词确认真文章,/ecosystem实测确认为生态目录页非文章",
+  "_chunk": 14
+ },
+ "NOW": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/defi/decentralized-lending-borrowing",
+   "https://ondo.finance/learn/tokenized-rwas/tokenized-stocks-and-etfs",
+   "https://ondo.finance/learn/defi/decentralized-finance-explained",
+   "https://ondo.finance/learn/stablecoins/what-are-stablecoins",
+   "https://ondo.finance/learn/tokenized-rwas/real-world-asset-tokenization"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理403+直连403+robots/sitemap均403(Fastly边缘拦截·域名级),本次无法实测。tentative pattern基于:blog_url声明/blog前缀 + top_paths(/learn 7、/blog 3)+ /learn slug为百科词条命名对比/blog为新闻公告命名(见ONDO同域证据)。与ONDO为同一项目重复收录,建议网络环境改善后复核",
+  "_chunk": 14
+ },
+ "OMI": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/category/",
+   "/blog/tag/",
+   "/blog/page/"
+  ],
+  "bad_samples": [
+   "https://www.veve.me/blog/category/fandoms/",
+   "https://www.veve.me/blog/tag/beyond-comics/",
+   "https://www.veve.me/blog/tag/spider-man/",
+   "https://www.veve.me/collectibles/en"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "WordPress结构博客,canonical确认;实测4个sample:category/tag归档页、/collectibles商品页均非文章,/blog/artworks/<slug>/实测881词确认真文章。真文章在/blog/<category>/<slug>/两段式路径(实测确认category含artworks/comics/fandoms),需排除category/tag/page归档",
+  "_chunk": 14
+ },
+ "ONDO": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/tokenized-rwas/tokenized-stocks-and-etfs",
+   "https://ondo.finance/learn/defi/decentralized-finance-explained",
+   "https://ondo.finance/learn/defi/decentralized-exchange-dex"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理403+直连403+robots/sitemap均403(Fastly边缘拦截·域名级),本次无法实测。tentative pattern基于:blog_url声明/blog前缀,sampled_urls中/blog/ondo-launches-tokenized-securities-in-usa等为新闻公告命名、/learn/*为百科词条命名,两类内容体裁明显不同。与NOW为同一项目重复收录(同域名同blog_url),建议网络环境改善后复核",
+  "_chunk": 14
+ },
+ "OPENAI": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://prestocks.com/spacex",
+   "https://prestocks.com/xai",
+   "https://prestocks.com/anthropic",
+   "https://prestocks.com/products",
+   "https://prestocks.com/neuralink"
+  ],
+  "confidence": "low",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理403+直连403+robots/sitemap均403(Fastly边缘拦截·域名级),本次完全无法实测。blog_url本身是根域名(非/blog路径),5个sample全是单段公司介绍页slug(spacex/xai/anthropic/neuralink为可交易标的详情页,products为产品导航页),top_paths无任何/blog/news/insights类前缀出现过,结构信号强烈指向NO_REAL_BLOG但未能实测确认正文,不强给pattern,标low置信,待网络环境改善后复核定论",
+  "_chunk": 14
+ },
+ "ORDI": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://docs.ordinals.com/overview.html",
+   "https://docs.ordinals.com/guides/wallet.html",
+   "https://docs.ordinals.com/inscriptions.html"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "mdbook技术文档站(Ordinal Theory Handbook),全站仅5个内部链接,3个sample实测均为文档章节(title统一后缀'- Ordinal Theory Handbook',1000-1700词参考手册体裁,无日期无作者),无博客/新闻栏目",
+  "_chunk": 14
+ },
+ "PI": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/page/"
+  ],
+  "bad_samples": [
+   "https://minepi.com/category/announcement/",
+   "https://minepi.com/vibe-code/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "canonical确认blog_url有效;3个sample实测均为真文章(689-2486词,title/desc具体)。top_paths中/category、/vibe-code已在/blog/前缀之外天然被排除;/blog/内部仅需排除/blog/page/<n>/分页。注:/vibe-code/(落地页)与/blog/vibe-code-social/(真文章)为两个不同路径,不要混淆",
+  "_chunk": 14
+ },
+ "PIPPIN": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://pippin.love/index.html",
+   "https://pippin.love/token.html",
+   "https://pippin.love/framework.html"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url本身是根域名;纯静态4页小站(index/token/framework/unicorn .html),3个实测页均为产品介绍页(93-755词,无日期无作者),无博客栏目,全站链接总数仅4个",
+  "_chunk": 14
+ },
+ "RLUSD": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/insights/"
+  ],
+  "exclude_prefixes": [
+   "/solutions/",
+   "/company/"
+  ],
+  "bad_samples": [
+   "https://ripple.com/solutions/treasury-management/",
+   "https://ripple.com/solutions/stablecoin/",
+   "https://ripple.com/investments/",
+   "https://ripple.com/solutions/prime-brokerage/"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理403+直连403+robots/sitemap均403(Fastly边缘拦截·域名级),本次无法实测。tentative pattern基于:blog_url声明/insights前缀且top_paths中/insights(13)已是28条里最大占比,/solutions为产品线页、/company为公司信息页,信息架构语义清晰,建议网络环境改善后复核",
+  "_chunk": 14
+ },
+ "ROBO": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://fabric.foundation/funding",
+   "https://fabric.foundation/protocol",
+   "https://fabric.foundation/partners"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理403+直连403+robots/sitemap均403(Fastly边缘拦截·域名级),本次无法实测。tentative pattern基于:blog_url声明/blog前缀,sampled_urls中/blog/robo-airdrop-eligibility-registration等为公告体裁命名,/funding /protocol /partners为静态导航页,建议网络环境改善后复核",
+  "_chunk": 14
+ },
+ "SAFE": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": null,
+  "bad_samples": [
+   "https://safe.global/users",
+   "https://safe.global/networks",
+   "https://safe.global/teams"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页链接文本自带作者+日期(如'Safe Labs 9 June 2026'),确认6篇/blog/<slug>真文章;实测/users坏样本title与首页完全相同(模板通用title,无独立标题)确认非文章,2个/blog/*实测正文1149/1604词确认真文章",
+  "_chunk": 14
+ },
+ "SC": {
+  "verdict": "ANTI_BOT",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "docs.sia.tech"
+  ],
+  "bad_samples": [
+   "https://sia.tech/contact-us",
+   "https://docs.sia.tech/miscellaneous/v2/exchanges",
+   "https://sia.tech/law-enforcement-guide",
+   "https://sia.tech/mica-indicators",
+   "https://docs.sia.tech/miscellaneous/v2"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理403+直连403+robots/sitemap均403(Fastly边缘拦截·域名级),本次无法实测。附加发现:sampled_urls中2/5来自docs.sia.tech(文档子域,非sia.tech同源!),LIST爬虫同域判定疑似用了后缀匹配而非精确host比对,导致跨子域污染,exclude_prefixes里的docs.sia.tech是host级排除不是path前缀,需要代码层面单独处理。top_paths显示/blog(8)是23条里最大占比,建议网络环境改善后复核",
+  "_chunk": 14
+ },
+ "SFP": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/en/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.safepal.com/en/store/s1pro",
+   "https://www.safepal.com/en/store",
+   "https://www.safepal.com/en/store/leathercase"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url 本身已带 /en/ 语种前缀,天然排除其他语种;/en/blog/academy 与 /en/blog/product-tutorials 落在前缀内但实为分类导航页非单篇文章,不影响本次 pattern 判定",
+  "_chunk": 15
+ },
+ "SKY": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://sky.money/stake-sky",
+   "https://sky.money/sky-ecosystem-rewards",
+   "https://sky.money/stusds",
+   "https://sky.money/susds"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "与 USDS 共用 sky.money 同一站",
+  "_chunk": 15
+ },
+ "SOXL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/tokenized-rwas/tokenized-stocks-and-etfs",
+   "https://ondo.finance/learn/defi/decentralized-finance-explained",
+   "https://ondo.finance/learn/defi/decentralized-lending-borrowing"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "ondo.finance 默认 header 下代理/直连均 403(Vercel bot 拦截),补浏览器标准 header 后代理拿到 200 并确认 pattern;/learn/ 是独立品牌栏目 Ondo Learn(教育向内容),非 blog_url 声明的博客,与 TER/TSEM/TTMI 共用同一站",
+  "_chunk": 15
+ },
+ "STBL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.stbl.com/404",
+   "https://www.stbl.com/privacy-policy",
+   "https://www.stbl.com/tokenomics",
+   "https://www.stbl.com/contact-us"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url stbl.com/blog 重定向到 www.stbl.com/blog,规范化跳转非死链",
+  "_chunk": 15
+ },
+ "STRK": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.starknet.io/wallets/",
+   "https://www.starknet.io/starknet-defi/",
+   "https://www.starknet.io/block-explorers-monitoring-tools/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog/account-abstraction/ /blog/all/ /blog/amm-crypto/ /blog/dex-aggregator/ /blog/layer-2-scaling-solutions/ 疑似标签归档页,落在前缀内但非单篇文章,供后续精修参考",
+  "_chunk": 15
+ },
+ "T": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.threshold.network/institutional",
+   "https://www.threshold.network/privacy-policy",
+   "https://www.threshold.network/vision"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url threshold.network/blog 重定向到 www.threshold.network/blog;文章正文发现疑似历史遗留子域 blog.threshold.network,本次样本未采到该域 URL,未纳入 pattern",
+  "_chunk": 15
+ },
+ "TAC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/es/",
+   "/ko/",
+   "/ru/",
+   "/zh/"
+  ],
+  "bad_samples": [
+   "https://tac.build/dapps",
+   "https://docs.tac.build/why-tac/overview/what-is-tac"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "确认 /es/ /ko/ /ru/ /zh/ 为同文章多语言分身(hreflang 式互链验证);docs.tac.build 是不同子域的文档站且触发 403,疑似 LIST 爬虫同域判定按根域放行导致子域泄漏,需爬虫层单独修,path-prefix 规则解决不了",
+  "_chunk": 15
+ },
+ "TER": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/defi/decentralized-lending-borrowing",
+   "https://ondo.finance/learn/tokenized-rwas/what-are-tokenized-treasuries"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "与 SOXL/TSEM/TTMI 共用 ondo.finance 同一站,判定依据同 SOXL",
+  "_chunk": 15
+ },
+ "TREE": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://docs.treehouse.finance/protocol",
+   "https://www.treehouse.finance/ecosystem/directory"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "docs.treehouse.finance 是不同子域文档站且触发 403,与 TAC 同类子域泄漏问题;/blog?category=xxx 是查询参数式分类筛选,风险低",
+  "_chunk": 15
+ },
+ "TRUTH": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://swarmnetwork.ai/agentlicenseagreement",
+   "https://swarmnetwork.ai/deck",
+   "https://swarmnetwork.ai/tos"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "Framer 建站,多数页面 title 标签客户端渲染导致 curl 拿不到差异化标题,但链接结构和两篇文章直连验证均正常,不影响判定",
+  "_chunk": 15
+ },
+ "TSEM": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/tokenized-rwas/what-are-tokenized-treasuries",
+   "https://ondo.finance/learn/defi/decentralized-lending-borrowing",
+   "https://ondo.finance/learn/defi/decentralized-exchange-dex"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "与 SOXL/TER/TTMI 共用 ondo.finance 同一站,判定依据同 SOXL",
+  "_chunk": 15
+ },
+ "TTMI": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/learn/"
+  ],
+  "bad_samples": [
+   "https://ondo.finance/learn/tokenized-rwas/what-are-tokenized-treasuries",
+   "https://ondo.finance/learn/stablecoins/what-are-stablecoins",
+   "https://ondo.finance/learn/defi/decentralized-exchange-dex"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": false,
+  "note": "与 SOXL/TER/TSEM 共用 ondo.finance 同一站,判定依据同 SOXL",
+  "_chunk": 15
+ },
+ "USDS": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://sky.money/vaults",
+   "https://sky.money/stusds",
+   "https://sky.money/fixed-yield"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "与 SKY 共用 sky.money 同一站",
+  "_chunk": 15
+ },
+ "VANA": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/posts/",
+   "/articles/"
+  ],
+  "exclude_prefixes": [
+   "/events/",
+   "/vana-press",
+   "/academy",
+   "/collectives",
+   "/es/",
+   "/ko/",
+   "/pt/",
+   "/zh/"
+  ],
+  "bad_samples": [],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url填/post(单数)但真文章在/posts/(复数)·因/post是/posts字符串前缀故原prefix_ratio=0.69部分蒙对。额外发现/articles/是第二个真实内容区(如/articles/datadaos-and-collectives·title不可靠但h1='DataDAOs & Collectives...'验证为真文章)建议一并纳入。噪音很小(top_paths里/events:1 /vana-press:1)·5个给定样本全部是真文章无一bad。",
+  "_chunk": 16
+ },
+ "VINE": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.vineco.in/waitlist"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "全站是未上线waitlist落地页(301跳转到www.vineco.in)·首页href全集仅/waitlist /terms +外链(moonshot.money/x.com)·无blog/news/updates入口·n_urls=1即为此waitlist页本身。",
+  "_chunk": 16
+ },
+ "W": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/products/",
+   "/pages/",
+   "/platform/",
+   "/case-studies",
+   "/brand-and-press"
+  ],
+  "bad_samples": [
+   "https://wormhole.com/products/queries",
+   "https://wormhole.com/pages/data-protection-and-privacy-policy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog/<slug>单段结构·无二级分类(全量核对/blog列表页确认)。噪音是同域放行采到的站内导航链接(产品页/法务页)·跟/blog不共享前缀·严格前缀匹配即可排除。",
+  "_chunk": 16
+ },
+ "WEN": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://wenwencoin.com/community",
+   "https://wenwencoin.com/brand"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "meme币营销站·首页导航仅/ /brand /community +外链(birdeye/jup.ag swap/pitch.com/telegram/x)·2个给定样本title均为泛化'Wen Wen Coin'、og:type为空·全站无blog/news内容类型。",
+  "_chunk": 16
+ },
+ "WET": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.humidifi.xyz/tokenomics",
+   "https://www.humidifi.xyz/terms-of-use",
+   "https://www.humidifi.xyz/litepaper"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "DeFi协议站·首页(280KB)被几十个solscan.io/account/*链接(疑似储备金/金库地址)主导·全页关键词搜索blog|news|article|updates仅命中无关CSS类名·3个给定样本(tokenomics/terms-of-use/litepaper)均为静态说明页非文章·n_urls=3已是全部噪音。",
+  "_chunk": 16
+ },
+ "WOO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/blog/category/",
+   "/zh/",
+   "/vn/"
+  ],
+  "bad_samples": [
+   "https://woox.io/zh/blog",
+   "https://woox.io/vn/blog",
+   "https://woox.io/blog/category/woo-x"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog/<slug>单段=真文章(列表页全量核对100个唯一链接)·/blog/category/<cat>是分类页(9个非文章)。交易所站大概率还有ja/ko/vi/id/tr等更多语言前缀未逐一枚举验证·建议过滤逻辑改成path严格startswith('/blog/')而非contains·可自动排除所有/xx/blog语言变体无需穷举语言码;/blog/category/因仍以/blog/开头需显式排除。",
+  "_chunk": 16
+ },
+ "XEC": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://e.cash/staking",
+   "https://e.cash/brand"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "/blog/<slug>单段结构(2.2MB列表页全量核对)。站点顶层路径(about/brand/build/careers/download/get-ecash/mining/roadmap/staking/tech/use-ecash/wallets)均不以/blog/开头·严格前缀匹配自动排除无需额外exclude_prefixes。真文章og:type=article可作辅助校验信号(噪音页复用站点默认title无此标记)。未发现语言前缀问题。",
+  "_chunk": 16
+ },
+ "XLM": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/ecosystem/",
+   "/blog/foundation-news/",
+   "/blog/developers/",
+   "/blog/policy/"
+  ],
+  "exclude_prefixes": [
+   "/events/",
+   "/es/blog"
+  ],
+  "bad_samples": [
+   "https://stellar.org/events/stellar-house/stellar-house",
+   "https://stellar.org/events/stellar-house/sao-paulo",
+   "https://stellar.org/events/stellar-house/stellar-house-mexico-city"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "⚠️关键结构:真文章是/blog/<分类>/<slug>三段式(分类:ecosystem/foundation-news/developers/policy)·裸的二段/blog/policy等实测是分类落地页非文章(title='Advocating for innovation in blockchain'非文章标题)。若只用/blog/单前缀会误收4个分类根页当文章·correct_patterns按已知4分类枚举·新增分类需人工补充。/events/是完全不同顶层路径的活动页·同域放行时被误采。",
+  "_chunk": 16
+ },
+ "XTZ": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/featured/",
+   "/author/"
+  ],
+  "bad_samples": [
+   "https://spotlight.tezos.com/7/",
+   "https://spotlight.tezos.com/1/",
+   "https://spotlight.tezos.com/5/",
+   "https://spotlight.tezos.com/featured/1/",
+   "https://spotlight.tezos.com/2/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "⚠️5/5给定样本全是分页索引页(title含'page N of M')·0篇真文章·命中率0%。站点是内容聚合器(meta描述:'Spotlight hosts content published by Tezos Foundation/Commons/Nomadic Labs/Trilitech/TZ Apac')·纯JS渲染curl拿不到<a href>·改用sitemap.txt(911条)+feed.xml交叉验证·真文章在根路径/<slug>/(抽样/why-tezos-commons-is-building-on-bluesky/实测h1+title+TechArticle类型确认为真)。⚠️pattern机制警告:真文章和噪音都在根路径无法简单前缀区分·需正则排除纯数字分页(^/[0-9]+/?$·sitemap数出49条)+/featured/(3条)+/author/<name>/<N>/(数十条作者分页)·若目标过滤器只支持前缀不支持正则·数字分页这条规则表达不了·必须跟实现方对齐。",
+  "_chunk": 16
+ },
+ "ZRO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/"
+  ],
+  "exclude_prefixes": [
+   "/followers",
+   "/about",
+   "/feed",
+   "/m/signin",
+   "/search"
+  ],
+  "bad_samples": [
+   "https://info.layerzero.foundation/followers?gi=47875e67df2c&source=collection_home_page----ba07a601c3f2----------------------------------------"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "⚠️唯一给定样本(1/1)是Medium'关注者列表'页·命中率0%。info.layerzero.foundation实为绑定自定义域名的Medium发布站(页面含blog.medium.com/medium.com/about等Medium平台元素)·首页JS渲染curl拿不到文章链接·改用Medium自带/feed RSS端点一击即中(9条真文章·guid精确对应medium.com/p/<12位hex>交叉验证)。真文章模式=根路径slug+12位hex后缀(如/introducing-zro-d39df554a9b7)·同XTZ一样根路径文章与噪音混杂·非简单前缀可表达·已用note说明后缀规则而非硬塞可能过度收纳的前缀。",
+  "_chunk": 16
+ },
+ "FIL": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.filecoin.io/provide-storage",
+   "https://www.filecoin.io/case-studies",
+   "https://www.filecoin.io/store-data/talk-to-expert",
+   "https://www.filecoin.io/learn"
+  ],
+  "confidence": "mid",
+  "proxy_blocked_direct_ok": false,
+  "note": "代理403+直连403双阻(站点级反爬,非代理IP问题)。改用web.archive.org快照(200)佐证:/blog/ProPGF-Batch-3-Call-for-Builders 是列表页真实链出的文章,与原采样中唯一在/blog/前缀内的样本一致。因未能活站验证完整文章列表,confidence降为mid。",
+  "_chunk": 4
+ },
+ "FLOW": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/post/",
+   "/engineering-blogs/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://flow.com/permissionless",
+   "https://flow.com/engineering-blog",
+   "https://flow.com/newsletter",
+   "https://flow.com/node-operation",
+   "https://flow.com/play"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url(/blog)是聚合hub,真文章在/post/<slug>和/engineering-blogs/<slug>(复数)两个前缀下,均已curl验证200+作者位。原采样5条全是导航/功能页,含hub本身(/engineering-blog单数)。",
+  "_chunk": 4
+ },
+ "G": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://gravity.xyz/g"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页直接列出十余篇真文章,全在/blog/<slug>下。原采集n_urls=1且唯一样本是/g(代币页),属于严重漏采而非采错域,但正确pattern明确。",
+  "_chunk": 4
+ },
+ "GNO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.gnosis.io/ventures",
+   "https://www.gnosis.io/press",
+   "https://www.gnosis.io/money-glitch",
+   "https://www.gnosis.io/events"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "已curl验证/blog/seed-phrase-storage是真文章(200,标题匹配)。原采样除该条外全是全站通用导航项。",
+  "_chunk": 4
+ },
+ "GOAT": {
+  "verdict": "NO_REAL_BLOG",
+  "correct_patterns": [],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://t.me/GoatseusMaximusSolanaPortal",
+   "https://x.com/gospelofgoatse",
+   "https://jup.ag/swap/SOL-CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
+   "https://x.com/punter_punts",
+   "https://x.com/NRV_gg"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "goatchan.xyz/blog与goatchan.xyz/根路径均200重定向到完全不同域名goat.cx,落地是meme币单页链接聚合器,HTML里无任何内部导航或博文结构,只有外链。原5条采样全部是站外链接(t.me/x.com/jup.ag),验证了'同域全放'漏洞在无内部内容站点上的表现。建议整源下架。",
+  "_chunk": 4
+ },
+ "H": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/ko/"
+  ],
+  "bad_samples": [
+   "https://www.humanity.org/mission",
+   "https://www.humanity.org/protocol",
+   "https://www.humanity.org/industries",
+   "https://www.humanity.org/humans",
+   "https://www.humanity.org/use-cases"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页链出约80篇真文章全在/blog/<slug>下。发现韩语镜像/ko/blog、/ko/mission,记为排除前缀。原采样5条全是主导航页。",
+  "_chunk": 4
+ },
+ "HOT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://holo.host/product/roadmap/",
+   "https://holo.host/resources/web-bridge-guide/",
+   "https://holo.host/resources/",
+   "https://holo.host/resources/whitepapers/",
+   "https://holo.host/resources/hot-token/"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "列表页链出约20篇真文章,格式/blog/<slug-随机后缀>/。原采样全落在/resources/或/product/(产品文档区),无一命中/blog/。",
+  "_chunk": 4
+ },
+ "ICNT": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/articles/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://www.icn.global/privacy-policy",
+   "https://www.icn.global/reports",
+   "https://www.icn.global/inventory",
+   "https://www.icn.global/partner-ecosystem",
+   "https://www.icn.global/operators"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "blog_url本身即列表页,文章直接在同前缀/articles/<slug>下(约45篇)。另有独立的/reports/<slug>报告板块,内容形态不同,未纳入pattern。原采样全是主导航页。",
+  "_chunk": 4
+ },
+ "INJ": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [
+   "/vn/",
+   "/ko/"
+  ],
+  "bad_samples": [
+   "https://injective.com/vn/summit/form",
+   "https://injective.com/vn/summit-terms-and-conditions",
+   "https://injective.com/vn/terms-of-use",
+   "https://injective.com/vn/privacy-policy",
+   "https://injective.com/vn/summit-privacy-policy"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "文章直接在/blog/<slug>下(与blog_url前缀一致)。原采样top_paths显示/vn(6)/ko(4)语言站群污染,且样本本身是活动表单/条款页,双重跑偏。",
+  "_chunk": 4
+ },
+ "IOTX": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://iotex.io/quicksilver",
+   "https://iotex.io/trio",
+   "https://iotex.io/press",
+   "https://iotex.io/ioid",
+   "https://iotex.io/iotx"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "Ghost CMS博客,30+篇真文章直接在/blog/<slug>/下。原采样全是产品介绍页。附注:列表页有分页/blog/page/2/,非文章,过滤时应排除。",
+  "_chunk": 4
+ },
+ "KAVA": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/news/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://kava.io/branding",
+   "https://kava.io/password/forgot",
+   "https://kava.io/events",
+   "https://kava.io/community",
+   "https://kava.io/account-settings"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "www与非www版本内容一致(非重定向问题)。12篇真文章直接在/news/<slug>下。原采样全是账户/品牌页。",
+  "_chunk": 4
+ },
+ "LAYER": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/resources/blog/"
+  ],
+  "exclude_prefixes": [],
+  "bad_samples": [
+   "https://solayer.org/resources/build",
+   "https://solayer.org/resources/feature-logs",
+   "https://solayer.org/eco-system/community",
+   "https://solayer.org/eco-system/solayer-chain",
+   "https://solayer.org/404"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "12篇真文章在/resources/blog/<slug>(比blog_url深一级,相对路径解析得出)。原采样含/resources/兄弟页、完全不同板块/eco-system/,以及一条404错误页被当URL采集——过滤漏洞。",
+  "_chunk": 4
+ },
+ "LAZIO": {
+  "verdict": "PATTERN_FOUND",
+  "correct_patterns": [
+   "/en/news/"
+  ],
+  "exclude_prefixes": [
+   "/it/"
+  ],
+  "bad_samples": [
+   "https://www.sslazio.it/it/club/storia-del-club/storia",
+   "https://www.sslazio.it/it/progetti-giovanili/lazio-soccer-school",
+   "https://www.sslazio.it/it/club/sponsor-partner",
+   "https://www.sslazio.it/it/news/statistiche/i-numeri-27-biancocelesti-negli-ultimi-30-anni",
+   "https://www.sslazio.it/it/news/infermeria/le-condizioni-di-gustav-isaksen-9"
+  ],
+  "confidence": "high",
+  "proxy_blocked_direct_ok": null,
+  "note": "站点意/英双语平行树,真文章在/news/<category>/<slug>,/en/news/与/it/news/均已curl验证可正常访问(200非跳转)。blog_url声明/en/为主语言,故/it/记为排除前缀。原采样30条100%落在/it/(与声明语言完全不符),5条抽样里还有3条连文章都不是(俱乐部历史/青训项目/赞助页)。",
+  "_chunk": 4
+ }
+}
