@@ -10,6 +10,7 @@ import {
     isBlacklistedHost,
     isValidHttpUrl,
     filterArticlesWhitelistFirst,
+    getThrottleGroup,
 } from '../src/utils/article-filter.js';
 import { normalizePublishedAt } from '../src/utils/normalize-date.js';
 import { mediumToRss, paragraphToRss, substackToRss } from '../src/handlers/medium.js';
@@ -127,6 +128,20 @@ test('normalizePublishedAt · 全格式(memory 待办的实测格式)', () => {
     assert.equal(normalizePublishedAt('Mon, 21 Jul 2025 19:06:42 GMT'), '2025-07-21T19:06:42.000Z'); // RSS RFC-822
     assert.equal(normalizePublishedAt('  2025-06-03T00:00:00.000Z  '), '2025-06-03T00:00:00.000Z'); // trim
     assert.equal(normalizePublishedAt('invalid garbage'), 'invalid garbage'); // 透传
+});
+
+test('getThrottleGroup · 限频域分组(2026-07-03 独立池分流)', () => {
+    // medium 生态 → 池 B
+    assert.equal(getThrottleGroup('https://medium.com/feed/pivx'), 'medium');
+    assert.equal(getThrottleGroup('https://trueusd.medium.com/some-post'), 'medium');
+    // 403 四强 → 池 C
+    assert.equal(getThrottleGroup('https://quant.network/news/x'), 'slow403');
+    assert.equal(getThrottleGroup('https://blog.celestia.org/x'), 'slow403');
+    assert.equal(getThrottleGroup('https://litecoin.com/blog/x'), 'slow403');
+    assert.equal(getThrottleGroup('https://minaprotocol.com/blog/x'), 'slow403');
+    // 主力池
+    assert.equal(getThrottleGroup('https://chromia.com/blog/x'), null);
+    assert.equal(getThrottleGroup('not-a-url'), null);
 });
 
 test('平台 URL → feed 转换', () => {

@@ -20,5 +20,10 @@
   ],
   "host_blacklist": [
     "gitbook.io", "github.com", "github.io"
-  ]
+  ],
+  "_throttled_comment": "限频域分流(2026-07-03 老板拍 · 独立代理池 + 低速队列)· medium=池B · slow403=池C · 数据来源 2026-07-02 全量实测 429/403 分布",
+  "throttled_domains": {
+    "medium": ["medium.com"],
+    "slow403": ["quant.network", "blog.celestia.org", "litecoin.com", "minaprotocol.com"]
+  }
 }

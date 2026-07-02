@@ -6,7 +6,7 @@ import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushS
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
-import { isValidHttpUrl } from './utils/article-filter.js';
+import { isValidHttpUrl, getThrottleGroup } from './utils/article-filter.js';
 
 // 🆕 2026-07-02 crash 教训:crawlee addRequests 的异步 batch 验证失败 = unhandledRejection = 全进程死
 // (实测 22:29 全量跑 · 某 LIST 源抽出非法 request · 进程直接退 · dataset 半途 1472 条)
@@ -16,6 +16,11 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const SITEMAP_URLS_PER_SOURCE = Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20);
+
+// 🆕 2026-07-03 增量死锁修复:入口 request(RSS/LIST)uniqueKey 加轮次盐 · 每轮必重抓
+// DETAIL(文章页)不加盐 → 持久 dedupe = 老文章不重抓 · 新文章从入口进来
+// 之前 bug:入口 URL 不变 → named queue handled 标记挡死 → 第二轮 0 产出(老板实测怀疑命中)
+const RUN_SALT = `run-${Date.now()}`;
 
 // 🆕 2026-06-30:过滤 blogpicker paused/disabled + hhwl 误判主域(gitbook/github)
 const sourcesRaw = listSources({ limit: 5000 }).filter((s) => s.blogpicker_status === 'active');
@@ -118,13 +123,16 @@ const mediumQueue = await RequestQueue.open('medium');
 const generalQueue = await RequestQueue.open('general');
 const mirrorQueue = await RequestQueue.open('mirror');
 
+// 入口层全部加 RUN_SALT(增量修复)
 const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
     url: rssUrl,
+    uniqueKey: `${rssUrl}#${RUN_SALT}`,
     userData: { sources_for_url: assoc },
 }));
 // paragraph 入 mediumQueue · 复用 mediumRouter · userData 带 crawler_label 分类
 const paragraphReqs = Array.from(paragraphByRss.entries()).map(([rssUrl, assoc]) => ({
     url: rssUrl,
+    uniqueKey: `${rssUrl}#${RUN_SALT}`,
     userData: { sources_for_url: assoc, crawler_label: 'paragraph' as const },
 }));
 // 🆕 substack 不入 mediumQueue · 改用 node:fetch 直跑(下方)· ImpitHttpClient TLS 被 cf 拉黑
@@ -193,6 +201,7 @@ for (const s of [...heuristicSources, ...otherSources]) listUrlSet.add(s.blog_ur
 for (const url of sitemapFallbackUrls) listUrlSet.add(url);
 const listReqs = Array.from(listUrlSet).map((url) => ({
     url,
+    uniqueKey: `${url}#${RUN_SALT}`, // LIST 入口每轮必重抓(增量修复)
     label: 'LIST',
     userData: {
         sources_for_url: blogUrlToTokens.get(url) ?? [],
@@ -201,17 +210,40 @@ const listReqs = Array.from(listUrlSet).map((url) => ({
 }));
 console.log(`   · LIST 入队 ${listReqs.length} unique URL(heuristic+other 去重前 ${heuristicSources.length + otherSources.length})`);
 
+// 🆕 2026-07-03 限频域分流(老板拍 · 独立代理池):
+// medium.com/*.medium.com + 403 四强 → slowQueue(低速 + 池 B/C)· 其余 → generalQueue(主力全速)
+// 主力队列不再被限频站的 retry/session-rotation 拖垮(实测 RPM 76 → 预期 300+)
+const generalReqs: typeof listReqs = [];
+const slowReqs: typeof listReqs = [];
+for (const req of [...listReqs, ...sitemapReqs]) {
+    (getThrottleGroup(req.url) ? slowReqs : generalReqs).push(req as (typeof listReqs)[number]);
+}
+console.log(`   · 分流:general ${generalReqs.length} · slow(限频域)${slowReqs.length}`);
+
+const slowQueue = await RequestQueue.open('slow');
 await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs]);
-await generalQueue.addRequests([...listReqs, ...sitemapReqs]);
+await generalQueue.addRequests(generalReqs);
+await slowQueue.addRequests(slowReqs);
 await mirrorQueue.addRequests(mirrorReqs);
 
-// 🆕 2026-07-01 代理池接入(老板提供 · socks5 每请求轮换出口 IP · 实测 AWS 东京池)
-// PROXY_URL 只放服务器 ~/.env.local(EnvironmentFile)· 不进 git
-// 有代理 = 单域压力分散 → 提速参数自动生效;无代理 = 保持原保守配置(向后兼容)
+// 🆕 2026-07-01 代理池接入 · 2026-07-03 扩三池(老板给独立池 · 全在服务器 .env.local · 不进 git)
+// PROXY_URL        主力池(10 节点)· general 队列
+// PROXY_URL_MEDIUM medium 专用池 · mediumCrawler(RSS)+ slow 队列的 medium 域
+// PROXY_URL_SLOW   403 四强专用池 · slow 队列的 slow403 域
 const PROXY_URL = process.env.PROXY_URL ?? '';
+const PROXY_URL_MEDIUM = process.env.PROXY_URL_MEDIUM || PROXY_URL;
+const PROXY_URL_SLOW = process.env.PROXY_URL_SLOW || PROXY_URL;
 const proxyConfiguration = PROXY_URL ? new ProxyConfiguration({ proxyUrls: [PROXY_URL] }) : undefined;
+const mediumProxyConfiguration = PROXY_URL_MEDIUM ? new ProxyConfiguration({ proxyUrls: [PROXY_URL_MEDIUM] }) : undefined;
+// slow 队列混两组域 · 按 request 域动态选池(medium 域 → 池 B · 403 四强 → 池 C)
+const slowProxyConfiguration = PROXY_URL ? new ProxyConfiguration({
+    newUrlFunction: (_sessionId, options) => {
+        const url = options?.request?.url ?? '';
+        return getThrottleGroup(url) === 'medium' ? PROXY_URL_MEDIUM : PROXY_URL_SLOW;
+    },
+}) : undefined;
 console.log(PROXY_URL
-    ? '🌐 代理池已接入(每请求轮换 IP)· 提速配置生效'
+    ? `🌐 代理池已接入 · 主力池 + medium 池${PROXY_URL_MEDIUM !== PROXY_URL ? '(独立)' : '(共用)'} + slow 池${PROXY_URL_SLOW !== PROXY_URL ? '(独立)' : '(共用)'}`
     : '⚠️ 无代理(PROXY_URL 未设)· 保守限速');
 
 // 混合方案(2026-06-29 老板拍板 · 2026-07-01 代理池落地调优):
@@ -222,9 +254,10 @@ const mediumCrawler = new CheerioCrawler({
     requestQueue: mediumQueue,
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mediumRouter,
-    proxyConfiguration,
-    maxRequestsPerMinute: PROXY_URL ? 300 : 60,
-    maxConcurrency: PROXY_URL ? 10 : 3,
+    proxyConfiguration: mediumProxyConfiguration,
+    // 池 B 专用后不用怕 medium 限频 · 但 RSS 一共 ~170 个 · RPM 150 也就 1 分钟 · 稳字优先
+    maxRequestsPerMinute: PROXY_URL ? 150 : 60,
+    maxConcurrency: PROXY_URL ? 5 : 3,
     sameDomainDelaySecs: 0,
     useSessionPool: true,
     persistCookiesPerSession: true,
@@ -247,6 +280,21 @@ const generalCrawler = new CheerioCrawler({
     maxRequestRetries: 2,
 });
 
+// 🆕 2026-07-03 slow crawler · 限频域专用(medium 域 + 403 四强)· 双池按域动态选
+// 低速慢啃 · 跟 general 并行 · 不占关键路径
+const slowCrawler = new CheerioCrawler({
+    requestQueue: slowQueue,
+    httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
+    requestHandler: defaultRouter,
+    proxyConfiguration: slowProxyConfiguration,
+    maxRequestsPerMinute: 60,
+    maxConcurrency: 3,
+    sameDomainDelaySecs: 1,
+    useSessionPool: true,
+    persistCookiesPerSession: true,
+    maxRequestRetries: 2,
+});
+
 // 🆕 2026-06-30 mirror 独立 crawler · Atom feed · cf 反爬严 · sessionPool 高 retry
 // 2026-07-01 挂代理(curl+代理仍 cf challenge · 但 impit TLS 指纹 + 新 IP 组合待真验)
 const mirrorCrawler = new CheerioCrawler({
@@ -263,39 +311,64 @@ const mirrorCrawler = new CheerioCrawler({
     maxRequestRetries: 3,
 });
 
-// 串行跑 · 避免 named queue 并发 race(ENOENT mkdir lock)
+// 🆕 2026-07-03 全并行(老板拍 全量 ≤20min):各 crawler 独立 named queue · 无共享 state · 可安全并行
+// (当年串行是防共享 default queue 的 ENOENT race · 分 queue 后此顾虑不存在 · 本轮真跑验证)
 const t0 = performance.now();
 const SKIP_MEDIUM = process.env.SKIP_MEDIUM === '1';
+const RUN_MIRROR = process.env.RUN_MIRROR === '1';
+
+const jobs: Promise<void>[] = [];
 
 if (SKIP_MEDIUM) {
-    console.log(`\n⊘ 跳过 mediumCrawler(SKIP_MEDIUM=1)· ${mediumReqs.length} 个 RSS 不抓`);
+    console.log(`⊘ 跳过 mediumCrawler(SKIP_MEDIUM=1)· ${mediumReqs.length} 个 RSS 不抓`);
 } else {
-    console.log(`\n🚀 mediumCrawler 启动 · ${mediumReqs.length} 个 RSS`);
-    const tMed = performance.now();
-    await mediumCrawler.run();
-    console.log(`   · medium 完成 ${((performance.now() - tMed) / 1000).toFixed(1)}s`);
+    console.log(`🚀 [并行] medium · ${mediumReqs.length + paragraphReqs.length} RSS`);
+    jobs.push((async () => {
+        const t = performance.now();
+        await mediumCrawler.run();
+        console.log(`   · medium 完成 ${((performance.now() - t) / 1000).toFixed(1)}s`);
+    })());
 }
 
-// 🆕 substack 用 node:fetch 独立跑(Crawlee + ImpitHttpClient 被 cf 拉黑)
 if (substackByRss.size > 0) {
-    console.log(`\n🚀 substack(node:fetch · 绕 cf) · ${substackByRss.size} RSS`);
-    const tSub = performance.now();
-    const ds = await Dataset.open();
-    const r = await fetchAndPushSubstack(substackByRss, ds);
-    console.log(`   · substack 完成 ${((performance.now() - tSub) / 1000).toFixed(1)}s · ok=${r.ok} fail=${r.failed} pushed=${r.pushed}`);
+    console.log(`🚀 [并行] substack(node:fetch)· ${substackByRss.size} RSS`);
+    jobs.push((async () => {
+        const t = performance.now();
+        const ds = await Dataset.open();
+        const r = await fetchAndPushSubstack(substackByRss, ds);
+        console.log(`   · substack 完成 ${((performance.now() - t) / 1000).toFixed(1)}s · ok=${r.ok} fail=${r.failed} pushed=${r.pushed}`);
+    })());
 }
 
-console.log(`\n🚀 generalCrawler 启动 · ${listReqs.length} LIST + ${sitemapReqs.length} sitemap DETAIL = ${listReqs.length + sitemapReqs.length} 入口 URL`);
-const tGen = performance.now();
-await generalCrawler.run();
-console.log(`   · general 完成 ${((performance.now() - tGen) / 1000).toFixed(1)}s`);
+console.log(`🚀 [并行] general · ${generalReqs.length} URL(主力池 · 全速)`);
+jobs.push((async () => {
+    const t = performance.now();
+    await generalCrawler.run();
+    console.log(`   · general 完成 ${((performance.now() - t) / 1000).toFixed(1)}s`);
+})());
 
-if (mirrorReqs.length > 0) {
-    console.log(`\n🚀 mirrorCrawler 启动 · ${mirrorReqs.length} Atom URL`);
-    const tMir = performance.now();
-    await mirrorCrawler.run();
-    console.log(`   · mirror 完成 ${((performance.now() - tMir) / 1000).toFixed(1)}s`);
+if (slowReqs.length > 0) {
+    console.log(`🚀 [并行] slow · ${slowReqs.length} URL(限频域 · 池 B/C 慢啃)`);
+    jobs.push((async () => {
+        const t = performance.now();
+        await slowCrawler.run();
+        console.log(`   · slow 完成 ${((performance.now() - t) / 1000).toFixed(1)}s`);
+    })());
 }
+
+// mirror 默认跳过(cf JS challenge 实测 IP 无关 · 0 产出纯烧 2.5min)· RUN_MIRROR=1 显式打开(等 Playwright 方案)
+if (RUN_MIRROR && mirrorReqs.length > 0) {
+    console.log(`🚀 [并行] mirror · ${mirrorReqs.length} Atom(RUN_MIRROR=1)`);
+    jobs.push((async () => {
+        const t = performance.now();
+        await mirrorCrawler.run();
+        console.log(`   · mirror 完成 ${((performance.now() - t) / 1000).toFixed(1)}s`);
+    })());
+} else if (mirrorReqs.length > 0) {
+    console.log(`⊘ mirror ${mirrorReqs.length} 源跳过(cf challenge 待 Playwright · RUN_MIRROR=1 打开)`);
+}
+
+await Promise.all(jobs);
 
 const dt = ((performance.now() - t0) / 1000).toFixed(1);
 

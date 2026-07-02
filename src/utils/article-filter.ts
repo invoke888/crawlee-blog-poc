@@ -14,6 +14,7 @@ const cfg = require('./filter-config.json') as {
     landing_segments: string[];
     file_extensions: string[];
     host_blacklist: string[];
+    throttled_domains: Record<string, string[]>;
 };
 
 export const WHITELIST_SEGMENTS = new Set(cfg.whitelist_segments);
@@ -89,6 +90,23 @@ export function isLikelyArticleUrl(url: string): boolean {
         return true;
     } catch {
         return false;
+    }
+}
+
+// 🆕 2026-07-03 限频域分组(老板拍 · 独立代理池):
+// 'medium' = medium.com 及子域(429 重灾 · 池 B)· 'slow403' = 限频型 403 四强(池 C)· null = 主力池
+export type ThrottleGroup = 'medium' | 'slow403' | null;
+export function getThrottleGroup(url: string): ThrottleGroup {
+    try {
+        const h = new URL(url).hostname.toLowerCase();
+        for (const [group, hosts] of Object.entries(cfg.throttled_domains)) {
+            for (const domain of hosts) {
+                if (h === domain || h.endsWith(`.${domain}`)) return group as ThrottleGroup;
+            }
+        }
+        return null;
+    } catch {
+        return null;
     }
 }
 
