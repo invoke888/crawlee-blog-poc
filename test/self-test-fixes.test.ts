@@ -47,6 +47,18 @@ test('isNoiseUrl · 列表/分页/归档(实锤 16 源)', () => {
     assert.equal(isNoiseUrl('https://blog.zentry.com/th'), true); // ZENT 语言码末段
 });
 
+test('isNoiseUrl · 复测轮收网(stripExt/复合词/新末段 · 机器比对实锤)', () => {
+    assert.equal(isNoiseUrl('https://steemit.com/login.html'), true); // 末段剥后缀匹配 landing
+    assert.equal(isNoiseUrl('https://www.vaulta.com/privacy-policy'), true); // 复合词 landing 末段
+    assert.equal(isNoiseUrl('https://www.awenetwork.ai/terms-of-service'), true);
+    assert.equal(isNoiseUrl('https://www.orbs.com/jp/'), true); // 语言码 jp
+    assert.equal(isNoiseUrl('https://www.safepal.com/en/blog/announcements'), true); // 分区列表末段
+    assert.equal(isNoiseUrl('https://www.bitgo.com/resources/blog/industry/'), true);
+    // 不误杀:末段 landing 词但有白名单段(真文章)· announcements 子路径
+    assert.equal(isNoiseUrl('https://example.com/blog/why-security-matters/'), false);
+    assert.equal(isNoiseUrl('https://example.com/announcements/big-launch'), false);
+});
+
 test('isNoiseUrl · 真文章不误杀', () => {
     assert.equal(isNoiseUrl('https://neo.org/blog/details/4320'), false); // 4 位 ID 非页码非年份
     assert.equal(isNoiseUrl('https://example.com/2026/07/some-article'), false); // 年份中段(WordPress 日期型)

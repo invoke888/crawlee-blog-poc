@@ -217,8 +217,10 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
     if (publishedAtFinal) {
         const dt = Math.abs(Date.parse(publishedAtFinal) - Date.now());
         if (dt < 10 * 60 * 1000) {
-            log.info(`⊘ [DETAIL] published_at≈抓取时刻(动态生成嫌疑)置空 "${publishedAtFinal}" | ${loaded}`);
-            publishedAtFinal = '';
+            // 动态 jsonld 命中在梯队前段 · 正文可见日期兜底没机会触发 → 这里补一次(MINIMAX 实锤正文有真日期)
+            const visible = normalizePublishedAt(extractVisibleDate($));
+            log.info(`⊘ [DETAIL] published_at≈抓取时刻(动态生成嫌疑)"${publishedAtFinal}" → ${visible ? `正文日期 ${visible}` : '置空'} | ${loaded}`);
+            publishedAtFinal = visible;
         }
     }
 

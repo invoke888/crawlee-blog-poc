@@ -60,13 +60,16 @@ const NOISE_LAST_SEGMENTS = new Set(cfg.noise_last_segments ?? []);
 const PAGINATION_LAST_RE = /^(?:\d{1,3}|(?:19|20)\d{2}|(?:blog|news|posts?|articles?)-(?:all|\d{1,3}))$/;
 
 // 列表/系统页 URL(采集 enqueue 与聚合/push 数据过滤共用同一语义)
+// 末段先剥 .html/.php 类后缀再匹配(steemit.com/login.html 实锤:'login.html' ≠ 'login' 精确段)
+const PAGE_EXT_RE = /\.(html?|php|aspx?)$/i;
 export function isNoiseUrl(url: string): boolean {
     try {
         const u = new URL(url);
         const segs = u.pathname.toLowerCase().split('/').filter(Boolean);
         if (segs.some((s) => NOISE_SEGMENTS.has(s))) return true;
-        const last = segs[segs.length - 1] ?? '';
+        const last = (segs[segs.length - 1] ?? '').replace(PAGE_EXT_RE, '');
         if (last && (PAGINATION_LAST_RE.test(last) || NOISE_LAST_SEGMENTS.has(last) || last.startsWith('sitemap'))) return true;
+        if (last && LANDING_SEGMENTS.has(last) && !segs.some((s) => WHITELIST_SEGMENTS.has(s))) return true;
         // medium 系统页/列表页 query 特征(合集主页来源标记 · 列表排序参数)
         if ((u.searchParams.get('source') ?? '').includes('collection_home_page')) return true;
         if (u.searchParams.has('orderBy')) return true;

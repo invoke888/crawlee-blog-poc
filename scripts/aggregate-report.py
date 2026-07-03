@@ -113,8 +113,11 @@ def is_noise(url):
         segs = [s for s in u.path.lower().split('/') if s]
         if any(s in NOISE for s in segs):
             return True
-        last = segs[-1] if segs else ''
+        # 末段剥 .html/.php 类后缀再匹配(steemit login.html 实锤)· 与 TS isNoiseUrl 同语义
+        last = re.sub(r'\.(html?|php|aspx?)$', '', segs[-1]) if segs else ''
         if last and (PAGINATION_LAST.match(last) or last in NOISE_LAST or last.startswith('sitemap')):
+            return True
+        if last and last in LANDING and not any(s in WHITELIST for s in segs):
             return True
         q = parse_qs(u.query)
         if 'collection_home_page' in (q.get('source', [''])[0] or ''):
