@@ -11,7 +11,7 @@
 import json, glob, sqlite3, os, re, sys
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = sys.argv[1] if len(sys.argv) > 1 else '/tmp/poc-report.json'
@@ -23,6 +23,10 @@ with open(os.path.join(REPO, 'src/utils/source-rules.json')) as f:
 WHITELIST = set(FC['whitelist_segments'])
 LANDING = set(FC['landing_segments'])
 BAD_EXT = re.compile(r'\.(' + '|'.join(FC['file_extensions']) + r')$', re.I)
+# 🆕 2026-07-03 自测战役:noise 段(列表/系统页 · 与 TS isNoiseUrl 同语义)
+NOISE = set(FC.get('noise_segments', []))
+NOISE_LAST = set(FC.get('noise_last_segments', []))
+PAGINATION_LAST = re.compile(r'^(?:\d{1,3}|(?:19|20)\d{2}|(?:blog|news|posts?|articles?)-(?:all|\d{1,3}))$')
 
 
 def host_in(url, domains):
@@ -99,6 +103,29 @@ def is_non_article(url):
         return False
 
 
+# 🆕 2026-07-03 自测战役:列表/系统页 URL(followers/tag/分页/年份归档/语言码末段/collection_home_page)
+# 与 TS isNoiseUrl(article-filter.ts)同语义 · 修 medium custom-domain 源白名单不触发时系统页全放行
+def is_noise(url):
+    if not url:
+        return False
+    try:
+        u = urlparse(url)
+        segs = [s for s in u.path.lower().split('/') if s]
+        if any(s in NOISE for s in segs):
+            return True
+        last = segs[-1] if segs else ''
+        if last and (PAGINATION_LAST.match(last) or last in NOISE_LAST or last.startswith('sitemap')):
+            return True
+        q = parse_qs(u.query)
+        if 'collection_home_page' in (q.get('source', [''])[0] or ''):
+            return True
+        if 'orderBy' in q:
+            return True
+        return False
+    except Exception:
+        return False
+
+
 def normalize_pub(raw):
     if not raw:
         return ''
@@ -119,7 +146,7 @@ def normalize_pub(raw):
         return dt.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
     except (TypeError, ValueError, IndexError):
         pass
-    return s  # 不能解 → 透传 · 报告里能看到异常格式
+    return ''  # 🆕 2026-07-03 B1 行为变更(老板拍):不能解 → 置空(BABY 'Insert Publish Date' 占位符实锤)
 
 
 con = sqlite3.connect(os.path.join(REPO, 'storage/sources.db'))
@@ -158,7 +185,7 @@ white_hit_sources = 0
 for tk, e in by_token.items():
     arts = e['articles']
     arts.sort(key=lambda a: (1 if a['title'] else 0, a['pub']), reverse=True)
-    real = [a for a in arts if not is_non_article(a.get('url', ''))]
+    real = [a for a in arts if not is_non_article(a.get('url', '')) and not is_noise(a.get('url', ''))]
     dropped_file += len(arts) - len(real)
     white = [a for a in real if is_white(a.get('url', ''))]
     if white:

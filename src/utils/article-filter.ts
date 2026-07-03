@@ -12,6 +12,9 @@ const require = createRequire(import.meta.url);
 const cfg = require('./filter-config.json') as {
     whitelist_segments: string[];
     landing_segments: string[];
+    noise_segments: string[];
+    noise_last_segments: string[];
+    platform_overrides: Record<string, string>;
     file_extensions: string[];
     host_blacklist: string[];
     throttled_domains: Record<string, string[]>;
@@ -48,6 +51,30 @@ export const WHITELIST_SEGMENTS = new Set(cfg.whitelist_segments);
 export const LANDING_SEGMENTS = new Set(cfg.landing_segments);
 export const HOST_BLACKLIST = new Set(cfg.host_blacklist);
 const FILE_EXT_RE = new RegExp(`\\.(${cfg.file_extensions.join('|')})$`, 'i');
+
+// 🆕 2026-07-03 自测战役 P0 修复(54 例 · 证据 docs/research/self-test-audit-2026-07-03/):
+// noise 段 = 列表/归档/系统页 · 优先级高于白名单(/blog/tag/x 是 tag 归档不是文章 · 白名单先赢正是穿透根因)
+// 末段形态 = 页码(/1/ /p/2)· 年份归档(/2016/)· blog-N 分页 · sitemap* · 列表专用段/语言码(仅末段才拦 · 子路径放行)
+const NOISE_SEGMENTS = new Set(cfg.noise_segments ?? []);
+const NOISE_LAST_SEGMENTS = new Set(cfg.noise_last_segments ?? []);
+const PAGINATION_LAST_RE = /^(?:\d{1,3}|(?:19|20)\d{2}|(?:blog|news|posts?|articles?)-(?:all|\d{1,3}))$/;
+
+// 列表/系统页 URL(采集 enqueue 与聚合/push 数据过滤共用同一语义)
+export function isNoiseUrl(url: string): boolean {
+    try {
+        const u = new URL(url);
+        const segs = u.pathname.toLowerCase().split('/').filter(Boolean);
+        if (segs.some((s) => NOISE_SEGMENTS.has(s))) return true;
+        const last = segs[segs.length - 1] ?? '';
+        if (last && (PAGINATION_LAST_RE.test(last) || NOISE_LAST_SEGMENTS.has(last) || last.startsWith('sitemap'))) return true;
+        // medium 系统页/列表页 query 特征(合集主页来源标记 · 列表排序参数)
+        if ((u.searchParams.get('source') ?? '').includes('collection_home_page')) return true;
+        if (u.searchParams.has('orderBy')) return true;
+        return false;
+    } catch {
+        return false;
+    }
+}
 
 function pathSegments(url: string): string[] | null {
     try {
@@ -104,12 +131,14 @@ export function isValidHttpUrl(url: string): boolean {
     }
 }
 
-// sitemap URL 过滤主判定(给 main.ts sitemap 流用)
+// sitemap URL 过滤主判定(给 main.ts sitemap 流 + LIST enqueue 用)
+// 🆕 2026-07-03 noise 判定前置(高于白名单):tag/page/followers 等列表系统页即使带 /blog/ 段也拦
 export function isLikelyArticleUrl(url: string): boolean {
     try {
         const u = new URL(url);
         const path = u.pathname.toLowerCase();
         const segs = path.split('/').filter(Boolean);
+        if (isNoiseUrl(url)) return false;
         if (segs.some((s) => WHITELIST_SEGMENTS.has(s))) return true;
         if (segs.some((s) => LANDING_SEGMENTS.has(s))) return false;
         if (FILE_EXT_RE.test(path)) return false;
@@ -117,6 +146,16 @@ export function isLikelyArticleUrl(url: string): boolean {
         return true;
     } catch {
         return false;
+    }
+}
+
+// 🆕 2026-07-03 custom-domain 平台源纠偏(detect-feed 探测实锤):host → 真实平台
+export function getPlatformOverride(url: string): string | null {
+    try {
+        const h = new URL(url).hostname.toLowerCase();
+        return cfg.platform_overrides?.[h] ?? null;
+    } catch {
+        return null;
     }
 }
 
@@ -153,11 +192,11 @@ export function getThrottleGroup(url: string): ThrottleGroup {
 }
 
 // 数据级白名单过滤(老板 2026-07-01 拍 · push.ts / 聚合共用同一语义):
-// 1. 先丢文件型 URL
+// 1. 先丢文件型 URL + 🆕 noise URL(followers/tag/分页 · 修 medium custom-domain 源白名单不触发时系统页全放行)
 // 2. 该 token 有白名单 article → 只留白名单的 · 其余全丢
-// 3. 无白名单 → 留全部非文件型
+// 3. 无白名单 → 留全部非文件非 noise
 export function filterArticlesWhitelistFirst<T extends { url?: string }>(items: T[]): T[] {
-    const real = items.filter((it) => !it.url || !isNonArticleFile(it.url));
+    const real = items.filter((it) => !it.url || (!isNonArticleFile(it.url) && !isNoiseUrl(it.url)));
     const white = real.filter((it) => it.url && isWhitelistedArticleUrl(it.url));
     return white.length > 0 ? white : real;
 }

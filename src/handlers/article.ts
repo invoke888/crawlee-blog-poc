@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
 import { isValidHttpUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
-import { extractH1, extractJsonLdMeta, extractNextDataDate } from '../utils/date-extract.js';
+import { extractH1, extractJsonLdMeta, extractNextDataDate, extractVisibleDate } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
 
@@ -140,6 +140,12 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         log.info(`⊘ [DETAIL] 错误页 title 跳过 "${title.slice(0, 50)}" | ${loaded}`);
         return;
     }
+    // 🆕 2026-07-03 自测战役:列表页 title 拦截(实锤 "Blog - Page 2" / "597 articles, page 2 of 50" / "(Page 1)")
+    const LIST_TITLE_RE = /\(page\s+\d+\)|page\s+\d+\s+of\s+\d+|(^|\|\s*)page\s+\d+(\s*$|\s*\|)|\b\d+\s+articles?,/i;
+    if (LIST_TITLE_RE.test(title) || LIST_TITLE_RE.test(h1Text)) {
+        log.info(`⊘ [DETAIL] 列表页 title 跳过 "${title.slice(0, 50)}" | ${loaded}`);
+        return;
+    }
 
     // 🆕 2026-07-03 P1#8 desc 质量 fallback(体检:desc==title 35 条 · <30 字符 150 条)
     // 梯队:og/meta → json-ld description → article/main 首个有意义 <p>(轻量 · 不是全文抽取)
@@ -185,6 +191,8 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('[itemprop="datePublished"]').first().attr('datetime')?.trim() ||
         $('[itemprop="datePublished"]').first().attr('content')?.trim() ||
         $('[itemprop="datePublished"]').first().text().trim() ||
+        // 🆕 2026-07-03 自测战役 B3:正文可见日期兜底(37 源实锤 byline 日期只在正文)· 梯队最末
+        extractVisibleDate($) ||
         '';
     const author =
         $('meta[property="article:author"]').attr('content')?.trim() ||
@@ -203,6 +211,17 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         log.warning(`存 raw HTML 失败 ${(e as Error).message?.slice(0, 80)}`);
     }
 
+    // 🆕 2026-07-03 自测战役 B2:动态 jsonld 污染防御(MINIMAX 实锤:jsonld datePublished=页面渲染时刻)
+    // 解析后与抓取时刻差 <10 分钟 → 大概率是动态生成的"now" · 置空进 pub_missing 桶(比错日期好)
+    let publishedAtFinal = normalizePublishedAt(publishedAt);
+    if (publishedAtFinal) {
+        const dt = Math.abs(Date.parse(publishedAtFinal) - Date.now());
+        if (dt < 10 * 60 * 1000) {
+            log.info(`⊘ [DETAIL] published_at≈抓取时刻(动态生成嫌疑)置空 "${publishedAtFinal}" | ${loaded}`);
+            publishedAtFinal = '';
+        }
+    }
+
     // P3.5 Bug A · 1-to-N · 每个 source 一条 dataset(KLAC vs TTMI 都有数据)
     const crawledAt = new Date().toISOString();
     for (const src of sources) {
@@ -219,7 +238,7 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
             description,
             jsonld_description: jsonLdMeta.description,
             image,
-            published_at: normalizePublishedAt(publishedAt),
+            published_at: publishedAtFinal,
             author,
             og_type: ogType,
             has_schema_blogposting: hasArticleSchema || hasJsonLdArticle,

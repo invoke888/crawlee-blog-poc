@@ -7,7 +7,7 @@ import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushS
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
-import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost } from './utils/article-filter.js';
+import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride } from './utils/article-filter.js';
 import { checkSourceRuleMulti, getSitemapOnly } from './utils/source-rules.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
 
@@ -43,31 +43,44 @@ if (sourcesDcBanned.length > 0) {
 if (sourcesDead.length > 0) {
     console.log(`⊘ 永久放弃 ${sourcesDead.length} 源(死站/非博客 · agent 实测判死)`);
 }
-const mediumSources = sources.filter((s) => s.host_platform === 'medium');
-const paragraphSources = sources.filter((s) => s.host_platform === 'paragraph');
+// 🆕 2026-07-03 自测战役 A1/A4:平台判定统一走 effectivePlatform
+// 1. platform_overrides(filter-config · detect-feed 探测实锤的 custom-domain 平台源)优先
+// 2. URL host 是 medium.com 系 → 强制 medium(PTB 实锤:host_platform 空走 LIST · same-hostname 在 medium.com 撞进别人专栏)
+// 3. 否则用 registry 的 host_platform
+const effectivePlatform = (s: SourceRow): string | null => {
+    const override = getPlatformOverride(s.blog_url);
+    if (override) return override;
+    try {
+        const h = new URL(s.blog_url).hostname.toLowerCase();
+        if (h === 'medium.com' || h.endsWith('.medium.com')) return 'medium';
+    } catch { /* 保持 registry 值 */ }
+    return s.host_platform;
+};
+const mediumSources = sources.filter((s) => effectivePlatform(s) === 'medium');
+const paragraphSources = sources.filter((s) => effectivePlatform(s) === 'paragraph');
 // 🆕 2026-06-30 substack 走 RSS(<sub>.substack.com/feed)· 复用 mediumRouter
-const substackSources = sources.filter((s) => s.host_platform === 'substack');
+const substackSources = sources.filter((s) => effectivePlatform(s) === 'substack');
 // 🆕 2026-06-30 mirror 走 Atom(.../feed/atom)· 独立 mirrorRouter
-const mirrorSources = sources.filter((s) => s.host_platform === 'mirror');
+const mirrorSources = sources.filter((s) => effectivePlatform(s) === 'mirror');
 const PLATFORM_HANDLED = new Set(['medium', 'paragraph', 'substack', 'mirror']);
 // 🆕 2026-07-03 P2#3 sitemap-only 源(chiliz/socios/BAT/REQ/OG · 真假 URL 同形站)
 // 不走 LIST/常规 sitemap · 直接用站方 post-sitemap.xml(纯文章清单)白名单入队
 const sitemapOnlySources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '') && getSitemapOnly(s.base_symbol),
+    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && getSitemapOnly(s.base_symbol),
 );
 const isSitemapOnly = (s: SourceRow) => !!getSitemapOnly(s.base_symbol);
 const sitemapSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '') && !isSitemapOnly(s)
+    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s)
         && s.fetch_strategy === 'sitemap' && s.sitemap_url,
 );
 // P3.4 · og=none 的源走 heuristic handler · 多重 fallback 抽 title/description/image/date + RSS auto-discovery
 const heuristicSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '') && !isSitemapOnly(s)
+    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s)
         && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
         && s.og_quality === 'none',
 );
 const otherSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '') && !isSitemapOnly(s)
+    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s)
         && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
         && s.og_quality !== 'none',
 );

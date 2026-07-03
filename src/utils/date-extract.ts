@@ -125,3 +125,37 @@ export function extractNextDataDate($: CheerioAPI): string {
 export function extractH1($: CheerioAPI): string {
     return $('h1').first().text().trim();
 }
+
+// 🆕 2026-07-03 自测战役 B3:正文可见日期兜底(37 源实锤:byline 日期只在正文文本 · meta/jsonld 全空)
+// 只在整个 published 梯队全空时触发 · 只扫正文容器前 2000 字(页脚版权年在尾部不会命中)
+// 'May 25, 2026' / 'May 25th, 2026' / '25 May 2026' / '2026-07-01' / '2026.10.28' 等
+const MONTH_NAME = '(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*';
+const VISIBLE_DATE_RES = [
+    new RegExp(`\\b${MONTH_NAME}\\.?\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s+(?:19|20)\\d{2}\\b`, 'i'),
+    new RegExp(`\\b\\d{1,2}(?:st|nd|rd|th)?\\.?\\s+${MONTH_NAME}\\.?,?\\s+(?:19|20)\\d{2}\\b`, 'i'),
+    /\b(?:19|20)\d{2}[-./]\d{1,2}[-./]\d{1,2}\b/,
+];
+
+export function extractVisibleDate($: CheerioAPI): string {
+    const scope = $('article').first().text() || $('main').first().text() || $('body').text();
+    const text = scope.replace(/\s+/g, ' ').slice(0, 2000);
+    for (const re of VISIBLE_DATE_RES) {
+        const m = re.exec(text);
+        if (!m) continue;
+        const cleaned = m[0].replace(/(\d)(?:st|nd|rd|th)/i, '$1');
+        // 无时区的裸日期按 UTC 解(否则服务器 UTC+8 下 toISOString 回退一天)
+        const numeric = /^((?:19|20)\d{2})[-./](\d{1,2})[-./](\d{1,2})$/.exec(cleaned);
+        if (numeric) {
+            const mo = Number(numeric[2]);
+            const day = Number(numeric[3]);
+            if (mo < 1 || mo > 12 || day < 1 || day > 31) continue;
+        }
+        const t = numeric
+            ? Date.UTC(Number(numeric[1]), Number(numeric[2]) - 1, Number(numeric[3]))
+            : Date.parse(`${cleaned} 00:00:00 UTC`);
+        if (Number.isNaN(t)) continue;
+        const year = new Date(t).getUTCFullYear();
+        if (year >= 2015 && year <= 2030) return new Date(t).toISOString();
+    }
+    return '';
+}

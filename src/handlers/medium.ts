@@ -123,7 +123,9 @@ export function mediumToRss(url: string): string {
             const path = u.pathname.replace(/\/+$/, '');
             return `${u.protocol}//medium.com/feed${path}`;
         }
-        return url;
+        // 🆕 2026-07-03 custom-domain medium(blog.floki.com 等 · platform_overrides 划进来的):
+        // medium 绑定域的标准 feed 就在根 /feed(detect-feed 15 host 实测全通)
+        return `${u.protocol}//${u.hostname}/feed`;
     } catch {
         return url;
     }
@@ -151,6 +153,11 @@ export function paragraphToRss(url: string): string {
             if (handle && handle.startsWith('@')) {
                 return `https://api.paragraph.com/blogs/rss/${handle}`;
             }
+        }
+        // 🆕 2026-07-03 custom-domain paragraph(blog.chainbase.com · platform_overrides 划进来的):
+        // 自绑域的 feed 在根 /feed(detect-feed 实测 20 items)
+        if (u.hostname !== 'paragraph.com' && !u.hostname.endsWith('.paragraph.com')) {
+            return `${u.protocol}//${u.hostname}/feed`;
         }
         return url;
     } catch {
