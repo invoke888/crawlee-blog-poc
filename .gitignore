@@ -9,3 +9,5 @@ docs-reference
 .claude
 .playwright-mcp
 __pycache__
+.env.local
+.env
