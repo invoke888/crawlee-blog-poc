@@ -7,3 +7,4 @@ storage
 docs-reference
 .tmp
 .claude
+.playwright-mcp
