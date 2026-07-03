@@ -1,0 +1,517 @@
+{
+ "slice": "02",
+ "total": 49,
+ "ok_count": 36,
+ "verdicts": [
+  {
+   "token_id": 11354,
+   "base_symbol": "AUDM",
+   "url": "https://www.macropod.com/resources/across-the-ditch-without-the-friction",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/h1/desc 四端一致,body_text 是真实payments行业分析正文,域名与blog_url一致,判真实博文。"
+  },
+  {
+   "token_id": 464,
+   "base_symbol": "AVA",
+   "url": "https://www.avafoundation.org/weekly-ava-update-19-jun-26/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/published_at(06:32:36Z=jsonld 16:32:36+10:00)全部吻合,真实周报文章。"
+  },
+  {
+   "token_id": 1360,
+   "base_symbol": "AVAAI",
+   "url": "https://medium.com/@holoworldai/holoworld-product-update-july-25th-august-8th-c7af8cdaa9e2?source=rss-96c3d5cbc54------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 'Just a moment...' 拦截二次访问),但采集 title/description 具体且自洽(产品双周更新),域名与blog_url一致,判真实博文。"
+  },
+  {
+   "token_id": 493,
+   "base_symbol": "AVAX",
+   "url": "https://www.avax.network/enterprise",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url 是 /enterprise 企业方案介绍页,title='Enterprise & Consumer Applications | Avalanche'、h1='The Chain for Business at Scale' 均为产品营销标题,og_type=website,body_text 全是导航菜单+方案罗列,无发布时间,非博文。"
+  },
+  {
+   "token_id": 471,
+   "base_symbol": "AWE",
+   "url": "https://www.awenetwork.ai/terms-of-service",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url 是服务条款页(/terms-of-service),title/h1均为'Terms of Service',body_text 是法律条款正文('Last Updated: June 27, 2025...'),非博文。"
+  },
+  {
+   "token_id": 478,
+   "base_symbol": "AXL",
+   "url": "https://www.axelar.network/blog/2-way-cross-chain-communication-smart-contract-solidity",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc 四端一致且为具体教程标题,url 落在 /blog/ 路径,判真实文章;probe.body_text 前600字恰好截到内联CSS/SCSS代码块属probe抽取瑕疵,不影响判断。"
+  },
+  {
+   "token_id": 480,
+   "base_symbol": "AXS",
+   "url": "https://blog.axieinfinity.com/p/terrariums-update-sneak-peek",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title(仅缺站名后缀,允许)/og_title/h1/published_at(与published_meta、jsonld_date均精确匹配)全部一致,真实Ghost博文。"
+  },
+  {
+   "token_id": 575,
+   "base_symbol": "AZTEC",
+   "url": "https://aztec.network/blog/10-privacy-features-ethereum-devs-want-all-of-them-live-on-aztec",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "published_at 为空,probe.published_meta/jsonld_date 也为空,但 body_text 紧跟标题处明文可见日期 'May 19th, 2026' — 页面确实展示发布日期,只是未走 meta/jsonld 结构化字段,采集管线未兜底抓到。"
+  },
+  {
+   "token_id": 1347,
+   "base_symbol": "B2",
+   "url": "https://medium.com/@bsquarednetwork/b%C2%B2-launches-the-web3-agent-skill-platform-b%C2%B2-mind-equipping-the-blockchain-with-skill-packs-so-ai-2fa4499c3b85?source=rss-55430143baa9------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(B² Mind 平台发布),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 11205,
+   "base_symbol": "BABY",
+   "url": "https://babylonlabs.io/blog/a-vault-first-roadmap-catalysing-bitcoin-defi",
+   "verdict": "problem",
+   "problems": [
+    "pub_mismatch"
+   ],
+   "severity": "P1",
+   "evidence": "published_at='Insert Publish Date' 是未渲染的CMS模板占位符而非真实日期;probe.jsonld_date 同样是 'Insert Publish Date'、jsonld_headline 是 'Insert Blog Title' — 站点JSON-LD本身是坏的,采集管线原样吃进导致该字段看似有值实则无效。title/h1/desc 其余字段均正常,文章本身真实。"
+  },
+  {
+   "token_id": 495,
+   "base_symbol": "BANANA",
+   "url": "https://blog.bananagun.io/blog/banana-gun-dominates-july-eth-volume-returns",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc 完全一致,published_at 与 probe.jsonld_date 精确匹配(2026-01-16T09:44:46.240Z),真实周报文章。"
+  },
+  {
+   "token_id": 431,
+   "base_symbol": "BAND",
+   "url": "https://medium.com/bandprotocol/band-community-update-6353450adeef?source=rss----1ef248656562---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(社区季度更新),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 429,
+   "base_symbol": "BANK",
+   "url": "https://lorenzo-protocol.ghost.io/lorenzo-letter-15-wlfi-activates-token-unlock-schedules/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc/published_at(与published_meta、jsonld_date三方精确一致)全部吻合,真实Ghost博文。"
+  },
+  {
+   "token_id": 528,
+   "base_symbol": "BAR",
+   "url": "https://medium.com/socios/socios-com-turns-spider-man-into-a-football-super-fan-in-first-of-its-kind-co-promotion-9d8cf35843ea?source=rss----467efbbd4aca---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(Socios x Spider-Man 联名),域名一致(Socios博客覆盖旗下多个Fan Token含BAR属正常),判真实博文。"
+  },
+  {
+   "token_id": 467,
+   "base_symbol": "BARD",
+   "url": "https://www.lombard.finance/blog/bitwise-joins-bitcoin-smart-accounts-as-strategic-yield-partner/",
+   "verdict": "problem",
+   "problems": [
+    "desc_bad",
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "description='Lombard brings Bitcoin to life onchain, for people, protocols, and platforms.' 是站级slogan复读,与本文Bitwise合作新闻无关(probe同样显示该slogan,与本文无关);另 published_at 为空,但 body_text 紧跟标题处明文可见日期 'March 24, 2026',属未兜底抓到的明文日期。body_text 证实确为真实文章(Bitwise战略合作报道)。"
+  },
+  {
+   "token_id": 2976,
+   "base_symbol": "BAS",
+   "url": "https://medium.com/@BAS/building-agent-reputation-with-attestations-ii-633840ab621a?source=rss-5e9bfb8fbdcc------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(系列文章第二篇),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 582,
+   "base_symbol": "BASED",
+   "url": "https://based.one/blog/2026-06-05-introducing-based-research",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc/published_at(与jsonld_date精确一致)全部吻合,真实产品发布文章。"
+  },
+  {
+   "token_id": 529,
+   "base_symbol": "BAT",
+   "url": "https://basicattentiontoken.org/mercury-preview-now-available/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc/h1一致,published_at(20:01:31Z)与published_meta(13:01:31-07:00,换算后同一时刻)吻合,真实文章。"
+  },
+  {
+   "token_id": 11345,
+   "base_symbol": "BB",
+   "url": "https://medium.com/@bouncebit/tokenized-treasuries-have-crossed-12-5-billion-what-comes-next-is-utility-ad9e522cb7f6?source=rss-818acde2b96b------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(国债代币化行业分析),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 12,
+   "base_symbol": "BCH",
+   "url": "https://bitcoincashnode.org/en/newsroom/bchn-v29-0-0%E7%89%88%E6%9C%AC%E5%8F%91%E5%B8%83%E5%85%AC%E5%91%8A",
+   "verdict": "problem",
+   "problems": [
+    "title_mismatch",
+    "pub_missing"
+   ],
+   "severity": "P1",
+   "evidence": "采集title='Bitcoin Cash Node' 只是站点通用品牌名(=probe.og_title),但页面真实<title>标签和h1都是文章专属标题'BCHN v29.0.0版本发布公告'(probe.title_tag=probe.h1=该标题)——采集管线取错了title来源字段。另published_at为空,但body_text明文可见日期'2026年1月9日',属未兜底抓到。"
+  },
+  {
+   "token_id": 11374,
+   "base_symbol": "BEAM",
+   "url": "https://onbeam.substack.com/p/60-may-2026-development-update",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403返回Substack错误页('Something has gone terribly wrong'),probe不可信;采集title/description具体自洽('#60 - May 2026 Development update'为月度更新惯用格式),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 31,
+   "base_symbol": "BEL",
+   "url": "https://bellaofficial.medium.com/bella-partners-with-billions-to-explore-human-and-ai-verification-for-the-next-era-of-web3-agents-0f82e47a02cb?source=rss-ae44d2ebb68f------2",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title一致,description是RSS全文截断版与probe.og_desc(单句摘要)措辞不同属正常,published_at与published_meta/jsonld_date均吻合,真实文章。"
+  },
+  {
+   "token_id": 201,
+   "base_symbol": "BICO",
+   "url": "https://medium.com/biconomy/introducing-biconomy-sdk-superpowers-for-your-web3-stack-b1bfbacc6779?source=rss----4af0ae3420cd---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(SDK发布公告),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 24,
+   "base_symbol": "BIGTIME",
+   "url": "https://medium.com/@playbigtime/big-time-halloween-leaderboard-2025-announced-666146e2eba7?source=rss-2c7f1a4f5dca------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(万圣节活动公告),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 589,
+   "base_symbol": "BILL",
+   "url": "https://billions.network/blog/a-school-in-barcelona-just-solved-a-21-billion-problem-heres-what-they-built-with-billions",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc完全一致且高度具体(巴塞罗那学校案例),body_text证实真实文章,published_at两端均空(页面本身无日期)判pub_absent_ok。"
+  },
+  {
+   "token_id": 56,
+   "base_symbol": "BIO",
+   "url": "https://www.bio.xyz/blog-posts/announcing-the-bioagents-elizaos-plugin-a-new-era-of-agentic-science-in-biotech",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc完全一致且高度具体(elizaOS插件发布+黑客松细节),判真实文章;probe.body_text前600字被cookie同意横幅占满属probe抽取局限,不代表页面无正文。"
+  },
+  {
+   "token_id": 592,
+   "base_symbol": "BLAST",
+   "url": "https://blog.blast.io/phase-2-gold-distribution-4/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc/published_at(与published_meta、jsonld_date三方精确一致)全部吻合,真实Ghost博文。"
+  },
+  {
+   "token_id": 593,
+   "base_symbol": "BLEND",
+   "url": "https://paragraph.com/@fluentlabs/the-era-of-expressivity-why-performance-is-no-longer-a-differentiator",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc/og_type=article/published_at与jsonld_date一致,body_text为具体技术分析正文,真实文章。"
+  },
+  {
+   "token_id": 2374,
+   "base_symbol": "BLESS",
+   "url": "https://blessnetwork.medium.com/the-can-cant-and-kant-of-bless-with-michael-chen-c535d566aae0?source=rss-9dfe460c4383------2",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title(允许Medium站名后缀)/og_title一致,published_at(21:24:11Z)与jsonld_date精确一致、与published_meta相差不到4小时在容差内,真实文章。"
+  },
+  {
+   "token_id": 2111,
+   "base_symbol": "BLUAI",
+   "url": "https://medium.com/@bluwhaleai/how-stablecoin-yield-actually-works-and-why-6-8-is-not-magic-2bb4ff30e41c?source=rss-70a2a5210f53------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(稳定币收益分析),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 89,
+   "base_symbol": "BMT",
+   "url": "https://blog.bubblemaps.io/find-deeper-connections-between-wallets/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title(=probe.title_tag/og_title)与h1(=probe.h1,站点<title>与<h1>本就用不同措辞,采集两端如实各自对应)、published_at三方精确一致,真实文章。"
+  },
+  {
+   "token_id": 95,
+   "base_symbol": "BNB",
+   "url": "https://www.bnbchain.org/en/blog/0-fee-transactions-for-usdc-usd1-u-extended-until-may-31",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url slug是具体文章('0-fee-transactions-for-usdc-usd1-u-extended-until-may-31'),但title/og_title/h1/body_text全部是BNB Chain Blog通用首页样板(title='...Stay Up-to-Date...'、h1为空、body是导航链列表),无任何该文章专属信息,页面本质上回退成了博客通用模板/未按路由渲染出文章内容。"
+  },
+  {
+   "token_id": 107,
+   "base_symbol": "BNT",
+   "url": "https://blog.bancor.network/all?gi=350cf1bbbeac&orderBy=earliest&source=collection_home_page----ea0872525293-----0-----------------------------------",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url是Medium刊物'/all?orderBy=earliest'全部文章列表页(非具体文章permalink),title='Bancor'为刊物名,h1为空,body_text='...BancorAll PostsWebsiteEarliestAll topics...'确认是列表页而非文章。"
+  },
+  {
+   "token_id": 198,
+   "base_symbol": "BONK",
+   "url": "https://medium.com/@bonk_inu/bonk-joins-forces-with-paris-musketeers-a-winning-partnership-0b8fdc92068c?source=rss-205d1e9f7f19------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(体育合作公告),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 2569,
+   "base_symbol": "BORA",
+   "url": "https://medium.com/boraecosystem/bora-ecosystem-update-building-the-next-phase-of-the-playable-ecosystem-b309d44c9a2e?source=rss----32f2d4b2abff---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(生态更新公告),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 11578,
+   "base_symbol": "BOUNTY",
+   "url": "https://medium.com/@ChainBountyX/gravity-bridge-exploit-full-attacker-fund-flow-traced-113-transactions-reveal-sophisticated-69da23e06cd9?source=rss-8600fb2f2f5b------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(链上追踪调查报告,符合ChainBounty定位),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 599,
+   "base_symbol": "BR",
+   "url": "https://paragraph.com/@bedrock-2/the-alpha-selini-vault-is-live-institutional-credit-yield-for-bitcoin-capital",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc(截断)/published_at与jsonld_date精确一致,body_text为具体产品发布正文,真实文章。"
+  },
+  {
+   "token_id": 354,
+   "base_symbol": "BREV",
+   "url": "https://blog.brevis.network/2026/05/20/brevis-vera-is-now-live/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title(允许站名后缀差异)/og_title/desc/published_at与published_meta精确一致,真实产品发布文章。"
+  },
+  {
+   "token_id": 11357,
+   "base_symbol": "BRL1",
+   "url": "https://brl1.io/como_funciona",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url是产品说明页'Como Funciona'(如何运作),title为站点通用标语,h1='Realizando Transações em Reais no Mundo Digital'是营销着陆页标题,body_text全是导航栏(如何运作/使用场景/安全/新闻/帮助/联系)+产品介绍,并非博文;站点导航里明明有独立Notícias(新闻)栏目但未采到该栏目下的文章。"
+  },
+  {
+   "token_id": 606,
+   "base_symbol": "BSB",
+   "url": "https://blockst-hq.medium.com/tokenization-is-only-the-beginning-the-next-phase-is-liquidity-utility-and-financialization-783f76a33d2c?source=rss-f982ed8c1760------2",
+   "verdict": "problem",
+   "problems": [
+    "title_mismatch"
+   ],
+   "severity": "P1",
+   "evidence": "采集title='Tokenization is only the beginning...'(=probe.og_title),但probe.title_tag/h1/jsonld_headline三处独立字段一致显示另一措辞标题'Tokenized Stocks Are Just the Beginning: Why Financialization Is the Next Phase of Onchain Capital Markets'——两个标题主题相同但整句改写,超出截断/站名后缀/大小写等允许差异范围,疑似作者事后改标题但og:title缓存未同步。"
+  },
+  {
+   "token_id": 153,
+   "base_symbol": "BTC",
+   "url": "https://bitcoin.org/en/posts/recognizing-recent-efforts-of-volunteer-translators",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title(=probe.title_tag)与h1(两端一致)均为具体文章标题('翻译志愿者致谢'),站点未设og标签属正常,published_at两端均空判pub_absent_ok,真实文章。"
+  },
+  {
+   "token_id": 1161,
+   "base_symbol": "BTR",
+   "url": "https://blog.bitlayer.org/bitlayer_101_ybtc_standout_cn/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "中文title/og_title/h1/desc完全一致,published_at与published_meta、jsonld_date三方精确一致,真实技术文章。"
+  },
+  {
+   "token_id": 11371,
+   "base_symbol": "BTT",
+   "url": "https://medium.com/bittorrent/dlive-joins-the-bittorrent-ecosystem-2abe127e12d4?source=rss----97fedb14dd51---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(2020年DLive合作公告,RSS老文章属正常),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 18,
+   "base_symbol": "C",
+   "url": "https://blog.chainbase.com/p/2",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url是'/p/2'分页列表页(第2页),title='Chainbase Network - Blog - Page 2'明确标注Page 2,h1为刊物名,body_text='Previous123More pages7Next...Subscribers4.9K+Posts74...'确认是Paragraph刊物的分页列表页而非具体文章。"
+  },
+  {
+   "token_id": 185,
+   "base_symbol": "C98",
+   "url": "https://coin98.com/blog/tag/campaigns-events/",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url是'/blog/tag/campaigns-events/'标签归档页,title/h1='Campaigns & Events'为标签名而非文章标题,body_text是该标签下的文章摘要列表(含'Coin98 x ADI Chain...'等多篇文章入口),不是单篇文章页。"
+  },
+  {
+   "token_id": 147,
+   "base_symbol": "CAKE",
+   "url": "https://blog.pancakeswap.finance/articles/PancakeSwap-x-BNB-AI-Agent-Studio",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "published_at为空,probe.published_meta/jsonld_date也为空,但body_text紧跟分类标签后明文可见日期'2026-07-01'——页面确实展示发布日期,只是未走meta/jsonld结构化字段,采集管线未兜底抓到。title/og_title/desc均一致,文章本身真实。"
+  },
+  {
+   "token_id": 613,
+   "base_symbol": "CARV",
+   "url": "https://medium.com/carv-official/introducing-the-guardian-paladin-role-your-creative-quest-starts-here-7a33866593ae?source=rss----8e4cdd53433f---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(社区角色计划公告),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 226,
+   "base_symbol": "CATI",
+   "url": "https://medium.com/catizen/a-letter-to-catizen-community-0d2a532dead4?source=rss----bcd1c23f482d---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 403(Cloudflare 拦截),采集 title/description 具体自洽(社区公开信),域名一致,判真实博文。"
+  },
+  {
+   "token_id": 615,
+   "base_symbol": "CBK",
+   "url": "https://cobak.medium.com/cobak-and-tokenpost-sign-mou-for-content-collaboration-683470be5da8?source=rss-1bebbd33cc66------2",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title(允许Medium站名后缀)/og_title一致,published_at与jsonld_date精确一致、与published_meta相差约14分钟在容差内,真实文章。"
+  }
+ ],
+ "patterns": [
+  "custom-domain 版 Medium/Paragraph 被误判为通用站点:blog.chainbase.com(实为Paragraph平台,footer含'Paragraph Technologies')和blog.bancor.network(实为Medium)都配的是crawler=article-detail而非medium/paragraph管线,结果两条都抓到了列表/分页URL(分别是'/p/2'翻页页和'/all?orderBy=earliest'全部文章页)而非具体文章正文——建议对custom domain也做Medium/Paragraph平台特征识别(页面footer/生成器标记),切到对应RSS管线。",
+  "SPA/客户端渲染站点非JS抓取拿到通用模板:BNB Chain Blog(bnbchain.org)的具体文章URL抓到的title/og_title/h1/body_text全部是博客首页通用样板而非文章专属内容,说明该站点按路由生成的SSR meta对非JS抓取不生效,crawler与probe(同款指纹)命中同一失败模式,不是probe偶发的问题而是该站的系统性盲区。",
+  "文章正文其实有明文日期但meta/jsonld均为空,published_at被留空:至少4条(AZTEC 'May 19th, 2026'、BARD 'March 24, 2026'、CAKE '2026-07-01'、BCH '2026年1月9日')body_text紧跟标题处能看到明文日期,但published_meta和jsonld_date两个结构化信号都是空——现有日期抽取只认meta/jsonld,遇到这类「日期只嵌纯文本DOM」的站点会全军覆没,建议加正文文本日期兜底抽取(如标题附近的月日年/ISO日期正则)。",
+  "站点自身title_tag与og_title分裂、采集管线取错字段:BCH(bitcoincashnode.org)的真实<title>标签和h1都是文章专属标题,但og_title是站点通用品牌名'Bitcoin Cash Node',采集管线取了og_title导致title字段变成千篇一律的站名;BSB(blockst-hq.medium.com)则反过来,title_tag/h1/jsonld_headline三处一致显示改写后的新标题,采集拿到的却是旧版og_title——两个方向的分裂都说明单一优先级(现状似乎是'能拿到og_title就用og_title')不够稳健,应做title_tag/og_title/h1三者交叉校验。",
+  "Medium/Substack类RSS源probe二次访问几乎全被Cloudflare拦截:本切片16条(约1/3)crawler=medium/substack的记录probe.http=403(title_tag='Just a moment...'或Substack错误页),probe数据在这些条目上完全不可用,只能退回采集字段自证——这是Medium/Substack反爬策略导致的必然现象而非采集缺陷,但意味着这批文章的复核证据强度天然弱于有probe佐证的条目,后续如需更高确信度需要专门的Medium级指纹/代理策略。",
+  "probe.body_text前600字有时截到非正文内容,不能仅凭这段判断:AXL(axelar.network)截到的是内联CSS/SCSS代码块,BIO(bio.xyz)和BTC(bitcoin.org)截到的是cookie同意横幅/捐款横幅文案——三条title/og_title/description均具体且吻合,结合起来看依然是真实文章,提醒判断not_article时body_text前段空洞不能单独作为定论依据。",
+  "个别站点JSON-LD结构化数据残留未渲染的模板占位符:Babylon Labs(babylonlabs.io)该文章页jsonld_headline='Insert Blog Title'、jsonld_date='Insert Publish Date'均是CMS模板占位符原文,采集管线把'Insert Publish Date'原样存进了published_at,产生了'看似有值实则无效'的日期字段,建议published_at入库前做基本日期格式校验。"
+ ]
+}

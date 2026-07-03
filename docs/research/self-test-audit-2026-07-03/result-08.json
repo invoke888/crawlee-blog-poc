@@ -1,0 +1,504 @@
+{
+ "slice": "08",
+ "total": 49,
+ "ok_count": 36,
+ "verdicts": [
+  {
+   "token_id": 368,
+   "base_symbol": "RLC",
+   "url": "https://medium.com/iex-ec/the-2026-privacy-roadmap-9d58d459c3e2?source=rss----5efdabf9a21a---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403 Just a moment...),但采集字段本身(title/description)具体且与 iex-ec 相关,判 ok"
+  },
+  {
+   "token_id": 2854,
+   "base_symbol": "RLS",
+   "url": "https://www.rayls.com/blog/announcing-the-rayls-public-chain",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "published_at 为空,但 probe.body_text 显示正文有 'Alex Jupiter November 11, 2025' 发布日期"
+  },
+  {
+   "token_id": 23,
+   "base_symbol": "RLUSD",
+   "url": "https://ripple.com/insights/fintech-checklist-stablecoin-payments-journey/",
+   "verdict": "problem",
+   "problems": [
+    "desc_bad"
+   ],
+   "severity": "P2",
+   "evidence": "description='Ripple is the leading blockchain payments company.' 与 og_desc/meta_desc 一致但为全站统一公司简介,不出现在正文中,与本文'稳定币支付清单'主题无关"
+  },
+  {
+   "token_id": 502,
+   "base_symbol": "ROBO",
+   "url": "https://fabric.foundation/partners",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url 是 /partners 合作方页非博文;title 仅为站点名'Fabric Foundation',h1/description/og_title 全空,probe.body_text 是首页导航栏内容"
+  },
+  {
+   "token_id": 11368,
+   "base_symbol": "RON",
+   "url": "https://blog.roninchain.com/p/proof-of-distribution-s2-is-almost",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/desc/published_at 与 probe 全部一致(published_meta 精确匹配)"
+  },
+  {
+   "token_id": 11327,
+   "base_symbol": "ROSE",
+   "url": "https://oasis.net/blog/100000-usd-bug-bounty-oasis-immunefi",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description 与 probe 精确一致,url 为 /blog/ 下具体文章"
+  },
+  {
+   "token_id": 411,
+   "base_symbol": "RPL",
+   "url": "https://medium.com/rocket-pool/bi-weekly-update-30-june-2026-0daf0eb4cd58?source=rss----5245e87458b9---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集字段本身(周报标题+具体数据)具体可信,判 ok"
+  },
+  {
+   "token_id": 434,
+   "base_symbol": "RSR",
+   "url": "https://blog.reserve.org/subpage/3c099459629e?gi=601c9b35745e&source=collection_home_page----5698c40d7862-----0-----------------------------------",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url 路径 /subpage/<hash>?source=collection_home_page... 为 Medium 合集主页链接;title 仅为'Reserve'(刊物名非文章名),h1 空,og_type=website,probe.body_text 显示为文章列表导航"
+  },
+  {
+   "token_id": 11023,
+   "base_symbol": "RUNE",
+   "url": "https://blog.thorchain.org/2025-rthorchain-ecosystem-the-builders-who-made-it-happen",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description 精确匹配,published_at 与 jsonld_date 同日"
+  },
+  {
+   "token_id": 11318,
+   "base_symbol": "RVN",
+   "url": "https://medium.com/@ravencoin/ravencoin-4683cd00f83c?source=rss-497374a54cc0------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容(具体项目介绍文案)自洽,判 ok"
+  },
+  {
+   "token_id": 11349,
+   "base_symbol": "S",
+   "url": "https://blog.soniclabs.com/the-first-1/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/desc/published_at 与 probe 全部精确一致"
+  },
+  {
+   "token_id": 922,
+   "base_symbol": "SAFE",
+   "url": "https://safe.global/blog/introducing-workspace-the-onchain-operating-environment-for-treasury-teams",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "published_at 为空,但 probe.body_text 显示 'Safe Labs9 June 2026' 发布日期"
+  },
+  {
+   "token_id": 11343,
+   "base_symbol": "SAGA",
+   "url": "https://medium.com/sagaxyz/saga-sells-crypto-arm-as-success-in-ai-business-grows-launches-saga-ai-labs-c2cad31349ea?source=rss----ba66b48f1089---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容具体(AI Labs 分拆公告),判 ok"
+  },
+  {
+   "token_id": 373,
+   "base_symbol": "SAHARA",
+   "url": "https://saharaai.com/blog/sorin-for-prediction-markets",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/desc/published_at(=published_meta 精确匹配)与 probe 一致"
+  },
+  {
+   "token_id": 40,
+   "base_symbol": "SAND",
+   "url": "https://medium.com/sandbox-game/circus-of-curiosities-7a1e2f81a6c9?source=rss----df97fb047c1e---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容具体(VoxEdit 比赛公告),判 ok"
+  },
+  {
+   "token_id": 275,
+   "base_symbol": "SANTOS",
+   "url": "https://www.chiliz.com/spain-fan-token-to-launch-on-friday-19th-june-via-the-socios-com-app/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description/published_at 与 probe(含 jsonld)精确一致,blog_url 为 Chiliz 集团博客域名与 url 同域"
+  },
+  {
+   "token_id": 200,
+   "base_symbol": "SAPIEN",
+   "url": "https://www.sapien.io/blog/5-key-metrics-every-av-business-should-track-for-data-quality",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/title_tag 精确一致;published_at 与 jsonld_date 差 8 小时属时区差可接受"
+  },
+  {
+   "token_id": 11323,
+   "base_symbol": "SC",
+   "url": "https://sia.tech/blog/the-state-of-sia-march-2026",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "published_at 为空,但 probe.body_text 显示 'Published 04/23/2026' 发布日期"
+  },
+  {
+   "token_id": 3,
+   "base_symbol": "SCR",
+   "url": "https://scroll.io/blog/scaling-security",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title 精确一致;description 采用文章专属 og_desc 而非站点通用 meta_desc('Native zkEVM Layer 2 for Ethereum'),选取正确"
+  },
+  {
+   "token_id": 44,
+   "base_symbol": "SCRT",
+   "url": "https://scrt.network/blog/verification-by-default-scrt-labs-integrates-intel%C2%AE-trust-authority-into-every-secretvm",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing",
+    "desc_bad"
+   ],
+   "severity": "P2",
+   "evidence": "published_at 为空但正文重复出现 'May 18, 2026' 日期(pub_missing);description='The Confidential Computing Layer of Web3 Secret Network...' 为全站通用产品简介,不出现在正文中,与本文 Intel Trust Authority 主题无关(desc_bad)"
+  },
+  {
+   "token_id": 929,
+   "base_symbol": "SD",
+   "url": "https://blog.staderlabs.com/the-cabbage-roadmap-a-leaf-by-leaf-recipe-4106544e2543?gi=b800c0974659&source=user_profile_page---------0-------------7e011fd9031d----------------------",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/description 与 og 一致,published_at 与 published_meta 精确匹配(jsonld_date 差 3 天视为 Medium 常见 created/published 差异,以匹配的 published_meta 为准)"
+  },
+  {
+   "token_id": 11154,
+   "base_symbol": "SEI",
+   "url": "https://blog.sei.io/payments/stablecoins/",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url /payments/stablecoins/ 为标签归档页;probe.body_text 显示两篇不同文章标题并列('What is a Stablecoin?...' 与 'What Is a Stablecoin and How Does It Work in 2025?'),og_type=website,title/h1 均为分类名"
+  },
+  {
+   "token_id": 28,
+   "base_symbol": "SFP",
+   "url": "https://www.safepal.com/en/blog/academy",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url /en/blog/academy 为博客分区落地页;description 原文即为 'SafePal Crypto Wallet Blog Home Page'(元数据自曝是首页非文章),h1/og_title 空,probe.body_text 为无关的硬件钱包产品列表"
+  },
+  {
+   "token_id": 137,
+   "base_symbol": "SHIB",
+   "url": "https://blog.shib.io/plasma-bone-bridge-is-back-stronger-and-more-secure-than-ever/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/desc/published_at 与 probe(含 jsonld)全部精确一致"
+  },
+  {
+   "token_id": 394,
+   "base_symbol": "SIGN",
+   "url": "https://medium.com/ethsign/signspace-june-2024-41ae2f5ac68d?source=rss----1f11869f039e---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容具体(月刊 SignSpace),判 ok"
+  },
+  {
+   "token_id": 1599,
+   "base_symbol": "SIREN",
+   "url": "https://medium.com/@sirenai/siren-is-heading-to-monaco-for-ai-agent-day-32823cc64394?source=rss-aac2b66528c8------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容具体(摩纳哥活动公告),判 ok"
+  },
+  {
+   "token_id": 57,
+   "base_symbol": "SKL",
+   "url": "https://medium.com/skale/skale-nft-launch-series-the-most-popular-nft-categories-on-the-skale-network-today-102c34bcab87?source=rss----2f9e59df3413---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容具体(NFT 系列文章),判 ok"
+  },
+  {
+   "token_id": 942,
+   "base_symbol": "SKR",
+   "url": "https://blog.solanamobile.com/post/5-seeker-dapps-you-need-to-try-right-now",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title 精确匹配具体文章标题;h1 与页面另一栏目标题('Photo Finish...')不同但 probe 复核确认页面本身如此,非采集错误"
+  },
+  {
+   "token_id": 58,
+   "base_symbol": "SKY",
+   "url": "https://sky.money/blog/what-is-sky-money",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/jsonld_headline 精确一致,published_at 与 jsonld_date 同日"
+  },
+  {
+   "token_id": 60,
+   "base_symbol": "SLP",
+   "url": "https://blog.axieinfinity.com/p/terrariums-update-sneak-peek",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/desc 精确一致,published_at 与 published_meta 精确匹配"
+  },
+  {
+   "token_id": 1116,
+   "base_symbol": "SLX",
+   "url": "https://solstice.finance/blog/solstice-x-raydium-partnership-get-up-to-10x-flares-multipli",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "published_at 为空,但 probe.body_text 显示标题后紧跟 'March 23, 2026' 发布日期"
+  },
+  {
+   "token_id": 84,
+   "base_symbol": "SNT",
+   "url": "https://status.app/blog/air-gapped-crypto-storage-how-it-works-and-why-it-beats-standard-hardware-wallet",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description/published_at(与 jsonld_date 精确匹配)与 probe 一致"
+  },
+  {
+   "token_id": 86,
+   "base_symbol": "SNX",
+   "url": "https://blog.synthetix.io/introducing-scaled-orders-on-synthetix-perps/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/desc/published_at 与 probe(published_meta+jsonld_date)精确一致"
+  },
+  {
+   "token_id": 92,
+   "base_symbol": "SOL",
+   "url": "https://solana.com/news/how-external-assets-start-trading-on-solana-from-day-one",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/desc 一致;published_at 与 published_meta 相差 8 小时属时区差可接受"
+  },
+  {
+   "token_id": 333,
+   "base_symbol": "SOMI",
+   "url": "https://blog.somnia.network/p/somnia-integrates-with-lifi-to-expand",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/desc/published_at 与 probe 精确一致(published_meta 精确匹配)"
+  },
+  {
+   "token_id": 12970,
+   "base_symbol": "SONY",
+   "url": "https://dinari.com/blog/24-7-trading-is-live-with-flow-traders-and-dinari",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "published_at 为空,但 probe.body_text 显示 'Dinari•May 20, 2026' 发布日期"
+  },
+  {
+   "token_id": 2411,
+   "base_symbol": "SOON",
+   "url": "https://medium.com/@soon_SVM/soon-partners-with-haleek-to-pioneer-the-next-era-of-on-chain-creators-c754e56db70d?source=rss-1f1888ea34d2------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容具体(音乐人合作公告),判 ok"
+  },
+  {
+   "token_id": 2448,
+   "base_symbol": "SOXL",
+   "url": "https://ondo.finance/blog/tokenized-stocks-are-live-uniswap",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/og_title/description 与 probe 一致,og_type=article 确认为文章页(probe.body_text 因页面重度 JS 渲染返回空,不作为判据)"
+  },
+  {
+   "token_id": 1126,
+   "base_symbol": "SPURS",
+   "url": "https://www.tottenhamhotspur.com/news/featured/1074027/this-is-where-it-starts?utm_source=thfc&utm_medium=matchespromocard&utm_campaign=retail_kitlaunch2627_1_2026_6&utm_content=u18-mens",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/description/published_at 与 probe(jsonld_date 精确匹配)一致"
+  },
+  {
+   "token_id": 956,
+   "base_symbol": "SQD",
+   "url": "https://sqd.dev/blog/unifying-under-sqd-dev/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description/published_at 与 probe(jsonld_date 精确匹配)一致"
+  },
+  {
+   "token_id": 131,
+   "base_symbol": "SSV",
+   "url": "https://ssv.network/blog/welcome-to-the-syndicate",
+   "verdict": "problem",
+   "problems": [
+    "pub_missing"
+   ],
+   "severity": "P2",
+   "evidence": "published_at 为空,但 probe.body_text 显示标题前有 '5/26/26' 日期戳"
+  },
+  {
+   "token_id": 959,
+   "base_symbol": "STABLE",
+   "url": "https://blog.stable.xyz/global-payouts-through-stablecoin-rails-or-stable-thesis",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description/published_at 与 probe(published_meta+jsonld_date 精确匹配)一致"
+  },
+  {
+   "token_id": 960,
+   "base_symbol": "STAR",
+   "url": "https://medium.com/@starpowerworld/from-nature-to-reality-starpower-begins-pilot-production-of-the-gvp01-home-battery-e8962b0188cf?source=rss-a1e503bd9b7d------2",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容具体(电池量产公告),判 ok"
+  },
+  {
+   "token_id": 2912,
+   "base_symbol": "STBL",
+   "url": "https://www.stbl.com/blog/unlocking-yield-usst-guide",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/description/published_at(与 published_meta 精确匹配)与 probe 一致;url 带 www 与 blog_url 无 www 属同根域"
+  },
+  {
+   "token_id": 11335,
+   "base_symbol": "STEEM",
+   "url": "https://steemit.com/login.html",
+   "verdict": "problem",
+   "problems": [
+    "not_article"
+   ],
+   "severity": "P0",
+   "evidence": "url 为 steemit.com/login.html 登录页,与目标博客账号 /@steemitblog 完全无关;probe.body_text 显示登录/注册/找回密码等界面文案,无任何文章内容"
+  },
+  {
+   "token_id": 964,
+   "base_symbol": "STETH",
+   "url": "https://blog.lido.fi/steth-liquidity-held-ground-during-stress-event/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description/published_at 与 probe(published_meta+jsonld_date 精确匹配)一致"
+  },
+  {
+   "token_id": 135,
+   "base_symbol": "STG",
+   "url": "https://medium.com/stargate-official/the-first-omnichain-dex-launches-on-stargate-c0ab74a79562?source=rss----11717828e935---4",
+   "verdict": "ok",
+   "problems": [
+    "fetch_flaky"
+   ],
+   "severity": null,
+   "evidence": "probe 被 Cloudflare 拦截(403),采集内容具体(Sushi 合作公告),判 ok"
+  },
+  {
+   "token_id": 305,
+   "base_symbol": "STORJ",
+   "url": "https://www.storj.io/blog/3-data-privacy-trends-to-watch",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description/published_at 与 probe(jsonld_date 精确匹配)一致"
+  },
+  {
+   "token_id": 36,
+   "base_symbol": "STRK",
+   "url": "https://www.starknet.io/blog/privacy-live-on-starknet/",
+   "verdict": "ok",
+   "problems": [],
+   "severity": null,
+   "evidence": "title/h1/description/published_at 与 probe(published_meta+jsonld_date 精确匹配)一致"
+  }
+ ],
+ "patterns": [
+  "medium/RSS 管线本切片 11/49 条(22%,RLC/RPL/RVN/SAGA/SAND/SIGN/SIREN/SKL/SOON/STAR/STG)probe 复访全部被 Cloudflare 拦截(403 'Just a moment...'),但采集字段自身(title+具体摘要)与项目一致自洽,判 fetch_flaky 不计入问题——说明 probe 探针对 medium.com 命中率天生偏低,不代表这批采集本身有质量问题。",
+  "article-detail/main 管线出现 7 例 published_at 留空、但页面正文其实有可见发布日期文本的情况(RLS/rayls.com、SAFE/safe.global、SC/sia.tech、SCRT/scrt.network、SLX/solstice.finance、SONY/dinari.com、SSV/ssv.network)。这些站点均无 <meta property=article:published_time> 或 JSON-LD 日期字段,日期只以纯文本形式'裸奔'在正文 byline 里(如 'Safe Labs9 June 2026'、'5/26/26'、'Dinari•May 20, 2026'),说明当前抓取逻辑只认 meta/jsonld 结构化日期、不解析正文日期文本,遇到此类站点会系统性漏采 published_at,属管线盲区而非个别站点偶发。",
+  "少数 article-detail 站点(ripple.com/insights、scrt.network)的 og:description/meta description 复用全站统一的公司介绍文案(如 Ripple 固定用 'Ripple is the leading blockchain payments company.'、Secret Network 固定用 'The Confidential Computing Layer of Web3...'),该文案完全不出现在文章正文中、与具体文章主题无关,采集端原样收录导致 description 字段对该文章无信息量,属'站级 slogan 复读'。",
+  "本切片 5 例 not_article(ROBO/fabric.foundation 合作方页、RSR/Medium 自定义域名合集首页、SEI/标签归档页、SFP/博客分区落地页、STEEM/登录页)分属 5 种不同陷阱,但共性特征明显:title 与站点名或分类名相同(而非具体文章标题)、且 h1 或 description 至少一项为空或自曝为列表/首页——可作为轻量级自动预警规则(title==站点名 或 h1 为空)提前拦截同类问题。",
+  "个别正常文章(ROSE/oasis.net、SKR/blog.solanamobile.com)的 probe.body_text 前 600 字全是导航菜单/横幅广告或不相关栏目标题,而非文章正文,但 title_tag/og_title 仍精确匹配具体文章标题——说明'body_text 看起来像列表页'不能单独作为 not_article 判据,必须结合 title 的具体性交叉验证,避免因 probe 截断误判正常文章为问题数据。"
+ ]
+}

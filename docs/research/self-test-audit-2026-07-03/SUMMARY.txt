@@ -1,0 +1,194 @@
+=== 总量 490(片数 10)· ok 382 · problem 108 ===
+severity: {"P0": 54, "P2": 47, "P1": 7}
+problem 类型: {"not_article": 53, "fetch_flaky": 140, "pub_missing": 38, "pub_mismatch": 3, "desc_bad": 17, "title_mismatch": 6, "wrong_domain": 1}
+
+=== P0 全列表(54)· wl=聚合白名单是否会放行(True=穿透进报告)===
+  A        wl=False https://www.vaulta.com/privacy-policy
+           url 为 /privacy-policy 隐私政策页,非博文;h1='Vaulta Privacy Policy',body_text 通篇为隐私条款正文,og_type=website 无 jsonld。
+  AAVE     wl=False https://aave.com/pro
+           url 为 /pro 产品页('Aave Pro'),h1='The future of DeFi',body_text 全是导航栏产品目录,非博文,og_type=website 无 jsonld。
+  ACX      wl=False https://across.to/pool
+           url 为 /pool 流动性产品页,非博文;h1 采集与 probe 均为空,og_type=website 无 jsonld,body_text 为导航+品牌介绍。
+  AKT      wl=False https://akash.network/community/welcome/
+           url 为 /community/welcome/ 社区首页,非具体博文;h1='The Open Cloud Community',og_type=website 无 jsonld,无发布时间。
+  ALLO     wl=False https://www.allora.network/partners
+           url 为 /partners 合作方列表页,非博文;h1='Sei'(列表首项),body_text 为合作伙伴卡片列表,og_type=website 无 jsonld。
+  ALT      wl=False https://blog.altlayer.io/subpage/51a4b5b54099?gi=58d8424a33f8&source=collection_
+           url 为 Medium 自定义域名的 /subpage/...?source=collection_home_page 合集页,非具体文章;title 仅为站点名'AltLayer',h1 空,body_text 为导
+  ARK      wl=False https://arkscic.com/partnerships
+           url 为 /partnerships 页,非具体博文;h1='#Partnerships',body_text 为合作伙伴计划通用宣讲文案,og_type=website 无 jsonld,无发布时间。
+  ASP      wl=False https://news.aspecta.ai/followers?gi=2c2ca91a7bc7&source=-----------------------
+           url 为 /followers 粉丝列表页,title 直接是'Medium'平台名,description 为空,body_text 为粉丝头像列表,与博文完全无关。
+  ASTR     wl=True  https://astar.network/blog/post/?slug=tokenomics-3-0-233
+           url 虽是 /blog/post/?slug=... 但页面为客户端渲染 SPA,probe body_text 字面为'Loading post...'从未加载真实内容;title 是通用路由标题'Collectiv
+  ATH      wl=False https://aethir.com/aethir-forge
+           url 为 /aethir-forge 社区计划落地页('Apply'招募文案),非博文;og_type 为空,无 jsonld,无发布时间,body_text 为项目介绍+导航。
+  ATOM     wl=False https://cosmos.network/payments-and-settlement
+           url 为 /payments-and-settlement 产品方案页,非博文;h1 为产品口号,body_text 为方案介绍+导航,og_type=website 无 jsonld,无发布时间。
+  AVAX     wl=False https://www.avax.network/enterprise
+           url 是 /enterprise 企业方案介绍页,title='Enterprise & Consumer Applications | Avalanche'、h1='The Chain for Business at
+  AWE      wl=False https://www.awenetwork.ai/terms-of-service
+           url 是服务条款页(/terms-of-service),title/h1均为'Terms of Service',body_text 是法律条款正文('Last Updated: June 27, 2025...')
+  BNB      wl=True  https://www.bnbchain.org/en/blog/0-fee-transactions-for-usdc-usd1-u-extended-unt
+           url slug是具体文章('0-fee-transactions-for-usdc-usd1-u-extended-until-may-31'),但title/og_title/h1/body_text全部是BNB C
+  BNT      wl=False https://blog.bancor.network/all?gi=350cf1bbbeac&orderBy=earliest&source=collecti
+           url是Medium刊物'/all?orderBy=earliest'全部文章列表页(非具体文章permalink),title='Bancor'为刊物名,h1为空,body_text='...BancorAll Pos
+  BRL1     wl=False https://brl1.io/como_funciona
+           url是产品说明页'Como Funciona'(如何运作),title为站点通用标语,h1='Realizando Transações em Reais no Mundo Digital'是营销着陆页标题,body_
+  C        wl=True  https://blog.chainbase.com/p/2
+           url是'/p/2'分页列表页(第2页),title='Chainbase Network - Blog - Page 2'明确标注Page 2,h1为刊物名,body_text='Previous123More pag
+  C98      wl=True  https://coin98.com/blog/tag/campaigns-events/
+           url是'/blog/tag/campaigns-events/'标签归档页,title/h1='Campaigns & Events'为标签名而非文章标题,body_text是该标签下的文章摘要列表(含'Coin98 
+  CROSS    wl=False https://blog.opengamefoundation.org/followers?gi=dd1b1be13f05&source=collection_
+           url 为 Medium 出版物『关注者列表』页(/followers?...);title/og_title 均为『People following CROSS Ecosystem Blog』;body_text 全是
+  DIA      wl=False https://www.diadata.org/app/
+           url 为 /app/ 产品应用页(非 /blog/ 博文);title『DIA App | Price Any Asset...』h1『Welcome to the DIA App』;body_text 全是质押/桥接
+  ELF      wl=False https://aelf.com/developer-center
+           url 为 aelf.com/developer-center 开发者资源导航页(非 blog.aelf.com 博文);title『aelf | Developer Resources』h1 为空;body_text 
+  EPIC     wl=True  https://epicchain.io/blog/blog-all
+           url 为 /blog/blog-all 列表页,og_type=website,h1='All Articles',probe body_text 罗列多篇多米尼加旅游文章,与 EPIC 项目无关且非单篇正文。
+  FIL      wl=False https://www.filecoin.io/learn
+           blog_url 指向 /blog 但实际采到 /learn 产品说明页,og_type=website,h1 为标语'The authenticity layer...',内容为通用产品介绍非具体博文,publishe
+  FLOKI    wl=False https://blog.floki.com/followers?gi=6b92e9087a2f&source=------------------------
+           url 为 /followers 粉丝列表页,title_tag 仅为'Medium',og_title/og_desc 均空;description 字段是粉丝简介拼凑的垃圾广告文本('Buy Verified Cas
+  HFT      wl=False https://blog.hashflow.com/followers?gi=29eb2cb60f06&source=collection_home_page-
+           url 为 /followers 粉丝列表页,title='People following Hashflow'非文章标题,probe body_text 为随机粉丝用户列表而非正文。
+  HOME     wl=False https://blog.defi.app/followers?gi=247cee9225e7&source=collection_home_page----5
+           url是blog.defi.app的/followers粉丝列表页非文章,title/og_title均为'People following Defi App',body_text只列用户名无正文
+  ID       wl=False https://blog.space.id/activity?gi=bcabb38ad31f&source=--------------------------
+           url是blog.space.id的/activity活动流页非文章,og_type=profile,title='Activity – SPACE ID – Medium',body_text明示'SPACE ID h
+  IQ       wl=False https://blog.iqai.com/kr/
+           url是博客韩文版分页首页(/kr/)非单篇文章,title='IQ Blog (Page 1)',description是多篇不同文章摘要拼接,og_type=website,h1为空
+  KMNO     wl=False https://blog.kamino.finance/followers?gi=5a8a80b132b7&source=-------------------
+           url是blog.kamino.finance的/followers粉丝列表页非文章,title为通用'Medium',description是某随机粉丝的个人简介与Kamino项目完全无关,body_text列出粉丝名
+  MOCA     wl=True  https://moca.network/blog/press/
+           url=/blog/press/ 是分类目录页:h1='Press',body_text 为 Archives/Categories/多条外媒报道列表(Forbes、Business Insider…),非单篇博文;og
+  NEO      wl=False https://neo.org/technology
+           url=/technology 是产品技术介绍页非博文:title='Neo Technology - Neo Smart Economy',og_type=website,body 为 'MIGRATE TO N3/S
+  NEWT     wl=False https://blog.newton.xyz/signin/
+           url=/signin/ 是 Ghost 博客登录页:h1='Sign in',desc='Sign in to access your saved articles…',body 为登录表单文案
+  NOM      wl=False https://www.nomina.io/blog-3
+           url=/blog-3 是博客列表第 3 分页:title 含 'Page 3',h1='latest news',body 为多篇文章卡片+分页序号 '1234510'
+  OPENAI   wl=False https://prestocks.com/anduril
+           url为PreStocks平台'Anduril'资产的产品/交易页(含Price/Impl Val/Mkt Cap等交易字段)· og_type=website 无发布日期 · 非博文
+  ORBS     wl=False https://www.orbs.com/ko/
+           url为韩语首页(/ko/)· h1='Orbs 소식 구독하기'(订阅CTA非标题)· body_text确认是导航+newsletter订阅表单 · 非博文
+  ORDER    wl=False https://orderly.network/listing
+           url=/listing(非/blog路径)· 内容是'Permissionless Listing'产品功能页 · 无发布日期 · og_type为空 · body_text确认是产品推广页非文章
+  PROVE    wl=False https://blog.succinct.xyz/learn/
+           title='Succinct (Page 1)'明示分页 · description/body_text是多篇文章标题拼接且重复出现两次 · url=/learn/为分类聚合页非单篇文章
+  PTB      wl=False https://medium.com/rafa-ai/trading-diary-of-the-rafa-intern-uraniums-second-act-
+           blog_url=medium.com/@Portal_team 但实际url来自medium.com/rafa-ai(完全不相关的publication · 内容是'RAFA intern'交易日记与Portal团队无
+  ROBO     wl=False https://fabric.foundation/partners
+           url 是 /partners 合作方页非博文;title 仅为站点名'Fabric Foundation',h1/description/og_title 全空,probe.body_text 是首页导航栏内容
+  RSR      wl=False https://blog.reserve.org/subpage/3c099459629e?gi=601c9b35745e&source=collection_
+           url 路径 /subpage/<hash>?source=collection_home_page... 为 Medium 合集主页链接;title 仅为'Reserve'(刊物名非文章名),h1 空,og_type=
+  SEI      wl=False https://blog.sei.io/payments/stablecoins/
+           url /payments/stablecoins/ 为标签归档页;probe.body_text 显示两篇不同文章标题并列('What is a Stablecoin?...' 与 'What Is a Stablec
+  SFP      wl=True  https://www.safepal.com/en/blog/academy
+           url /en/blog/academy 为博客分区落地页;description 原文即为 'SafePal Crypto Wallet Blog Home Page'(元数据自曝是首页非文章),h1/og_title
+  STEEM    wl=False https://steemit.com/login.html
+           url 为 steemit.com/login.html 登录页,与目标博客账号 /@steemitblog 完全无关;probe.body_text 显示登录/注册/找回密码等界面文案,无任何文章内容
+  TAO      wl=False https://blog.bittensor.com/followers?gi=b2eb56d1f8f1&source=--------------------
+           url路径为/followers,probe body_text确认为'699 followers'关注者名单页而非文章;title仅为'Medium',og_title/og_desc/h1均为空
+  USAT     wl=False https://usat.io/sitemap.html
+           url为usat.io/sitemap.html,probe body_text确认为'XML Sitemap Index'纯站点地图索引页(列出sitemap-misc.html等子地图链接),非文章;og_title
+  WBTC     wl=True  https://www.bitgo.com/resources/blog/2016/
+           url 为 /resources/blog/2016/ 年份归档列表页,title='Blog | BitGo' h1='Blog' og_type 为空,非单篇文章
+  WLD      wl=True  https://world.org/blog/foundational-topics
+           url 为专题聚合页;title='Foundational topics' 与 probe h1='The Simple Plan...' 与 jsonld_headline='The Revenue Potentia
+  XAN      wl=False https://anoma.net/institutions
+           url 为 /institutions 机构介绍页而非博文;collected title='Anoma: Every Chain at Your Command | Distributed OS' 与 probe ti
+  XCN      wl=False https://blog.onyx.org/followers?gi=cab3231e68c3&source=collection_home_page----2
+           url 为 /followers 关注者列表页,title='People following OnyxProtocol',body_text 为粉丝姓名列表,非博文
+  XTZ      wl=False https://spotlight.tezos.com/1/
+           url 为分页列表页 /1/,h1='597 articles, page 2 of 50',body_text 为多篇文章标题罗列,非单篇文章
+  ZBCN     wl=False https://zebec.io/compliance
+           url 为 /compliance 公司合规介绍页,title='Trust, Security, and Innovation',body_text 为产品导航菜单,非博文
+  ZENT     wl=False https://blog.zentry.com/th
+           url 为泰语站点根目录 /th,title 仅为品牌名'Zentry',h1 为空,body_text 为多篇不同日期文章标题罗列,判定为博客首页/列表页而非单篇文章
+  ZETA     wl=True  https://www.zetachain.com/blog/category/3NiIBK76UIJWOuIyqtdWpY/page/1
+           url 为 /blog/category/.../page/1 分类分页,h1='Product  Articles',body_text 为多篇文章标题罗列,非单篇文章
+  ZEUS     wl=False https://zeusnetwork.xyz/ecosystem
+           url 为 /ecosystem 生态合作伙伴目录页,h1='Dive into the Zeus Ecosystem',body_text 为工具/钱包列表,非博文
+
+=== P1 全列表(7)===
+  BABY     pub_mismatch · published_at='Insert Publish Date' 是未渲染的CMS模板占位符而非真实日期;probe.jsonld_date 同样是 'Insert Publish Date'、j
+  BCH      title_mismatch,pub_missing · 采集title='Bitcoin Cash Node' 只是站点通用品牌名(=probe.og_title),但页面真实<title>标签和h1都是文章专属标题'BCHN v29.0.0版本发布公告'
+  BSB      title_mismatch · 采集title='Tokenization is only the beginning...'(=probe.og_title),但probe.title_tag/h1/jsonld_headline
+  MINIMAX  pub_mismatch · published_at=2026-07-03T11:54:49(抓取时刻)而正文显示真实日期 '2025.10.28';probe jsonld_date=11:57:56 随访问漂移 3 分钟,系
+  RE       title_mismatch · 采集title='Resilience Foundation'(站名)· probe title_tag与h1均为'Governance Opens, Portfolio Grows to $510M
+  RE       title_mismatch · 与token 12893为同一篇文章(重复token_id)· 同样的title_mismatch:采集title='Resilience Foundation'站名 vs 真实标题'Governan
+  TWT      pub_mismatch · published_at=2026-06-30T16:00:00Z,但probe published_meta='Jul 1, 2026'且jsonld_date=2026-07-01T19:18:3
+
+=== P2 按类型 ===
+  pub_missing(37): AZTEC BARD CAKE COLLECT CTSI CYBER DRIFT ERA FLOW FORT GPS GWEI INJ KAVA LSK MEW MTL NCT OGN PEAQ PRCL QUICK RESOLV RLS SAFE
+  desc_bad(16): BARD CELR ERA EUR EURI FOGO LAYER MNT ON OP PHA PRCL QUICK RESOLV RLUSD SCRT
+
+fetch_flaky(probe 二次访问被拦 · 不算采集错):140
+
+=== agent patterns 全收集 ===
+  [01] 【核心发现】article-detail 管线误抓'非博文页'比例高达 11/27(41%),而 medium/substack(RSS 管线)在本切片 0/22 命中同类问题——例如 AAVE 抓到 /pro 产品页、ATOM 抓到 /payments-and-settlement 方案页、ALLO 抓到 /part
+  [01] article-detail 命中的非博文页可归为 4 类:产品/方案落地页(AAVE /pro、ACX /pool、ATOM /payments-and-settlement、ATH /aethir-forge,共4条)、列表目录页(ALLO /partners、ARK /partnerships,共2条)、社区首页
+  [01] 自定义域名 Medium 博客被 article-detail 管线抓取(而非走 RSS)是额外盲区:ALT(blog.altlayer.io)抓到 /subpage/...?source=collection_home_page 合集页,ASP(news.aspecta.ai)抓到 /followers 粉丝列表页(
+  [01] 新发现 SPA 客户端渲染盲区:ASTR(astar.network)的 /blog/post/?slug=... 页面 probe body_text 字面显示'Loading post...',标题是模板占位符'Collective post | Astar'——文章内容前端异步加载,HTML 直抓拿不到真实内容,
+  [01] Substack 类 probe 100% 被拦截(2/2:AMP、APR 均返回同一个 403 'Error - Substack' 错误页),medium 类 probe 70% 被拦截(14/20 命中 Cloudflare 'Just a moment...' 挑战),两类采集字段本身经交叉核对内容真实可信,判
+  [01] blog_url 关联疑点:AHT_3(token 12542,blog_url=medium.com/aha-official)采到的是 2020 年韩语'YouTube 收益报税'文章,内容与加密项目完全无关,疑似该项目 blog_url 上游关联到了错误/无关的 Medium 账号(而非采集环节问题),建议人工复
+  [01] 未发现 wrong_domain(0/49)、title_mismatch(0/49)、字段级 pub_mismatch/pub_missing(0/49)——仅 ARKM(token 78)一条正文可见日期'Feb 19'与 jsonld_date'Mar 7'相差16天但因 published_at 与 jsonl
+  [02] custom-domain 版 Medium/Paragraph 被误判为通用站点:blog.chainbase.com(实为Paragraph平台,footer含'Paragraph Technologies')和blog.bancor.network(实为Medium)都配的是crawler=article-det
+  [02] SPA/客户端渲染站点非JS抓取拿到通用模板:BNB Chain Blog(bnbchain.org)的具体文章URL抓到的title/og_title/h1/body_text全部是博客首页通用样板而非文章专属内容,说明该站点按路由生成的SSR meta对非JS抓取不生效,crawler与probe(同款指纹)命中同
+  [02] 文章正文其实有明文日期但meta/jsonld均为空,published_at被留空:至少4条(AZTEC 'May 19th, 2026'、BARD 'March 24, 2026'、CAKE '2026-07-01'、BCH '2026年1月9日')body_text紧跟标题处能看到明文日期,但published_
+  [02] 站点自身title_tag与og_title分裂、采集管线取错字段:BCH(bitcoincashnode.org)的真实<title>标签和h1都是文章专属标题,但og_title是站点通用品牌名'Bitcoin Cash Node',采集管线取了og_title导致title字段变成千篇一律的站名;BSB(bloc
+  [02] Medium/Substack类RSS源probe二次访问几乎全被Cloudflare拦截:本切片16条(约1/3)crawler=medium/substack的记录probe.http=403(title_tag='Just a moment...'或Substack错误页),probe数据在这些条目上完全不可用,
+  [02] probe.body_text前600字有时截到非正文内容,不能仅凭这段判断:AXL(axelar.network)截到的是内联CSS/SCSS代码块,BIO(bio.xyz)和BTC(bitcoin.org)截到的是cookie同意横幅/捐款横幅文案——三条title/og_title/description均具体且
+  [02] 个别站点JSON-LD结构化数据残留未渲染的模板占位符:Babylon Labs(babylonlabs.io)该文章页jsonld_headline='Insert Blog Title'、jsonld_date='Insert Publish Date'均是CMS模板占位符原文,采集管线把'Insert Publi
+  [03] Medium 自定义域名现象:CELO 的 blog_url 配置为 medium.com/celoorg,但实际文章落在自定义域名 blog.celo.org(Medium 允许绑定自定义域名),与项目已知的 CRO custom-domain substack 案例同类,不应误判 wrong_domain。
+  [03] medium 管线 probe 二次探针高频被拦截:13/49(27%)条目 probe.http=403(Cloudflare『Just a moment...』挑战),100% 集中在 crawler=medium 的条目,article-detail/substack 管线零命中;采集当时用生产指纹成功,只是探针
+  [03] 正文内嵌日期未被结构化提取:COLLECT/CTSI/CYBER/DRIFT 共 4 条 published_at 留空,且 probe 的 published_meta/jsonld_date 也都是空,但 probe.body_text 里能看到明显的 byline 日期(如『Announcements2025-0
+  [03] 疑似重复 token 记录:token_id 669(EDGE)与 11393(EDGEX)是两个不同 token,但 blog_url 和采到的文章 url 完全相同(medium.com/@edgexexchange 同一篇文章),不是本次采集缺陷,但建议排查源 token 表是否把同一项目重复登记成两个符号。
+  [03] SPA 壳层污染 body_text 但不影响元数据:Centrifuge(CFG)、dYdX Foundation(DYDX)的 probe.body_text 抓到的是首页横幅/导航壳层文字,不是文章正文,但两者的 title/og_title/og_desc 仍与采集字段完全一致,说明这些站点正文由 JS 渲染、
+  [03] 『每源只采 1 条』策略会采到源站自己发的垃圾/测试帖:CELR(Celer Network)当期最新博文标题为『x402-demo-mov-mov』,内容『0 sec read』基本为空,description 是 WordPress 默认占位符『Visit the post for more.』,这是源站自己发的开
+  [03] 弱 meta 站点靠 h1/body_text 兜底验证有效:Casper Network(CSPR)文章页 title_tag/og_title/meta_desc 全部为空或通用值,但 probe.h1 与采集 title 完全一致、body_text 内容吻合,本次靠交叉字段验证通过,反映该审查方法对弱 meta
+  [04] P0 全部 4 例(EPIC/blog-all、FIL/learn、FLOKI/followers、HFT/followers)集中在 article-detail 管线,分两个子模式:抓到列表/说明页而非正文(EPIC、FIL),以及 Medium custom-domain 站点被当普通站点解析、误采到 /foll
+  [04] medium 管线本切片 18 条中 12 条(约67%)probe 用生产指纹二次访问时遇 Cloudflare 403('Just a moment...'),但采集字段自身 title 与 url slug 高度自洽,判定为 probe 阶段反爬拦截而非采集当时失败(fetch_flaky);substack 管
+  [04] article-detail 管线里 5 条(ERA/caldera.xyz、FLOW/flow.com、FORT/forta.org、GPS/blog.gopluslabs.io、GWEI/ethgas.com)published_at 采集为空,但 probe body_text 中肉眼可见发布日期(如'Feb 4
+  [04] 3 个站点(Caldera/ERA、ECB/EUR、Fogo/FOGO)的 og:description/meta description 本身就是站级固定文案(公司一句话简介或机构使命声明),与具体文章主题完全无关,crawler 如实采集但导致 description 字段对该文章零信息增量;EURI 是变体——抓
+  [04] GWEI(ethgas.com)正文中混有未替换的 CMS 占位符('Heading 1…Lorem ipsum dolor sit amet…'),是源站自身内容缺陷,采集本身无误,仅供后续判断该源文章质量时参考。
+  [04] FRAX(news.frax.com)url 结构(/p/ 前缀)与 meta_desc 风格(独立于标题的短 subtitle)均为典型 Substack 特征,但 crawler 字段标的是 article-detail 而非 substack——custom-domain 部署的 Substack 站点疑似未被识
+  [05] Medium/Substack反爬对probe二次访问覆盖极广:本切片17/49条(约35%)probe.http均返回403(Medium统一是Cloudflare'Just a moment...'挑战页,Substack统一是'Error - Substack'错误页),但这些条目采集当时的title/desc/
+  [05] Medium custom-domain博客的『粉丝/活动』子页被误采为文章:HOME(blog.defi.app/followers)、ID(blog.space.id/activity)、KMNO(blog.kamino.finance/followers)三个独立token的blog_url都是Medium自定义
+  [05] 博客分页/列表首页被当成文章:IQ(blog.iqai.com/kr/)与上面三条同属『入口页当文章』的P0大类,其description由多篇不同文章摘要拼接而成,可作为该类问题的自动检测特征(description明显是多段不相关摘要顺序拼接时,大概率是列表页非单篇文章)。
+  [05] 页面肉眼可见发布日期但站点未提供标准meta/jsonld导致published_at漏采:INJ(injective.com)与KAVA(kava.io)两个独立article-detail站点的body_text中都能看到日期紧跟在标题后(分别是'May 25, 2026'和'Nov 6, 2024'),但两站pu
+  [05] 同一篇Ondo公告被多个代币化股票token共享blog_url:ISRG(token 12717)与KLAC(token 12903)的blog_url、url完全相同,都指向Ondo Finance同一篇'代币化股票上线Uniswap'公告,这是Ondo将同一博客地址批量赋给旗下所有代币化股票token的数据设计,
+  [05] 纯JS渲染SPA站点导致description/h1/jsonld系统性为空:ICNT(icn.global,经生产复探确认为Webflow构建的客户端渲染站)的title由服务端按路由具体注入、内容正确,但og_desc/meta_desc/h1/jsonld_headline全部为空,因为正文完全依赖前端JS加载,
+  [06] article-detail 管线独占全部 4 例 P0 not_article:NEO 采到 /technology 产品页、NEWT 采到 /signin/ 登录页、MOCA 采到 /blog/press/ 分类页、NOM 采到 /blog-3 列表分页 — 链接筛选缺『文章 URL 形态/语义校验』,RSS 三管
+  [06] 站级 meta 站点群(mantle.xyz/orochi.network/mew.xyz):title_tag+og 全站一个值,title 字段采到站名,其中 MNT/ON 的 description 也是站级简介(desc_bad),真文题只在 h1/正文 — 此类站需 h1 优先提取策略
+  [06] pub_missing 5 例全在 article-detail(LSK/MEW/MTL/NCT/OGN):页面正文都可见日期(如 'Oct 21, 2025'/'Jun 26, 2026')但 meta/jsonld 无或未读到 — 日期提取只依赖 meta,不读正文文本日期
+  [06] MINIMAX 的 jsonld_date 是页面渲染时刻动态生成(采集 11:54:49 vs probe 11:57:56 漂移),published_at 被抓取时间污染,正文真实日期 2025.10.28 — 动态 jsonld 日期需与正文日期交叉校验,同类 SPA 站可能批量中招
+  [06] probe 403 率 17/49(35%),全部集中在 medium(16)+substack(1):RSS 采集当时成功、二次直连被 Cloudflare/Substack 拒 — RSS 管线字段本身完整可信,但该类源无法用 HTML 探针复核
+  [06] medium 个人号 RSS 常吐 publication 路径文章(lumiwave.medium.com→medium.com/lumiwave、@mvlchain→/mvl-ecosystem、metadium.medium.com→/metadium):根域一致不算 wrong_domain,属 medium 
+  [06] 多 token 共享博客产生跨 token 重复:LRCX 与 NOW 都指向 ondo.finance/blog 且采到同一篇文章(Ondo 代币化股票);另 socios(MENGO)采到 2020 年根路径旧文而非 /blog 新文、ME 采到 MiCA 白皮书合规文档贴(页面形态是正规博文判 ok)— 选文新鲜
+  [07] medium RSS源探针复访命中率低:16条crawler=medium中14条(87.5%)probe.http=403('Just a moment...'Cloudflare拦截)· 仅RAY/RENDER两条探针成功 · 原始RSS采集本身不受影响 · 属探针方法论限制非采集缺陷
+  [07] article-detail源普遍存在'站级slogan顶替文章摘要'问题:OP/PHA/PRCL/QUICK/RESOLV共5条description字段是站级通用产品文案而非文章摘要 · 均经probe独立复现同一段通用文案确认是源站og:description/meta设置问题非crawler抓取错误 · 但导致
+  [07] article-detail源'误抓非文章页'集中在4条:PreStocks(资产交易页/anduril)、Orbs(韩语首页/ko/)、Orderly Network(产品功能页/listing)、Succinct(分类聚合页/learn/标题直接带'(Page 1)')· 共性是crawler'找最新博文'的链接选
+  [07] 可见发布日期未被结构化抓取:PEAQ/PRCL/QUICK/RESOLV共4条页面正文中明确显示人类可读日期(如'Published on June 27, 2023'、署名式'Sep 8, 2025'、'April 14th 2026')但既未出现在meta标签也未被crawler写入published_at · 建
+  [07] og:title可能被源站设为品牌名而非文章标题:RE(blog.re.xyz)的og:title='Resilience Foundation'(站名)而title_tag与h1一致指向真实标题'Governance Opens, Portfolio Grows to $510M' · crawler当前选用og_t
+  [07] 跨publication撞车风险(同平台跨源):PTB(token 2675)配置的blog_url=medium.com/@Portal_team但抓到的文章来自完全不相关的medium.com/rafa-ai publication · 两者同属medium.com根域 · 若wrong_domain仅按根域比对会
+  [07] 同一博客被多个token共享属正常现象非重复抓取缺陷:ONG/ONT(Ontology双token共享同一medium)、POR/PSG(Socios博客覆盖多支球队fan token)均因'每源只采1条'设计+多个token指向同一blog_url而自然拿到同一篇文章 · 不应误判为缺陷
+  [08] medium/RSS 管线本切片 11/49 条(22%,RLC/RPL/RVN/SAGA/SAND/SIGN/SIREN/SKL/SOON/STAR/STG)probe 复访全部被 Cloudflare 拦截(403 'Just a moment...'),但采集字段自身(title+具体摘要)与项目一致自洽,判 f
+  [08] article-detail/main 管线出现 7 例 published_at 留空、但页面正文其实有可见发布日期文本的情况(RLS/rayls.com、SAFE/safe.global、SC/sia.tech、SCRT/scrt.network、SLX/solstice.finance、SONY/dinari.c
+  [08] 少数 article-detail 站点(ripple.com/insights、scrt.network)的 og:description/meta description 复用全站统一的公司介绍文案(如 Ripple 固定用 'Ripple is the leading blockchain payments co
+  [08] 本切片 5 例 not_article(ROBO/fabric.foundation 合作方页、RSR/Medium 自定义域名合集首页、SEI/标签归档页、SFP/博客分区落地页、STEEM/登录页)分属 5 种不同陷阱,但共性特征明显:title 与站点名或分类名相同(而非具体文章标题)、且 h1 或 descri
+  [08] 个别正常文章(ROSE/oasis.net、SKR/blog.solanamobile.com)的 probe.body_text 前 600 字全是导航菜单/横幅广告或不相关栏目标题,而非文章正文,但 title_tag/og_title 仍精确匹配具体文章标题——说明'body_text 看起来像列表页'不能单独作
+  [09] article-detail管线的published_at只认meta/jsonld结构化日期字段,当页面把发布日期写在正文DOM文本里而无对应meta/jsonld时会完全提取失败:本切片6/49(SWELL/T/TAC/TREE/USUAL/VANA)命中,占比约12%,建议增加DOM可见文本日期兜底解析。
+  [09] medium管线probe二次直连高概率被Cloudflare拦截:本切片16条medium来源中11条(69%,SUPER/TA/TAKE/TFUEL/THE/THETA/TOKAMAK/TOSHI/TRAC/TRUST/USTC)probe返回403('Just a moment...'),但crawler自身经R
+  [09] 3个token(TER/TSEM/TTMI,疑似代币化股票)的blog_url全部指向同一个ondo.finance/blog且采到完全相同的一篇文章'Ondo Tokenized Stocks Are Live on Uniswap',怀疑这批token在博客名单里被批量错配到Ondo自身博客而非各自发行方博客,属上
+  [09] 多个真实文章页(SWELL/TAC/T/TER/TSEM/TTMI/TURTLE/USDG/TREE/VANRY/USUAL/TRUTH)的og_type被设为'website'而非'article',不能单独作为not_article判据,需结合title/h1/body综合判断,否则易造成误判。
+  [09] 部分站点(Ondo/Treehouse/Vanarchain)probe抓到的body_text只有导航栏壳内容或为空(疑似SPA客户端渲染,probe非浏览器抓取拿不到正文),但title/og_title等head内meta字段仍具体准确,说明这类站点靠SSR/预渲染保证SEO元数据而正文靠JS挂载;审查时不能仅凭
+  [09] 跨article-detail与medium两种管线,'每源1条'自测采到的文章发布时间有多条明显陈旧(USDC约4.5年前/TWLO约3年前/T约2.75年前/TA约2年前/TUSD约21个月前/TOSHI约20个月前/USTC约15个月前),而这些均为高频更新的大公司博客,怀疑'取1条'逻辑命中的是目录/索引页里排
+  [10] 列表/分类/归档页被误当文章采集是本切片最大宗 P0 模式(9 例 P0 中 6 例):BitGo /resources/blog/2016/(年份归档)、World.org /blog/foundational-topics(专题聚合+Loading占位)、Tezos spotlight.tezos.com/1/(明
+  [10] 另 3 例 P0 是 blog_url 落地页本身指向营销/公司页而非文章聚合入口:Anoma /institutions、Zebec /compliance、Zeus Network /ecosystem——这些页面的 h1/desc/body 均与'博文'语义无关,属站点导航结构问题而非采集逻辑 bug。
+  [10] medium.com 域名 probe 二次访问命中 Cloudflare『Just a moment...』403 拦截,占比约 22%(11/49),均判 fetch_flaky 而非采集错误,因 url slug + collected title/desc 本身语义完整可独立判断为真实文章。
+  [10] VET(236)与 VTHO(297)两个不同 token 采到完全相同文章 URL——因二者 blog_url 分别写作 vechainofficial.medium.com 与 medium.com/@vechainofficial,实指向同一 VeChain Foundation medium 账号,数据本身无误
+  [10] 自定义域名反代 Medium 的博客(blog.waves.tech)经 article-detail(HTML)管线仍完整提取 title/og/jsonld,证明该 fallback 对'套壳 Medium'站点有效,不是采集盲区。
+  [10] 老旧博文经 CMS 迁移后 published_meta/jsonld_date 显示的是'迁移重建日期'而非文章原始发布日期(XRP xrpl.org/blog/2014/... 正文标题写 2014-09-03,但 published_at 与 probe 都显示 2025-04-25),因采集字段与 probe 
