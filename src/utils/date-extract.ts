@@ -137,8 +137,17 @@ const VISIBLE_DATE_RES = [
 ];
 
 export function extractVisibleDate($: CheerioAPI): string {
-    const scope = $('article').first().text() || $('main').first().text() || $('body').text();
-    const text = scope.replace(/\s+/g, ' ').slice(0, 2000);
+    // 不用 .text():cheerio 块级元素间文本粘连(<h1>T</h1><span>May…</span> → 'TMay…')破坏 \b 边界
+    // 改剥标签为空格 · 先剥 script/style(内嵌 JSON 的时间戳会污染)
+    const container = ['article', 'main', 'body']
+        .map((sel) => $(sel).first())
+        .find((el) => el.length > 0 && (el.html() ?? '').trim().length > 0);
+    const rawHtml = (container?.html() ?? '').slice(0, 12000);
+    const text = rawHtml
+        .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .slice(0, 2000);
     for (const re of VISIBLE_DATE_RES) {
         const m = re.exec(text);
         if (!m) continue;
