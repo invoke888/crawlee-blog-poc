@@ -299,6 +299,7 @@ function renderArticles(articles) {
     + (a.url
         ? '<a class="art-title" href="' + escHtml(a.url) + '" target="_blank" rel="noopener">' + escHtml(a.title || a.url) + '</a>'
         : '<span class="art-title">' + escHtml(a.title || '(no title)') + '</span>')
+    + (a.desc_generic ? '<span class="chip y" title="该源 description 为站级通用文案(同源≥80% 复读 · 无 jsonld 摘要可替换)· e 项智能切换标记">站级文案</span> ' : '')
     + (a.desc
         ? '<span class="art-desc" title="' + escHtml(a.desc) + '">▸ ' + escHtml(a.desc.slice(0, 50)) + (a.desc.length > 50 ? '…' : '') + '</span>'
         : '')

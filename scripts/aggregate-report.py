@@ -129,6 +129,64 @@ def is_noise(url):
         return False
 
 
+# 🆕 2026-07-03 e 项(老板拍):title/desc 智能切换 · 与 TS src/utils/display-fields.ts 同语义(改必同步)
+# title:①同源≥3条且众数占比≥80%且 h1 有值不复读 → h1 ②单条站名信号(title 归一==host 注册名)→ h1
+# desc:同源≥3条且众数(前100字)占比≥80% → jsonld(≥30字且≠title)· 无则原值+desc_generic 标记
+REPEAT_RATIO = 0.8
+MIN_GROUP = 3
+
+
+def _norm(s):
+    return re.sub(r'[^a-z0-9]+', '', (s or '').lower())
+
+
+def _host_name(url):
+    try:
+        h = re.sub(r'^(www|blog|news|info)\.', '', (urlparse(url).hostname or '').lower())
+        return h.split('.')[0]
+    except Exception:
+        return ''
+
+
+def _mode_ratio(values):
+    counts = {}
+    for v in values:
+        if v:
+            counts[v] = counts.get(v, 0) + 1
+    if not counts or not values:
+        return '', 0.0
+    best = max(counts, key=counts.get)
+    return best, counts[best] / len(values)
+
+
+def apply_display_fields(arts):
+    n = len(arts)
+    t_mode, t_ratio = _mode_ratio([_norm(a['title']) for a in arts])
+    title_repeats = n >= MIN_GROUP and t_ratio >= REPEAT_RATIO and bool(t_mode)
+    h_mode, h_ratio = _mode_ratio([_norm(a.get('_h1')) for a in arts])
+    h1_also_repeats = n >= MIN_GROUP and h_ratio >= REPEAT_RATIO and bool(h_mode)
+    d_mode, d_ratio = _mode_ratio([_norm(a['desc'])[:100] for a in arts])
+    desc_repeats = n >= MIN_GROUP and d_ratio >= REPEAT_RATIO and bool(d_mode)
+    for a in arts:
+        t_norm = _norm(a['title'])
+        h1 = (a.get('_h1') or '').strip()
+        h1_ok = bool(h1) and _norm(h1) != t_norm
+        is_site_name = bool(t_norm) and t_norm == _norm(_host_name(a.get('_src')))
+        group_hit = title_repeats and t_norm == t_mode and not h1_also_repeats
+        if (group_hit or is_site_name) and h1_ok:
+            a['title'] = h1[:160]
+        if desc_repeats and _norm(a['desc'])[:100] == d_mode:
+            jd = (a.get('_jd') or '').strip()
+            if jd and len(jd) >= 30 and _norm(jd) != t_norm and _norm(jd)[:100] != d_mode:
+                a['desc'] = jd[:200]
+            else:
+                a['desc_generic'] = True
+        a.pop('_h1', None)
+        a.pop('_jd', None)
+        a.pop('_src', None)
+    return arts
+
+
 def normalize_pub(raw):
     if not raw:
         return ''
@@ -178,6 +236,10 @@ for f in glob.glob(os.path.join(REPO, 'storage/datasets/default/*.json')):
             'pub': normalize_pub(d.get('published_at') or d.get('publishedTime') or ''),
             'crawler': d.get('crawler') or '',
             'desc': re.sub(r'\s+', ' ', raw_desc).strip()[:200],
+            # 🆕 e 项(display 切换用 · 输出前 pop 掉):
+            '_h1': re.sub(r'\s+', ' ', d.get('h1') or '').strip()[:160],
+            '_jd': re.sub(r'\s+', ' ', d.get('jsonld_description') or '').strip()[:300],
+            '_src': d.get('source_url') or '',
         })
     except Exception:
         pass
@@ -199,6 +261,8 @@ for tk, e in by_token.items():
     else:
         e['articles'] = real
         e['count'] = len(real)
+    # 🆕 e 项:过滤定稿后应用 title/desc 智能切换(临时字段 _h1/_jd/_src 在此 pop)
+    e['articles'] = apply_display_fields(e['articles'])
     e['crawlers'] = sorted(e['crawlers'])
 
 for s in sources:
