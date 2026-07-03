@@ -78,9 +78,8 @@ export const URL_OVERRIDES: Record<string, string> = {
     UMA: 'https://blog.uma.xyz', // 站方 sitemap 写错自己域名(uma.blog.xyz 不存在)
     USDT: 'https://tether.to/en/blog/', // 原配置路径错 · 照抄同公司 XAUT(实测 24 篇)
     BANK: 'https://lorenzo-protocol.ghost.io', // 真身 Ghost CMS · 原 www.lorenzo-protocol.xyz 是 JS 壳
-    FARTCOIN: 'https://www.infinitebackrooms.com/', // 原配置指到单篇叶子页 · 根路径直出 102 条
+    // FARTCOIN/PLAY:2026-07-03 老板拍砍(相关性弱/三方聚合)· 已进 dead_hosts
     CRO: 'https://blog.cronos.com', // 项目迁移 · 新博客是 Substack(旧 blog.cronos.org cf 1014)
-    PLAY: 'https://playsout.com/news.html', // www 子域证书失效 + 缺 .html(注:内容是三方聚合 · 老板知悉)
     // 🆕 2026-07-03 第二批(17 agent pattern 审计 · 证据 docs/research/)
     DEEP: 'https://blog.sui.io/', // 原记成一篇具体文章 · prefix_ratio 假阳性根因
     PROS: 'https://www.pharos.xyz/blog', // 原 /resources 是资源页 · 真文章在 /blog(已采 14/26 命中)
