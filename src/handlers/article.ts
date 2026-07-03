@@ -1,7 +1,7 @@
 import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
 import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
-import { isValidHttpUrl } from '../utils/article-filter.js';
+import { isValidHttpUrl, isWhitelistedArticleUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
 import { extractH1, extractJsonLdMeta, extractNextDataDate, extractVisibleDate } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
@@ -28,35 +28,54 @@ function getSources(ctx: CheerioCrawlingContext): TokenAssoc[] {
 
 // LIST handler · 在博客首页/列表页 · enqueueLinks 发现 article 链接
 export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
-    const { request, log, enqueueLinks } = ctx;
+    const { request, $, log, crawler } = ctx;
     const sources = getSources(ctx);
     const label = sources[0]?.base_symbol ?? '?';
     const extraTokens = sources.length > 1 ? ` +${sources.length - 1}` : '';
 
     try {
         // 🆕 2026-06-30 大改:不用 ARTICLE_GLOBS 过滤 · 跟 isLikelyArticleUrl 同步"信任默认"逻辑
-        // 之前漏:bitcoincashnode /en/newsroom/<article> 不在 globs · 入队 0
-        // 新法:enqueueLinks same-domain · 用 transformRequestFunction 调 isLikelyArticleUrl 过滤(黑名单 + 根路径)
-        const enqueued = await enqueueLinks({
-            selector: 'a[href]',
-            // 🆕 2026-07-03 P2#4 收紧:same-domain 按根域放行 · 5 次实锤混入 docs.*/build.*/platform.* 子域垃圾
-            // (docs.tac.build / docs.chiliz.com / docs.sia.tech / build.avax.network / platform.minimax.io)
-            strategy: 'same-hostname',
-            label: 'DETAIL',
-            limit: LIST_ENQUEUE_LIMIT,
-            transformRequestFunction: (req) => {
-                // 🆕 2026-07-02 严格 http 验证 · 防非法 URL 进 addRequests 异步 batch 炸全进程
-                if (!isValidHttpUrl(req.url)) return false;
-                if (!isLikelyArticleUrl(req.url)) return false;
-                // 🆕 2026-07-03 per-source 规则(17 agent 审计 · SPACE 类同域跑歪根治)
-                if (!checkSourceRuleMulti(sources.map((s) => s.base_symbol), req.url)) return false;
-                return req;
-            },
-            userData: { sources_for_url: sources, from_sitemap: false },
+        // 🆕 2026-07-03 自测战役复审:enqueueLinks 改手动收集+排序 —
+        // 白名单段 URL(/blog/ 等)优先入队 · 首页导航链接(/gaming /brand 类)只在文章链接不足时垫底
+        // (复审实锤 ~15 源:LIST 候选被导航页占满 · 每源限量时第一条永远是导航页)
+        const base = request.loadedUrl ?? request.url;
+        const baseHost = new URL(base).hostname;
+        const seen = new Set<string>();
+        const candidates: { url: string; white: boolean }[] = [];
+        $('a[href]').each((_, el) => {
+            const href = $(el).attr('href');
+            if (!href) return;
+            let abs: string;
+            try {
+                abs = new URL(href, base).toString().replace(/#.*$/, '');
+            } catch {
+                return;
+            }
+            if (seen.has(abs)) return;
+            seen.add(abs);
+            // 🆕 2026-07-02 严格 http 验证 · 防非法 URL 进 addRequests 异步 batch 炸全进程
+            if (!isValidHttpUrl(abs)) return;
+            // 🆕 2026-07-03 P2#4 收紧:same-hostname(5 次实锤混入 docs.*/build.* 子域垃圾)
+            try {
+                if (new URL(abs).hostname !== baseHost) return;
+            } catch {
+                return;
+            }
+            if (!isLikelyArticleUrl(abs)) return;
+            // 🆕 2026-07-03 per-source 规则(17 agent 审计 · SPACE 类同域跑歪根治)
+            if (!checkSourceRuleMulti(sources.map((s) => s.base_symbol), abs)) return;
+            candidates.push({ url: abs, white: isWhitelistedArticleUrl(abs) });
         });
-        log.info(`📋 [LIST] ${label}${extraTokens} 入队 ${enqueued.processedRequests.length} article · 跳过 ${enqueued.unprocessedRequests.length} | ${request.url}`);
+        candidates.sort((a, b) => Number(b.white) - Number(a.white)); // 稳定排序 · 白名单内保持页面出现顺序
+        const picked = candidates.slice(0, LIST_ENQUEUE_LIMIT);
+        await crawler.addRequests(picked.map((c) => ({
+            url: c.url,
+            label: 'DETAIL',
+            userData: { sources_for_url: sources, from_sitemap: false },
+        })));
+        log.info(`📋 [LIST] ${label}${extraTokens} 入队 ${picked.length} article(白名单 ${picked.filter((c) => c.white).length})· 候选 ${candidates.length} | ${request.url}`);
     } catch (e) {
-        log.warning(`📋 [LIST] enqueueLinks 失败 ${label}: ${(e as Error).message?.slice(0, 80)}`);
+        log.warning(`📋 [LIST] 链接收集失败 ${label}: ${(e as Error).message?.slice(0, 80)}`);
     }
 }
 

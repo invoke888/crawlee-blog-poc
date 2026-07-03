@@ -112,6 +112,24 @@ test('extractVisibleDate · 正文可见日期兜底(37 源实锤)', () => {
     assert.equal(extractVisibleDate(loadFixture('<html><body><article>Jan 1, 1999 old</article></body></html>')), '');
 });
 
+test('extractVisibleDate · 复审收紧(byline 优先 · 歧义放弃 · 美式日期)', () => {
+    // byline 标记的日期赢过正文更早出现的事件日期(RESOLV/USAT 误锚实锤)
+    const byline = extractVisibleDate(loadFixture(
+        '<html><body><article>The incident on May 1, 2026 caused issues. Published June 10, 2026 by team.</article></body></html>',
+    ));
+    assert.equal(byline.startsWith('2026-06-10'), true);
+    // 多个不同日期且无 byline → 歧义放弃(宁缺勿错)
+    assert.equal(extractVisibleDate(loadFixture(
+        '<html><body><article>On May 1, 2026 we saw X. Later June 10, 2026 brought Y.</article></body></html>',
+    )), '');
+    // 美式 MM/DD/YYYY(复审实锤格式)
+    const us = extractVisibleDate(loadFixture('<html><body><main>Published 06/27/2023</main></body></html>'));
+    assert.equal(us.startsWith('2023-06-27'), true);
+    // 前词粘连容错('InsightsOctober 7, 2023' 类)
+    const glued = extractVisibleDate(loadFixture('<html><body><article>InsightsOctober 7, 2023 body text</article></body></html>'));
+    assert.equal(glued.startsWith('2023-10-07'), true);
+});
+
 test('filterArticlesWhitelistFirst · noise 硬丢(medium custom-domain 无白名单段时不再放行系统页)', () => {
     const items = [
         { url: 'https://blog.floki.com/followers?gi=1' },
