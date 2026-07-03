@@ -83,6 +83,8 @@ h2.sec { font-size: 15px; margin: 18px 0 9px; color: var(--ink); }
   <a class="on" data-p="p1">总览</a>
   <a data-p="p2">告警 <span style="color:var(--bad)">3</span></a>
   <a data-p="p3">源管理</a>
+  <a data-p="p4">博文</a>
+  <a data-p="p5">错误日志</a>
   <div class="foot">
     <div><span class="dot g"></span> 上次 12:00 ok</div>
     <div>下次 00:23:41</div>
@@ -154,6 +156,58 @@ h2.sec { font-size: 15px; margin: 18px 0 9px; color: var(--ink); }
     </tbody>
   </table>
   <p class="det-sans" style="color:var(--mute); font-size:12px; margin-top:9px">点行展开详情(30 轮趋势 + 最近博文 + 告警史)· 交互同方案 A</p>
+</div>
+
+<!-- ═══ 页4 博文管理 ═══ -->
+<div class="page" id="p4">
+  <div class="filters">
+    <input placeholder="搜标题 / 正文…" style="width:210px">
+    <input placeholder="博客 symbol…" style="width:110px">
+    <select><option>全部管线</option><option>rss</option><option>medium</option><option>article-detail</option><option>substack</option><option>paragraph</option></select>
+    <select><option>push:全部</option><option>已推送</option><option>未推送</option><option>推送失败</option></select>
+    <input type="date" title="发布时间起"> <span style="color:var(--mute)">→</span> <input type="date" title="发布时间止">
+    <select><option>采集时间:全部</option><option>今天</option><option>近7天</option></select>
+  </div>
+  <table>
+    <thead><tr><th>标题</th><th>博客</th><th>管线</th><th>发布时间</th><th>采集时间</th><th>push</th></tr></thead>
+    <tbody>
+      <tr><td class="det-sans"><a href="#">Sei Giga Whitepaper V2 发布</a></td><td>SEI</td><td><span class="chip">rss</span></td><td>07-04</td><td>07-04 12:00</td><td><span class="chip g">已推</span></td></tr>
+      <tr><td class="det-sans"><a href="#">Golem Workers 新版上线</a></td><td>GLM</td><td><span class="chip">rss</span></td><td>07-03</td><td>07-04 11:00</td><td><span class="chip g">已推</span></td></tr>
+      <tr><td class="det-sans"><a href="#">EVM on Bittensor draft</a></td><td>TAO</td><td><span class="chip">medium</span></td><td>07-02</td><td>07-04 11:00</td><td><span class="chip y">未推</span></td></tr>
+      <tr><td class="det-sans"><a href="#">Introducing LA Staking</a></td><td>LA</td><td><span class="chip">detail</span></td><td>07-01</td><td>07-04 10:07</td><td><span class="chip r">失败 ×2</span></td></tr>
+      <tr><td class="det-sans"><a href="#">MOSS IS LIVE</a></td><td>MEGA</td><td><span class="chip">detail</span></td><td>06-17</td><td>07-04 10:07</td><td><span class="chip g">已推</span></td></tr>
+    </tbody>
+  </table>
+  <p class="det-sans" style="color:var(--mute); font-size:12px; margin-top:9px">5,944 篇 · 筛选后 5 · 点标题看详情(正文预览/字段质量/原文链接)· push 状态列在 push 对接后激活</p>
+</div>
+
+<!-- ═══ 页5 错误日志 ═══ -->
+<div class="page" id="p5">
+  <div class="grid3" style="grid-template-columns: repeat(6, 1fr)">
+    <div class="card"><div class="lab">本轮错误</div><div class="v" style="font-size:20px">14</div></div>
+    <div class="card"><div class="lab">http_429</div><div class="v" style="font-size:20px; color:var(--warn)">5</div></div>
+    <div class="card"><div class="lab">http_403</div><div class="v" style="font-size:20px; color:var(--bad)">4</div></div>
+    <div class="card"><div class="lab">超时</div><div class="v" style="font-size:20px">3</div></div>
+    <div class="card"><div class="lab">代理错误</div><div class="v" style="font-size:20px">1</div></div>
+    <div class="card"><div class="lab">5xx</div><div class="v" style="font-size:20px">1</div></div>
+  </div>
+  <div class="filters">
+    <select><option>批次:run-0704-1200</option><option>近 24h 全部</option></select>
+    <select><option>全部错误类型</option><option>proxy_error 代理</option><option>unreachable 不可达</option><option>timeout 超时</option><option>http_403</option><option>http_404</option><option>http_429</option><option>http_5xx</option><option>tls_error</option><option>parse_error 解析</option></select>
+    <input placeholder="搜源 / URL…" style="width:190px">
+  </div>
+  <table>
+    <thead><tr><th>时间</th><th>源</th><th>URL</th><th>类型</th><th>HTTP</th><th>信息</th><th>重试</th></tr></thead>
+    <tbody>
+      <tr><td>12:03:41</td><td><b>QNT</b></td><td><a href="#">quant.network/blog/x</a></td><td><span class="chip r">http_403</span></td><td>403</td><td class="det-sans">Request blocked - 403(池C出口被拒)</td><td>2/2</td></tr>
+      <tr><td>12:03:12</td><td><b>MED</b></td><td><a href="#">medibloc.com/feed</a></td><td><span class="chip y">http_429</span></td><td>429</td><td class="det-sans">Too Many Requests · retry-after 60s</td><td>2/2</td></tr>
+      <tr><td>12:02:58</td><td><b>TRU</b></td><td><a href="#">blog.truefi.io/…</a></td><td><span class="chip y">timeout</span></td><td>—</td><td class="det-sans">25s 无响应(impit timeout)</td><td>2/2</td></tr>
+      <tr><td>12:02:31</td><td><b>XNY</b></td><td><a href="#">blog.codatta.io</a></td><td><span class="chip">unreachable</span></td><td>—</td><td class="det-sans">DNS 解析失败(Cloudflare 1016)</td><td>2/2</td></tr>
+      <tr><td>12:01:44</td><td><b>FLUID</b></td><td><a href="#">blog.instadapp.io</a></td><td><span class="chip r">http_5xx</span></td><td>522</td><td class="det-sans">源站不可达(CF 522 origin down)</td><td>2/2</td></tr>
+      <tr><td>12:01:02</td><td><b>ACX</b></td><td><a href="#">across.to/blog</a></td><td><span class="chip">proxy_error</span></td><td>—</td><td class="det-sans">代理连接失败(主力池节点3)· 换节点后成功</td><td>1/2</td></tr>
+    </tbody>
+  </table>
+  <p class="det-sans" style="color:var(--mute); font-size:12px; margin-top:9px">错误明细按批次留存 30 天 · 同源同类连续出错会聚合成告警(见告警页)· 类型枚举:proxy_error / unreachable / timeout / http_403 / 404 / 429 / 4xx / 5xx / tls_error / parse_error</p>
 </div>
 
 </main>
