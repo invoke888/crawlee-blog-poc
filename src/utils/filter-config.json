@@ -30,7 +30,8 @@
   "page",
   "followers",
   "activity",
-  "subpage"
+  "subpage",
+  "u"
  ],
  "noise_last_segments": [
   "press",
@@ -110,7 +111,9 @@
   "customers",
   "investors",
   "pro",
-  "pool"
+  "pool",
+  "terms-of-use",
+  "brand-kit"
  ],
  "_platform_overrides_comment": "🆕 2026-07-03 custom-domain 平台源纠偏(detect-feed 探测实锤 · /feed generator 判定 · 证据 docs/research/self-test-audit-2026-07-03/)· host → 真实平台 · main.ts 分组优先用这里 · 划归 RSS 管线根治 followers/subpage 系统页误采",
  "platform_overrides": {

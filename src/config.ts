@@ -91,6 +91,8 @@ export const URL_OVERRIDES: Record<string, string> = {
     // 🆕 2026-07-04 判死复核战役:blog.meteora.ag 是 medium 门面站(页面链接全指向 meteoraag.medium.com
     // 被外链拦截 · 实为 medium 源)· 改 medium URL 自动归 RSS 管线
     MET: 'https://meteoraag.medium.com',
+    // 🆕 2026-07-04 POKT 品牌双域:blog.pokt.network 页面 54 链接指向 pocket.network(根域不同被外链拦)
+    POKT: 'https://pocket.network/blog',
 };
 
 // 非 article URL 黑名单(glob 风格)· 长期迭代
