@@ -8,7 +8,7 @@ import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
 import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost } from './utils/article-filter.js';
-import { checkSourceRuleMulti } from './utils/source-rules.js';
+import { checkSourceRuleMulti, getSitemapOnly } from './utils/source-rules.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
 
 // 🆕 2026-07-02 crash 教训:crawlee addRequests 的异步 batch 验证失败 = unhandledRejection = 全进程死
@@ -50,18 +50,24 @@ const substackSources = sources.filter((s) => s.host_platform === 'substack');
 // 🆕 2026-06-30 mirror 走 Atom(.../feed/atom)· 独立 mirrorRouter
 const mirrorSources = sources.filter((s) => s.host_platform === 'mirror');
 const PLATFORM_HANDLED = new Set(['medium', 'paragraph', 'substack', 'mirror']);
+// 🆕 2026-07-03 P2#3 sitemap-only 源(chiliz/socios/BAT/REQ/OG · 真假 URL 同形站)
+// 不走 LIST/常规 sitemap · 直接用站方 post-sitemap.xml(纯文章清单)白名单入队
+const sitemapOnlySources = sources.filter(
+    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '') && getSitemapOnly(s.base_symbol),
+);
+const isSitemapOnly = (s: SourceRow) => !!getSitemapOnly(s.base_symbol);
 const sitemapSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '')
+    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '') && !isSitemapOnly(s)
         && s.fetch_strategy === 'sitemap' && s.sitemap_url,
 );
 // P3.4 · og=none 的源走 heuristic handler · 多重 fallback 抽 title/description/image/date + RSS auto-discovery
 const heuristicSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '')
+    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '') && !isSitemapOnly(s)
         && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
         && s.og_quality === 'none',
 );
 const otherSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '')
+    (s) => !PLATFORM_HANDLED.has(s.host_platform ?? '') && !isSitemapOnly(s)
         && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
         && s.og_quality !== 'none',
 );
@@ -247,13 +253,50 @@ const listReqs = Array.from(listUrlSet).map((url) => ({
 }));
 console.log(`   · LIST 入队 ${listReqs.length} unique URL(heuristic+other 去重前 ${heuristicSources.length + otherSources.length})`);
 
+// 🆕 P2#3 sitemap-only 拉取(post-sitemap 去重 · chiliz 4 token 共用一个)
+const sitemapOnlyByUrl = new Map<string, TokenAssoc[]>();
+for (const s of sitemapOnlySources) {
+    const ps = getSitemapOnly(s.base_symbol)!;
+    const arr = sitemapOnlyByUrl.get(ps) ?? [];
+    arr.push({ token_id: s.token_id, base_symbol: s.base_symbol, original_url: s.blog_url });
+    sitemapOnlyByUrl.set(ps, arr);
+}
+const sitemapOnlyReqs: typeof listReqs = [];
+if (sitemapOnlyByUrl.size > 0) {
+    console.log(`\n📍 sitemap-only 拉 ${sitemapOnlyByUrl.size} 个 post-sitemap(${sitemapOnlySources.length} 源)...`);
+    const soResults = await Promise.allSettled(
+        Array.from(sitemapOnlyByUrl.entries()).map(async ([psUrl, assoc]) => {
+            const items: { loc: string; lastmod?: Date }[] = [];
+            for await (const item of parseSitemap([{ type: 'url', url: psUrl }])) {
+                items.push({ loc: item.loc, lastmod: item.lastmod });
+            }
+            items.sort((a, b) => (b.lastmod?.getTime() ?? 0) - (a.lastmod?.getTime() ?? 0));
+            return { assoc, urls: items.map((i) => i.loc) };
+        }),
+    );
+    for (const r of soResults) {
+        if (r.status === 'rejected') { console.warn(`   ⚠️ post-sitemap 拉取失败`); continue; }
+        const { assoc, urls } = r.value;
+        // post-sitemap 就是文章白名单 · 只做基础校验 · 不走 isLikelyArticleUrl(同形站会误杀)
+        const picked = urls.filter(isValidHttpUrl).slice(0, SITEMAP_URLS_PER_SOURCE);
+        for (const url of picked) {
+            sitemapOnlyReqs.push({
+                url,
+                label: 'DETAIL',
+                userData: { sources_for_url: assoc, from_sitemap: true },
+            } as (typeof listReqs)[number]);
+        }
+        console.log(`   · ${assoc.map((a) => a.base_symbol).join(',')} ← ${picked.length} URL(post-sitemap 共 ${urls.length})`);
+    }
+}
+
 // 🆕 2026-07-03 限频域分流(老板拍 · 独立代理池):
 // medium.com/*.medium.com + 403 四强 → slowQueue(低速 + 池 B/C)· 其余 → generalQueue(主力全速)
 // 主力队列不再被限频站的 retry/session-rotation 拖垮(实测 RPM 76 → 预期 300+)
 const generalReqs: typeof listReqs = [];
 const slowReqs: typeof listReqs = [];
 let dcBannedDropped = 0;
-for (const req of [...listReqs, ...sitemapReqs]) {
+for (const req of [...listReqs, ...sitemapReqs, ...sitemapOnlyReqs]) {
     if (isDcBannedHost(req.url)) { dcBannedDropped += 1; continue; } // 兜底:跨源链接指向 DC-ban 域也 drop
     (getThrottleGroup(req.url) ? slowReqs : generalReqs).push(req as (typeof listReqs)[number]);
 }

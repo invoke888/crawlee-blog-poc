@@ -18,6 +18,8 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else '/tmp/poc-report.json'
 
 with open(os.path.join(REPO, 'src/utils/filter-config.json')) as f:
     FC = json.load(f)
+with open(os.path.join(REPO, 'src/utils/source-rules.json')) as f:
+    SOURCE_RULES = json.load(f).get('rules', {})
 WHITELIST = set(FC['whitelist_segments'])
 LANDING = set(FC['landing_segments'])
 BAD_EXT = re.compile(r'\.(' + '|'.join(FC['file_extensions']) + r')$', re.I)
@@ -29,6 +31,38 @@ def host_in(url, domains):
         return any(h == d or h.endswith('.' + d) for d in domains)
     except Exception:
         return False
+
+
+# 🆕 P2#2+7 per-source 规则命中(体检尺子升级 + pattern 腐烂监控)
+def rule_hit(sym, url):
+    """返回 'pass'/'reject'/'no-rule' · 与 TS 端 checkSourceRule 同语义"""
+    rule = SOURCE_RULES.get(sym)
+    if not rule:
+        return 'no-rule'
+    try:
+        path = urlparse(url).path.lower()
+    except Exception:
+        return 'reject'
+    p = path if path.endswith('/') else path + '/'
+    for ex in rule.get('exclude_prefixes') or []:
+        if p == ex or p.startswith(ex):
+            return 'reject'
+    if rule.get('confidence') != 'high':
+        return 'no-rule'
+    incs = rule.get('include_prefixes') or []
+    rx = rule.get('include_regex')
+    if not incs and not rx:
+        return 'no-rule'
+    for inc in incs:
+        if p == inc or p.startswith(inc):
+            return 'pass'
+    if rx:
+        try:
+            if re.search(rx, path):
+                return 'pass'
+        except re.error:
+            pass
+    return 'reject'
 
 
 # 处置状态(2026-07-03 老板要求:挂起/放弃必须在报告源表行级可见)
@@ -150,6 +184,13 @@ for s in sources:
     d, reason = disposition(s['blog_url'])
     s['disposition'] = d
     s['disposition_reason'] = reason
+    # 🆕 P2#2+7 规则命中率(有 high 规则的源)· 腐烂监控数据源
+    sym = s['base_symbol']
+    if sym in SOURCE_RULES and s['articles']:
+        hits = [rule_hit(sym, a['url']) for a in s['articles'] if a.get('url')]
+        n_judged = sum(1 for h in hits if h != 'no-rule')
+        if n_judged:
+            s['pattern_hit_ratio'] = round(sum(1 for h in hits if h == 'pass') / n_judged, 2)
 
 summary = {
     'total': len(sources),
@@ -160,6 +201,16 @@ summary = {
 stale_probe = sum(1 for s in sources if s['dataset_count'] > 0 and s.get('http_status') == -1)
 if stale_probe:
     print(f'⚠️ {stale_probe} 源 probe 状态(-1)与采集事实(有数据)矛盾 · probe 是历史快照 · 报告状态列已改以采集为准')
+
+# 🆕 P2#7 pattern 腐烂告警:有规则源命中率 <50% = 站可能改版 · 规则失效
+pattern_alerts = [
+    {'sym': s['base_symbol'], 'hit_ratio': s['pattern_hit_ratio'], 'blog_url': s['blog_url']}
+    for s in sources
+    if s.get('pattern_hit_ratio') is not None and s['pattern_hit_ratio'] < 0.5 and s['dataset_count'] > 0
+]
+if pattern_alerts:
+    print(f'🔴 pattern 腐烂告警 {len(pattern_alerts)} 源(规则命中 <50% · 站可能改版):'
+          + ', '.join(f"{a['sym']}({a['hit_ratio']})" for a in pattern_alerts[:10]))
 out = {
     'sources': sources,
     'summary': summary,
@@ -170,6 +221,8 @@ out = {
         'whitelist_hit_sources': white_hit_sources,
         # 生成时间(北京)· HTML 标题/落款动态渲染用 · 修"报告日期不同步"问题
         'generated_at': datetime.now(timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M'),
+        # P2#7 pattern 腐烂告警(规则命中 <50% 的有数据源)
+        'pattern_alerts': pattern_alerts,
     },
 }
 with open(OUT, 'w') as fh:

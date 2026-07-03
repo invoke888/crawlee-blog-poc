@@ -35,7 +35,9 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
         // 新法:enqueueLinks same-domain · 用 transformRequestFunction 调 isLikelyArticleUrl 过滤(黑名单 + 根路径)
         const enqueued = await enqueueLinks({
             selector: 'a[href]',
-            strategy: 'same-domain',
+            // 🆕 2026-07-03 P2#4 收紧:same-domain 按根域放行 · 5 次实锤混入 docs.*/build.*/platform.* 子域垃圾
+            // (docs.tac.build / docs.chiliz.com / docs.sia.tech / build.avax.network / platform.minimax.io)
+            strategy: 'same-hostname',
             label: 'DETAIL',
             limit: 30,
             transformRequestFunction: (req) => {

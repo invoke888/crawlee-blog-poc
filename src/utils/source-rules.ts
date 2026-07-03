@@ -14,8 +14,16 @@ const data = require('./source-rules.json') as {
         include_prefixes?: string[];
         include_regex?: string;
         exclude_prefixes?: string[];
+        mode?: 'sitemap-only';
+        post_sitemap?: string;
     }>;
 };
+
+// 🆕 P2#3 sitemap-only 源(真假 URL 同形 · 用站方 post-sitemap.xml 白名单)
+export function getSitemapOnly(sym: string): string | null {
+    const r = data.rules[sym];
+    return r?.mode === 'sitemap-only' && r.post_sitemap ? r.post_sitemap : null;
+}
 
 const regexCache = new Map<string, RegExp | null>();
 function getRegex(pattern: string): RegExp | null {

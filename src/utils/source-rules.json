@@ -1,6 +1,6 @@
 {
  "_comment": "per-source 文章 URL 规则(2026-07-03 · 17 agent 审计 205 嫌疑源 · 全 17 片到齐)· 只有 confidence=high 强制过滤",
- "_modes": "include_prefixes: path 段级前缀(带尾斜杠) · include_regex: 日期型等正则 · exclude_prefixes: 语言变体/子栏目排除",
+ "_modes": "include_prefixes: path 段级前缀(带尾斜杠) · include_regex: 日期型等正则 · exclude_prefixes: 语言变体/子栏目排除 · mode=sitemap-only: 真假URL同形站 · 直接用站方 post-sitemap.xml 白名单入队(不走 LIST/常规 sitemap)",
  "rules": {
   "ACM": {
    "confidence": "mid",
@@ -28,7 +28,9 @@
     "/wp-json/",
     "/feed/",
     "/comments/"
-   ]
+   ],
+   "mode": "sitemap-only",
+   "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
   },
   "ADA": {
    "confidence": "high",
@@ -444,7 +446,9 @@
    "exclude_prefixes": [
     "/blog/",
     "/fr/"
-   ]
+   ],
+   "mode": "sitemap-only",
+   "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
   },
   "POWR": {
    "confidence": "high",
@@ -519,7 +523,9 @@
     "/category/",
     "/wp-json/",
     "/xmlrpc.php/"
-   ]
+   ],
+   "mode": "sitemap-only",
+   "post_sitemap": "https://request.network/post-sitemap.xml"
   },
   "RESOLV": {
    "confidence": "high",
@@ -557,7 +563,9 @@
    "confidence": "low",
    "exclude_prefixes": [
     "/fr/"
-   ]
+   ],
+   "mode": "sitemap-only",
+   "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
   },
   "SAPIEN": {
    "confidence": "high",
@@ -1039,7 +1047,9 @@
     "/campus/",
     "/sustainability/",
     "/cookies-policy/"
-   ]
+   ],
+   "mode": "sitemap-only",
+   "post_sitemap": "https://www.socios.com/post-sitemap.xml"
   },
   "MINIMAX": {
    "confidence": "high",
@@ -1338,6 +1348,21 @@
    "exclude_prefixes": [
     "/it/"
    ]
+  },
+  "CHZ": {
+   "mode": "sitemap-only",
+   "post_sitemap": "https://www.chiliz.com/post-sitemap.xml",
+   "confidence": "high"
+  },
+  "BAT": {
+   "mode": "sitemap-only",
+   "post_sitemap": "https://basicattentiontoken.org/post-sitemap.xml",
+   "confidence": "high"
+  },
+  "OG": {
+   "mode": "sitemap-only",
+   "post_sitemap": "https://ogs.gg/post-sitemap.xml",
+   "confidence": "high"
   }
  }
 }
