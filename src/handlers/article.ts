@@ -145,8 +145,14 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         if (jd && jd.length >= 30 && jd !== title) {
             description = jd;
         } else {
-            const firstP = $('article p, main p').filter((_, el) => $(el).text().trim().length >= 30).first().text().trim();
-            if (firstP) description = firstP.replace(/\s+/g, ' ').slice(0, 280);
+            // 🆕 2026-07-03 老板拍:摘要够用 · 没摘要就给全文(article/main 全段落合并 · 截 2000)
+            const fullText = $('article p, main p')
+                .map((_, el) => $(el).text().trim())
+                .get()
+                .filter((t) => t.length >= 20)
+                .join(' ')
+                .replace(/\s+/g, ' ');
+            if (fullText) description = fullText.slice(0, 2000);
         }
     }
     const image =
