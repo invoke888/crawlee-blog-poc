@@ -3,7 +3,7 @@ import { CheerioCrawler, Dataset, Configuration, RequestQueue, ProxyConfiguratio
 import { parseSitemap } from '@crawlee/utils';
 
 import { defaultRouter } from './handlers/default.js';
-import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushSubstack } from './handlers/medium.js';
+import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushSubstack, fetchAndPushRssFeeds } from './handlers/medium.js';
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
@@ -179,7 +179,6 @@ await loadSeen();
 const mediumQueue = await RequestQueue.open('medium');
 const generalQueue = await RequestQueue.open('general');
 const mirrorQueue = await RequestQueue.open('mirror');
-const rssQueue = await RequestQueue.open('rss');
 
 // 入口层全部加 RUN_SALT(增量修复)
 const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
@@ -199,12 +198,7 @@ const mirrorReqs = Array.from(mirrorByAtom.entries()).map(([atomUrl, assoc]) => 
     url: atomUrl,
     userData: { sources_for_url: assoc },
 }));
-// 🆕 通用 RSS 源 · 独立 queue(主力池 · 不占 medium 池 B)· 复用 mediumRouter 解析 RSS 2.0
-const rssReqs = Array.from(rssByFeed.entries()).map(([feedUrl, assoc]) => ({
-    url: feedUrl,
-    uniqueKey: `${feedUrl}#${RUN_SALT}`,
-    userData: { sources_for_url: assoc, crawler_label: 'rss' as const },
-}));
+// 🆕 通用 RSS 源:Impit 直拉模式(不走 crawler · 见 fetchAndPushRssFeeds 头注)· 并行 jobs 里跑
 
 // 并发拉所有 unique sitemap · 取每个的前 N URL(去重后)
 // 🆕 2026-07-03 换 parseSitemap 拿 lastmod · 修 GLMR 实锤 bug:
@@ -348,7 +342,6 @@ await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs]);
 await generalQueue.addRequests(generalReqs);
 await slowQueue.addRequests(slowReqs);
 await mirrorQueue.addRequests(mirrorReqs);
-await rssQueue.addRequests(rssReqs);
 
 // 🆕 2026-07-01 代理池接入 · 2026-07-03 扩三池(老板给独立池 · 全在服务器 .env.local · 不进 git)
 // PROXY_URL        主力池(10 节点)· general 队列
@@ -425,22 +418,6 @@ const slowCrawler = new CheerioCrawler({
     maxRequestRetries: 2,
 });
 
-// 🆕 2026-07-03 通用 RSS crawler(老板拍 a · ghost/wp/gatsby 60 host)· 主力池 · 复用 mediumRouter
-// feed 一次 1 请求 · 60 feed 也就分钟级 · RPM 300 稳字优先
-const rssCrawler = new CheerioCrawler({
-    requestQueue: rssQueue,
-    httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
-    requestHandler: mediumRouter,
-    proxyConfiguration,
-    maxRequestsPerMinute: 300,
-    maxConcurrency: 10,
-    sameDomainDelaySecs: 0,
-    useSessionPool: true,
-    persistCookiesPerSession: true,
-    additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
-    maxRequestRetries: 2,
-});
-
 // 🆕 2026-06-30 mirror 独立 crawler · Atom feed · cf 反爬严 · sessionPool 高 retry
 // 2026-07-01 挂代理(curl+代理仍 cf challenge · 但 impit TLS 指纹 + 新 IP 组合待真验)
 const mirrorCrawler = new CheerioCrawler({
@@ -486,12 +463,13 @@ if (substackByRss.size > 0) {
     })());
 }
 
-if (rssReqs.length > 0) {
-    console.log(`🚀 [并行] rss(通用 feed)· ${rssReqs.length} feed(主力池)`);
+if (rssByFeed.size > 0) {
+    console.log(`🚀 [并行] rss(Impit 直拉)· ${rssByFeed.size} feed(主力池)`);
     jobs.push((async () => {
         const t = performance.now();
-        await rssCrawler.run();
-        console.log(`   · rss 完成 ${((performance.now() - t) / 1000).toFixed(1)}s`);
+        const ds = await Dataset.open();
+        const r = await fetchAndPushRssFeeds(rssByFeed, ds);
+        console.log(`   · rss 完成 ${((performance.now() - t) / 1000).toFixed(1)}s · ok=${r.ok} fail=${r.failed} pushed=${r.pushed}`);
     })());
 }
 

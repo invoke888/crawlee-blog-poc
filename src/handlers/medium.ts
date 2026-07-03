@@ -113,6 +113,103 @@ export async function fetchAndPushSubstack(
     return { ok, failed, pushed };
 }
 
+// 🆕 2026-07-03 老板拍 a:通用 RSS 源(ghost/wp/gatsby 60 host)直拉模式
+// 为什么不走 CheerioCrawler:①application/rss+xml 不被 cheerio 化($ is not a function)
+// ②部分 ghost 站对 crawler 请求形态 403 · 而 detect-feed 的 Impit 直拉实证 87/87 全 200 · 用已验证路径
+// RSS 2.0(item)+ Atom(entry)双格式兼容(gatsby 站可能吐 atom)
+export async function fetchAndPushRssFeeds(
+    byFeed: Map<string, FeedSourceAssoc[]>,
+    dataset: Dataset,
+): Promise<{ ok: number; failed: number; pushed: number }> {
+    const { Impit } = await import('impit');
+    const impit = new Impit({
+        browser: 'chrome',
+        proxyUrl: process.env.PROXY_URL || undefined,
+        timeout: 25000,
+    });
+    let ok = 0;
+    let failed = 0;
+    let pushed = 0;
+    const entries = Array.from(byFeed.entries());
+    const CONCURRENCY = 6;
+    let cursor = 0;
+    async function worker(): Promise<void> {
+        while (cursor < entries.length) {
+            const [feedUrl, assoc] = entries[cursor];
+            cursor += 1;
+            try {
+                const res = await impit.fetch(feedUrl, {
+                    headers: {
+                        'Accept': 'application/rss+xml,application/xml;q=0.9,text/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                    },
+                });
+                if (res.status !== 200) {
+                    console.log(`❌ [rss] ${feedUrl} HTTP=${res.status}`);
+                    failed += 1;
+                    continue;
+                }
+                const xml = await res.text();
+                await saveRawFeed(assoc[0]?.token_id, feedUrl, xml);
+                const $ = cheerio.load(xml, { xmlMode: true });
+                const channelTitle = $('channel > title, feed > title').first().text().trim();
+                let itemCount = 0;
+                const tasks: Promise<void>[] = [];
+                $('item, entry').each((_, el) => {
+                    const $item = $(el);
+                    const isAtom = el.tagName?.toLowerCase() === 'entry';
+                    const postUrl = isAtom
+                        ? ($item.find('link[rel="alternate"]').attr('href') || $item.find('link').first().attr('href') || '').trim()
+                        : $item.find('link').first().text().trim();
+                    const postTitle = $item.find('title').first().text().trim();
+                    const desc = $item.find('description, summary').first().text().trim();
+                    const ce = $item.find('content\\:encoded, encoded, content').first().text().trim();
+                    const snippet = (desc || ce).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 280);
+                    const pubDate = (
+                        $item.find('pubDate').first().text()
+                        || $item.find('published').first().text()
+                        || $item.find('updated').first().text()
+                    ).trim();
+                    const author = $item.find('dc\\:creator, creator, author > name').first().text().trim();
+                    const guid = $item.find('guid, id').first().text().trim();
+                    if (!postUrl) return;
+                    for (const src of assoc) {
+                        if (isSeen(src.token_id, postUrl)) continue;
+                        if (!underSourceCap(src.token_id)) continue;
+                        markSeen(src.token_id, postUrl);
+                        countSourcePush(src.token_id);
+                        tasks.push(dataset.pushData({
+                            crawler: 'rss',
+                            token_id: src.token_id,
+                            base_symbol: src.base_symbol,
+                            source_url: src.original_url,
+                            rss_url: feedUrl,
+                            channel: channelTitle,
+                            url: postUrl,
+                            title: postTitle,
+                            description: snippet,
+                            author,
+                            publishedTime: normalizePublishedAt(pubDate),
+                            guid,
+                            crawledAt: new Date().toISOString(),
+                        }));
+                    }
+                    itemCount += 1;
+                });
+                await Promise.all(tasks);
+                ok += 1;
+                pushed += tasks.length;
+                console.log(`✅ [rss] ${feedUrl} ${itemCount} items → ${tasks.length} 条 | ${channelTitle || '(no channel)'}`);
+            } catch (e) {
+                failed += 1;
+                console.log(`❌ [rss] ${feedUrl} ${((e as Error).message ?? e)}`.slice(0, 160));
+            }
+        }
+    }
+    await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+    return { ok, failed, pushed };
+}
+
 export function mediumToRss(url: string): string {
     try {
         const u = new URL(url);
