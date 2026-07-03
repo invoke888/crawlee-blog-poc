@@ -184,13 +184,18 @@ a:hover { text-decoration: underline; }
 <thead><tr><th>原因</th><th>状态</th><th>例子</th><th>处置</th></tr></thead>
 <tbody>
 <tr><td>Medium 反爬 429</td><td>✅ 已解</td><td>quarkchain / etherfi / api3</td><td>medium 专用代理池 B + RSS(429 从 115→~10)</td></tr>
-<tr><td>DC-ban(AWS 段整段 403)</td><td>⏸ 挂起 4 源</td><td>QNT / TIA / LTC / MINA</td><td>等住宅代理 · dc_banned_hosts 移回即恢复</td></tr>
-<tr><td>cf JS challenge</td><td>⏸ 挂起 7 源</td><td>mirror.xyz 全家</td><td>P3.5 Playwright(换 IP 无效已实测)</td></tr>
-<tr><td>抽取规则不足(有数据但字段缺)</td><td>🔄 修复中</td><td>缺 pub 208 源 · title/desc 误报 25+36 源</td><td>3 agent 并行:json-ld/__NEXT_DATA__/正文日期 + 双字段防站级复读</td></tr>
-<tr><td>已禁用/暂停源</td><td>✅ 长期过滤</td><td>JTO / C / SPK</td><td>main.ts 只跑 active</td></tr>
+<tr><td>列表/系统页误采(followers/分页/tag)</td><td>✅ 已解</td><td>TAO followers · XTZ 分页 · C98 tag</td><td>自测战役:noise 规则三层 + custom-domain 平台源划 RSS(24 host)+ 通用 RSS 直拉(60 host)</td></tr>
+<tr><td>DC-ban(AWS 段整段 403)</td><td>⏸ 挂起</td><td>QNT / TIA / LTC / MINA(WAF-IP 型)</td><td>等住宅代理 · dc_banned_hosts 移回即恢复</td></tr>
+<tr><td>cf JS challenge</td><td>⏸ 挂起</td><td>mirror.xyz 全家 · PENGU / jito</td><td>P3 Playwright(换 IP 无效已实测)</td></tr>
+<tr><td>抽取字段缺失</td><td>✅ 收敛</td><td>pub 覆盖 73.5%→85% · title/desc 智能切换上线</td><td>正文日期兜底(byline 优先)+ h1/jsonld 复读切换 · 剩余站级文案已标 chip</td></tr>
+<tr><td>上游 blog_url 错配 / 重复登记</td><td>⊘ token 排除</td><td>OPENAI / PTB / AHT_3(挂起)· EDGEX / RE 副本(去重)</td><td>excluded_token_ids(老板拍 c/d)· 详见 §5 账本</td></tr>
 <tr><td>误判非博客</td><td>✅ 黑名单</td><td>gitbook / github / x.com</td><td>host_blacklist</td></tr>
 </tbody>
 </table></div>
+
+<h2><span class="num">§5</span>不采集源账本(放弃 / 挂起 / 暂不抓 · 全清单动态生成)</h2>
+<p id="ledger-info" style="color: var(--mute); font-size: 13px;">—</p>
+<div id="ledger"></div>
 
 <p style="color: var(--mute); font-size: 12px; margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line);">
   数据生成 <span id="gen-at2">—</span>(北京)· server hk-prod · 全量 634 源不抽样 · blogpicker prod 零影响 · 框架静态章节更新于 2026-07-03。
@@ -405,6 +410,37 @@ function renderSPA() {
     + '<td><span class="chip">' + escHtml(s.og_quality || '—') + '</span></td>'
     + '</tr>').join('');
 }
+function renderLedger() {
+  const GROUPS = [
+    { key: 'dead',        icon: '\u26d4', name: '永久放弃', recover: '不恢复 · 死站/非博客/账号封/停更多年(agent 实测判死 · dead_hosts)' },
+    { key: 'suspended',   icon: '\u23f8\ufe0f', name: '挂起(反爬/JS 壳)', recover: '住宅代理池或 P3 Playwright 就绪后恢复 · filter-config dc_banned_hosts 移出即恢复' },
+    { key: 'mirror_hold', icon: '\ud83d\udd78\ufe0f', name: '暂不抓(mirror)', recover: 'P3 Playwright 后恢复(cf JS challenge 实测换 IP 无效)· RUN_MIRROR=1 可手动打开' },
+    { key: 'excluded',    icon: '\u2298', name: 'token 级排除(老板拍 c/d)', recover: '去重项不恢复 · 挂起项等上游 blog_url 修正(URL_OVERRIDES)后移出 excluded_token_ids' },
+    { key: 'blacklist',   icon: '\ud83d\udeab', name: '主域黑名单', recover: '不恢复 · gitbook/github 等误判非博客域(host_blacklist)' },
+  ];
+  let total = 0;
+  const html = GROUPS.map(g => {
+    const rows = sources.filter(s => s.disposition === g.key);
+    if (!rows.length) return '';
+    total += rows.length;
+    return '<h3 style="margin: 22px 0 8px;">' + g.icon + ' ' + g.name + '(' + rows.length + ')'
+      + '<span style="font-weight: normal; color: var(--mute); font-size: 12px;"> · 恢复条件:' + escHtml(g.recover) + '</span></h3>'
+      + '<div class="table-wrap"><table><thead><tr><th>symbol</th><th>blog URL</th><th>原因</th><th>细节(agent 实测)</th></tr></thead><tbody>'
+      + rows.map(s => '<tr>'
+        + '<td>' + escHtml(s.base_symbol) + '</td>'
+        + '<td class="url-cell"><a href="' + escHtml(s.blog_url) + '" target="_blank" rel="noopener">' + escHtml(s.blog_url) + '</a></td>'
+        + '<td>' + escHtml(s.disposition_reason || '') + '</td>'
+        + '<td style="max-width: 420px;">' + (s.disposition_detail
+            ? '<span title="' + escHtml(s.disposition_detail) + '">' + escHtml(s.disposition_detail.slice(0, 90)) + (s.disposition_detail.length > 90 ? '…' : '') + '</span>'
+            : '<span style="color: var(--mute);">—</span>')
+        + '</td>'
+        + '</tr>').join('')
+      + '</tbody></table></div>';
+  }).join('');
+  document.getElementById('ledger').innerHTML = html || '<p>无</p>';
+  document.getElementById('ledger-info').textContent = '共 ' + total + ' 源不在采集池 · 按处置类型分组 · 数据来自 filter-config 名单 + agent 205 源实测判定档 · 随聚合动态生成(不写死)';
+}
+renderLedger();
 renderSPA();
 render();
 </script>

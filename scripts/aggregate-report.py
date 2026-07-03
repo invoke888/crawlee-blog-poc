@@ -20,6 +20,14 @@ with open(os.path.join(REPO, 'src/utils/filter-config.json')) as f:
     FC = json.load(f)
 with open(os.path.join(REPO, 'src/utils/source-rules.json')) as f:
     SOURCE_RULES = json.load(f).get('rules', {})
+# 🆕 2026-07-03 不采集账本:per-symbol 判定原因(agent 205 源实测档 · 报告 §5 用)
+VERDICTS = {}
+try:
+    with open(os.path.join(REPO, 'docs/research/pattern-verdicts-205-sources-2026-07-03.json')) as f:
+        VERDICTS = json.load(f)
+except Exception:
+    pass
+EXCLUDED_TOKENS = FC.get('excluded_token_ids', {})
 WHITELIST = set(FC['whitelist_segments'])
 LANDING = set(FC['landing_segments'])
 BAD_EXT = re.compile(r'\.(' + '|'.join(FC['file_extensions']) + r')$', re.I)
@@ -276,8 +284,17 @@ for s in sources:
         s['crawlers'] = []
         s['articles'] = []
     d, reason = disposition(s['blog_url'])
+    # 🆕 不采集账本增强:token 级排除(c 去重/d 挂起)优先 · mirror 暂不抓单列
+    excl = EXCLUDED_TOKENS.get(str(s['token_id']))
+    if excl:
+        d, reason = 'excluded', excl
+    elif d == 'active' and (s.get('host_platform') == 'mirror'):
+        d, reason = 'mirror_hold', '暂不抓:cf JS challenge(实测换 IP 无效)· P3 Playwright 后恢复'
     s['disposition'] = d
     s['disposition_reason'] = reason
+    v = VERDICTS.get(s['base_symbol'])
+    if v and d in ('dead', 'suspended') and v.get('note'):
+        s['disposition_detail'] = str(v['note'])[:300]
     # 🆕 P2#2+7 规则命中率(有 high 规则的源)· 腐烂监控数据源
     sym = s['base_symbol']
     if sym in SOURCE_RULES and s['articles']:
