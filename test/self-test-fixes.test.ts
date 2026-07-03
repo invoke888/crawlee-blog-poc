@@ -7,6 +7,8 @@ import {
     isNoiseUrl,
     isLikelyArticleUrl,
     getPlatformOverride,
+    getRssFeedOverride,
+    getTokenExclusion,
     filterArticlesWhitelistFirst,
 } from '../src/utils/article-filter.js';
 import { mediumToRss, paragraphToRss } from '../src/handlers/medium.js';
@@ -80,6 +82,17 @@ test('isLikelyArticleUrl · noise 高于白名单(穿透根因修复)· 白名�
     assert.equal(isLikelyArticleUrl('https://zeusnetwork.xyz/ecosystem'), false);
     assert.equal(isLikelyArticleUrl('https://blog.newton.xyz/signin/'), false);
     assert.equal(isLikelyArticleUrl('https://aave.com/pro'), false);
+});
+
+test('getRssFeedOverride/getTokenExclusion · 老板拍 a/c/d(通用 RSS 60 host + token 级排除)', () => {
+    assert.equal(getRssFeedOverride('https://blog.sei.io/some-post'), 'https://blog.sei.io/feed');
+    assert.equal(getRssFeedOverride('https://blog.orchid.com/'), 'https://blog.orchid.com/rss'); // feed 路径按探测结果
+    assert.equal(getRssFeedOverride('https://www.chiliz.com/'), null); // sitemap-only 三站不进名单
+    assert.equal(getRssFeedOverride('https://example.com/'), null);
+    assert.ok(getTokenExclusion(11393)); // c 去重 EDGEX
+    assert.ok(getTokenExclusion(2489)); // d 挂起 OPENAI
+    assert.equal(getTokenExclusion(669), null); // EDGE 保留
+    assert.equal(getTokenExclusion(12893), null); // RE 保留
 });
 
 test('getPlatformOverride · custom-domain 平台源纠偏(detect-feed 24 host)', () => {

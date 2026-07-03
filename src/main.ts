@@ -7,7 +7,7 @@ import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushS
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost } from './config.js';
-import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride } from './utils/article-filter.js';
+import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion } from './utils/article-filter.js';
 import { checkSourceRuleMulti, getSitemapOnly } from './utils/source-rules.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
 
@@ -33,7 +33,9 @@ const sourcesBlocked = sourcesRaw.filter((s) => isBlacklistedHost(s.blog_url));
 // 🆕 2026-07-03 老板拍 b/c:挂起名单(反爬/JS壳 · 方案就绪恢复)+ 永久放弃名单(死站/非博客)
 const sourcesDcBanned = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && isDcBannedHost(s.blog_url));
 const sourcesDead = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url) && isDeadHost(s.blog_url));
-const sources = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url) && !isDeadHost(s.blog_url));
+// 🆕 2026-07-03 老板拍 c/d:token 级排除(重复登记去重 + 上游 blog_url 错配挂起)
+const sourcesExcluded = sourcesRaw.filter((s) => getTokenExclusion(s.token_id));
+const sources = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url) && !isDeadHost(s.blog_url) && !getTokenExclusion(s.token_id));
 if (sourcesBlocked.length > 0) {
     console.log(`⊘ 黑名单过滤 ${sourcesBlocked.length} 源(${sourcesBlocked.map(s => s.base_symbol).join(', ')})`);
 }
@@ -42,6 +44,9 @@ if (sourcesDcBanned.length > 0) {
 }
 if (sourcesDead.length > 0) {
     console.log(`⊘ 永久放弃 ${sourcesDead.length} 源(死站/非博客 · agent 实测判死)`);
+}
+if (sourcesExcluded.length > 0) {
+    console.log(`⊘ token 级排除 ${sourcesExcluded.length} 源(去重/上游错配挂起):${sourcesExcluded.map((s) => s.base_symbol).join(', ')}`);
 }
 // 🆕 2026-07-03 自测战役 A1/A4:平台判定统一走 effectivePlatform
 // 1. platform_overrides(filter-config · detect-feed 探测实锤的 custom-domain 平台源)优先
@@ -69,18 +74,24 @@ const sitemapOnlySources = sources.filter(
     (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && getSitemapOnly(s.base_symbol),
 );
 const isSitemapOnly = (s: SourceRow) => !!getSitemapOnly(s.base_symbol);
+// 🆕 2026-07-03 老板拍 a:通用 RSS 源(ghost/wp/gatsby 60 host · detect-feed 实锤)· 独立 rssCrawler
+// 优先级:平台 > sitemap-only > rss > sitemap > LIST(sitemap-only 三站不在 rss 名单 · 代码层再保险)
+const isRssOverride = (s: SourceRow) => !!getRssFeedOverride(s.blog_url);
+const rssSources = sources.filter(
+    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s) && isRssOverride(s),
+);
 const sitemapSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s)
+    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s) && !isRssOverride(s)
         && s.fetch_strategy === 'sitemap' && s.sitemap_url,
 );
 // P3.4 · og=none 的源走 heuristic handler · 多重 fallback 抽 title/description/image/date + RSS auto-discovery
 const heuristicSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s)
+    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s) && !isRssOverride(s)
         && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
         && s.og_quality === 'none',
 );
 const otherSources = sources.filter(
-    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s)
+    (s) => !PLATFORM_HANDLED.has(effectivePlatform(s) ?? '') && !isSitemapOnly(s) && !isRssOverride(s)
         && !(s.fetch_strategy === 'sitemap' && s.sitemap_url)
         && s.og_quality !== 'none',
 );
@@ -122,6 +133,15 @@ for (const s of mirrorSources) {
     mirrorByAtom.set(atom, list);
 }
 
+// 🆕 2026-07-03 老板拍 a:通用 RSS 源同模式 · feed URL 维度 1-to-N(lido 双 token 共 feed 等)
+const rssByFeed = new Map<string, TokenAssoc[]>();
+for (const s of rssSources) {
+    const feed = getRssFeedOverride(s.blog_url)!;
+    const list = rssByFeed.get(feed) ?? [];
+    list.push({ token_id: s.token_id, base_symbol: s.base_symbol, original_url: s.blog_url });
+    rssByFeed.set(feed, list);
+}
+
 // 🆕 2026-06-30 sitemap 按 sitemap_url 去重(ondo 13 token 共用同 sitemap → 1 次 load)
 const sitemapByUrl = new Map<string, SourceRow[]>();
 for (const s of sitemapSources) {
@@ -142,6 +162,7 @@ console.log(`📊 source registry 总 ${sources.length} 条(已过黑名单 ${so
 console.log(`   · medium    ${mediumSources.length} 源 → ${mediumByRss.size} unique RSS`);
 console.log(`   · paragraph ${paragraphSources.length} 源 → ${paragraphByRss.size} unique RSS`);
 console.log(`   · substack  ${substackSources.length} 源 → ${substackByRss.size} unique RSS`);
+console.log(`   · rss       ${rssSources.length} 源 → ${rssByFeed.size} unique feed(ghost/wp 通用 · 老板拍 a)`);
 console.log(`   · mirror    ${mirrorSources.length} 源 → ${mirrorByAtom.size} unique Atom`);
 console.log(`   · sitemap   ${sitemapSources.length} 源 → ${sitemapByUrl.size} unique sitemap · 每个取前 ${SITEMAP_URLS_PER_SOURCE} URL`);
 console.log(`   · heuristic ${heuristicSources.length} 源 → 多重 fallback 抽(og=none 兜底)`);
@@ -158,6 +179,7 @@ await loadSeen();
 const mediumQueue = await RequestQueue.open('medium');
 const generalQueue = await RequestQueue.open('general');
 const mirrorQueue = await RequestQueue.open('mirror');
+const rssQueue = await RequestQueue.open('rss');
 
 // 入口层全部加 RUN_SALT(增量修复)
 const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
@@ -176,6 +198,12 @@ const paragraphReqs = Array.from(paragraphByRss.entries()).map(([rssUrl, assoc])
 const mirrorReqs = Array.from(mirrorByAtom.entries()).map(([atomUrl, assoc]) => ({
     url: atomUrl,
     userData: { sources_for_url: assoc },
+}));
+// 🆕 通用 RSS 源 · 独立 queue(主力池 · 不占 medium 池 B)· 复用 mediumRouter 解析 RSS 2.0
+const rssReqs = Array.from(rssByFeed.entries()).map(([feedUrl, assoc]) => ({
+    url: feedUrl,
+    uniqueKey: `${feedUrl}#${RUN_SALT}`,
+    userData: { sources_for_url: assoc, crawler_label: 'rss' as const },
 }));
 
 // 并发拉所有 unique sitemap · 取每个的前 N URL(去重后)
@@ -320,6 +348,7 @@ await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs]);
 await generalQueue.addRequests(generalReqs);
 await slowQueue.addRequests(slowReqs);
 await mirrorQueue.addRequests(mirrorReqs);
+await rssQueue.addRequests(rssReqs);
 
 // 🆕 2026-07-01 代理池接入 · 2026-07-03 扩三池(老板给独立池 · 全在服务器 .env.local · 不进 git)
 // PROXY_URL        主力池(10 节点)· general 队列
@@ -396,6 +425,22 @@ const slowCrawler = new CheerioCrawler({
     maxRequestRetries: 2,
 });
 
+// 🆕 2026-07-03 通用 RSS crawler(老板拍 a · ghost/wp/gatsby 60 host)· 主力池 · 复用 mediumRouter
+// feed 一次 1 请求 · 60 feed 也就分钟级 · RPM 300 稳字优先
+const rssCrawler = new CheerioCrawler({
+    requestQueue: rssQueue,
+    httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
+    requestHandler: mediumRouter,
+    proxyConfiguration,
+    maxRequestsPerMinute: 300,
+    maxConcurrency: 10,
+    sameDomainDelaySecs: 0,
+    useSessionPool: true,
+    persistCookiesPerSession: true,
+    additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
+    maxRequestRetries: 2,
+});
+
 // 🆕 2026-06-30 mirror 独立 crawler · Atom feed · cf 反爬严 · sessionPool 高 retry
 // 2026-07-01 挂代理(curl+代理仍 cf challenge · 但 impit TLS 指纹 + 新 IP 组合待真验)
 const mirrorCrawler = new CheerioCrawler({
@@ -438,6 +483,15 @@ if (substackByRss.size > 0) {
         const ds = await Dataset.open();
         const r = await fetchAndPushSubstack(substackByRss, ds);
         console.log(`   · substack 完成 ${((performance.now() - t) / 1000).toFixed(1)}s · ok=${r.ok} fail=${r.failed} pushed=${r.pushed}`);
+    })());
+}
+
+if (rssReqs.length > 0) {
+    console.log(`🚀 [并行] rss(通用 feed)· ${rssReqs.length} feed(主力池)`);
+    jobs.push((async () => {
+        const t = performance.now();
+        await rssCrawler.run();
+        console.log(`   · rss 完成 ${((performance.now() - t) / 1000).toFixed(1)}s`);
     })());
 }
 

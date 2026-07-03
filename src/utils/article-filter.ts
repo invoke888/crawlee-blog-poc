@@ -15,6 +15,8 @@ const cfg = require('./filter-config.json') as {
     noise_segments: string[];
     noise_last_segments: string[];
     platform_overrides: Record<string, string>;
+    rss_feed_overrides: Record<string, string>;
+    excluded_token_ids: Record<string, string>;
     file_extensions: string[];
     host_blacklist: string[];
     throttled_domains: Record<string, string[]>;
@@ -160,6 +162,21 @@ export function getPlatformOverride(url: string): string | null {
     } catch {
         return null;
     }
+}
+
+// 🆕 2026-07-03 老板拍 a:通用 RSS 源(ghost/wp/gatsby 等 60 host)· host → feed URL
+export function getRssFeedOverride(url: string): string | null {
+    try {
+        const h = new URL(url).hostname.toLowerCase();
+        return cfg.rss_feed_overrides?.[h] ?? null;
+    } catch {
+        return null;
+    }
+}
+
+// 🆕 2026-07-03 老板拍 c/d:token 级排除(去重/上游错配挂起)· 返回排除原因 · null=不排除
+export function getTokenExclusion(tokenId: number): string | null {
+    return cfg.excluded_token_ids?.[String(tokenId)] ?? null;
 }
 
 // 🆕 2026-07-03 DC-ban 名单(老板拍 b):AWS 段被整段 ban 的站(池 A/C 全 403)· 暂停采集
