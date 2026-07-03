@@ -246,6 +246,11 @@ const sitemapReqs = sitemapResults.flatMap((r, i) => {
         for (const s of srcs) sitemapFallbackUrls.add(s.blog_url);
         return [];
     }
+    // 🆕 2026-07-04 判死复核战役:sitemap 稀薄(<5 条 article URL)时附加 LIST 双保险
+    // (G/HOT 实锤:sitemap 只有 /blog 一条 · 进 DETAIL 被首页拦 → 源挂零 · LIST 页上其实有真文章)
+    if (articleUrls.length < 5) {
+        for (const s of srcs) sitemapFallbackUrls.add(s.blog_url);
+    }
     // 🆕 2026-07-03 修 SUI/DEEP 归属 bug(agent 实锤):共用 sitemap 的源 blog_url 可能不同 ·
     // 之前只查 srcs[0] 的 blog_url → 其他 token 挂零。改为合并全部 srcs 的 tokens(去重)
     const seenTokens = new Set<number>();

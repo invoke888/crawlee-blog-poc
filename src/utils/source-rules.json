@@ -1343,7 +1343,8 @@
   "LAZIO": {
    "confidence": "high",
    "include_prefixes": [
-    "/en/news/"
+    "/en/news/",
+    "/en/latest-news/"
    ],
    "exclude_prefixes": [
     "/it/"

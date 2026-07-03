@@ -88,6 +88,9 @@ export const URL_OVERRIDES: Record<string, string> = {
     SPURS: 'https://www.tottenhamhotspur.com/news', // 原 /media 301 失效 · 真新闻 /news/<id>/<slug>
     LYN: 'https://everlyn.ai/posts/', // 原采样全落姊妹域 everlyn.app 工具页 · 真博客 everlyn.ai/posts
     PEAQ: 'https://www.peaq.xyz/learn/blog', // 原 /community/blog 301 · 已迁 /learn/blog
+    // 🆕 2026-07-04 判死复核战役:blog.meteora.ag 是 medium 门面站(页面链接全指向 meteoraag.medium.com
+    // 被外链拦截 · 实为 medium 源)· 改 medium URL 自动归 RSS 管线
+    MET: 'https://meteoraag.medium.com',
 };
 
 // 非 article URL 黑名单(glob 风格)· 长期迭代

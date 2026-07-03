@@ -202,7 +202,6 @@
   "powerledger.io": "https://powerledger.io/feed",
   "blog.iqai.com": "https://blog.iqai.com/feed",
   "blog.golem.network": "https://blog.golem.network/feed",
-  "blog.osmosis.zone": "https://blog.osmosis.zone/feed",
   "blog.pundix.com": "https://blog.pundix.com/feed"
  },
  "_excluded_comment": "🆕 2026-07-03 老板拍 c/d:token 级排除 · c=同项目重复登记去重保留一个 · d=上游 blog_url 错配挂起(host 级挂会误伤子域 · 如 prestocks.com 会杀 newsletter.prestocks.com 的 ANTHROPIC)",
