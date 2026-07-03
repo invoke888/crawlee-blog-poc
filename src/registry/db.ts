@@ -70,7 +70,8 @@ export function updateProbe(token_id: number, probe: Partial<SourceRow>): void {
             sitemap_count = @sitemap_count,
             fetch_strategy = @fetch_strategy,
             og_quality = @og_quality,
-            host_platform = @host_platform,
+            -- 🆕 2026-07-03 P2#5 教训:probe 检测不出 platform(custom-domain substack 如 CRO)时保留人工标记 · 不许 null 覆盖
+            host_platform = COALESCE(@host_platform, host_platform),
             http_status = @http_status,
             server_header = @server_header,
             probed_at = CURRENT_TIMESTAMP,
