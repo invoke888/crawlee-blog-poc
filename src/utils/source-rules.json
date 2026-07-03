@@ -1363,6 +1363,60 @@
    "mode": "sitemap-only",
    "post_sitemap": "https://ogs.gg/post-sitemap.xml",
    "confidence": "high"
+  },
+  "0G": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/blog/"
+   ]
+  },
+  "ARC": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/blog/"
+   ]
+  },
+  "CVC": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/news/",
+    "/field-notes/"
+   ]
+  },
+  "CYBER": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/article/"
+   ]
+  },
+  "FIDA": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/blog/"
+   ],
+   "exclude_prefixes": [
+    "/zh-Hans/blog/",
+    "/ko/blog/",
+    "/pseudo/blog/"
+   ]
+  },
+  "PHA": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/posts/"
+   ]
+  },
+  "TRIA": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/en/blogs/"
+   ]
+  },
+  "ZORA": {
+   "confidence": "high",
+   "include_prefixes": [
+    "/blog/"
+   ]
   }
  }
 }
