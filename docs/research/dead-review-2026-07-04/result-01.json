@@ -1,0 +1,53 @@
+{
+ "slice": "01",
+ "verdicts": [
+  {
+   "base_symbol": "NEAR",
+   "blog_url": "https://near.org/blog",
+   "verdict": "keep_hold",
+   "best_entry": "",
+   "evidence": "blog页body全是'Loading articles...'占位(真SPA);5个feed变体200但body实为'404 Page Not Found'壳(假feed);复查sitemap.txt同样返回该404壳而非URL列表,无法抽文章复核SSR,维持等Playwright"
+  },
+  {
+   "base_symbol": "HOT",
+   "blog_url": "https://holo.host/blog/",
+   "verdict": "rescue_html",
+   "best_entry": "https://holo.host/blog/",
+   "evidence": "blog页SSR真实文章列表(标题+日期+摘要,如'You Can't Run an Economy on a Bet' July 03 2026),非JS空壳;5个feed变体为假200(body即blog页本身非XML),直接读blog页即可救"
+  },
+  {
+   "base_symbol": "G",
+   "blog_url": "https://gravity.xyz/blog",
+   "verdict": "rescue_html",
+   "best_entry": "https://gravity.xyz/blog",
+   "evidence": "blog页SSR真实文章列表(日期+分类+标题,如'[Jun 4,2026//Company]Gravity L1 Mainnet: Beginning the Transition'),内容完整非空壳;6个feed入口全不通,直接读blog页可救"
+  },
+  {
+   "base_symbol": "UMA",
+   "blog_url": "https://blog.uma.xyz",
+   "verdict": "rescue_html",
+   "best_entry": "https://blog.uma.xyz",
+   "evidence": "blog页SSR真实文章列表(日期+阅读时长+标题+标签,如'Mar 10,2026 2 min read UMA Powers Market Resolution for Predict.fun'),非空壳;6个feed入口全不通,直接读blog页可救"
+  },
+  {
+   "base_symbol": "EGLD",
+   "blog_url": "https://multiversx.com/blog",
+   "verdict": "keep_hold",
+   "best_entry": "",
+   "evidence": "blog_url返回403 Cloudflare盾('Just a moment...'),非SPA问题而是反爬拦截,当前生产指纹过不去;sitemap为空、6个feed入口同域大概率同样被拦,维持等更强反爬方案/报上游"
+  },
+  {
+   "base_symbol": "MET",
+   "blog_url": "https://blog.meteora.ag/",
+   "verdict": "rescue_html",
+   "best_entry": "https://blog.meteora.ag/",
+   "evidence": "custom domain Medium博客,blog页真实文章列表(作者+日期+标题,如'Meteora·Dec 19,2025 The Meteora Toolkit Roadmap'),账号非空非JS空壳;6个feed入口全不通,直接读blog页可救"
+  }
+ ],
+ "patterns": [
+  "生产指纹下feed变体常见'假200':状态码200但body实为首页/404占位壳而非真实XML feed(6源里5源命中),不能只看http状态需判body内容",
+  "本切片4/6源(HOT/G/UMA/MET)blog页本身已是SSR真实文章列表(标题+日期俱全),并非JS空壳,此前'0数据源=SPA候选'的归类过粗,可直接切HTML抓取不必等Playwright",
+  "403 Cloudflare盾(EGLD)与真SPA(NEAR)是两种不同阻塞机制,前者需反爬能力后者需渲染能力,修复路径不同不应合并处理",
+  "sitemap_url字段可能已失效:NEAR的sitemap.txt实测返回404占位壳而非URL文本列表,sitemap_count>0不代表sitemap当前可用,需实测才能采信"
+ ]
+}

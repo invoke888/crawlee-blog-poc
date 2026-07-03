@@ -1,0 +1,64 @@
+{
+  "slice": "06",
+  "verdicts": [
+    {
+      "base_symbol": "MOODENG",
+      "blog_url": "https://moodengsol.com",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "probe_blog 200/62KB,body_text 全是 meme 币要素(1B+Views/1M+Fans/About MooDeng/Exchanges/Tokenomics),无 Blog/News 导航或文章列表;/feed 404('Page not found'),确认是纯代币营销落地站非博客,维持判死。"
+    },
+    {
+      "base_symbol": "OL",
+      "blog_url": "https://about.openloot.com/news",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "复查后与原判死完全一致:/news 正文仍是未渲染骨架屏,body_text 反复出现 'This article is loading'+'Medium'+'Open Loot'+Lorem ipsum 占位文本,说明卡片内容经 JS 从 Medium/chainplay.gg 拉取而非自有站产出;/feed 404。原 sitemap 零文章证据(仅 17 条静态页)依然成立,维持判死。"
+    },
+    {
+      "base_symbol": "OPEN",
+      "blog_url": "https://openledger.xyz/blog",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "补测原判死引用的正确 URL www.openledger.xyz/blog:正文明确写着 'Openledger Blogs No blog posts found.',站方自证零博文;blog_url(无 www)本次 probe_blog 标题/正文均为首页内容(导航栏而非博文列表),印证原诊断所述 301 丢 path 到首页仍然成立,/feed 同样落到首页,维持判死。"
+    },
+    {
+      "base_symbol": "ORDI",
+      "blog_url": "https://docs.ordinals.com/",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "probe_blog title='Introduction - Ordinal Theory Handbook'、h1='Ordinal Theory Handbook',正文是聪(satoshi)理论教程语言,与原诊断'mdbook 技术手册体裁、全站仅5内部链接'完全吻合;/feed 404 返回 'Page not found - Ordinal Theory Handbook',确认全站无博客栏目,维持判死。"
+    },
+    {
+      "base_symbol": "OSMO",
+      "blog_url": "https://blog.osmosis.zone",
+      "verdict": "rescue",
+      "alive": true,
+      "latest_post_hint": "2025-07-01",
+      "best_entry": "https://blog.osmosis.zone",
+      "evidence": "blog.osmosis.zone 是 Discourse 论坛的 Blog 分类页(generator meta='Discourse 2026.7.0'),原始 HTML 内嵌 data-preloaded 转义 JSON,解出 topic_list 含 30 条真实文章(标题+精确时间戳),最新一条《Highlights from the Lab: Osmosis H1 2025 Recap》created_at=2025-07-01,往前还有《Tokenomics Roadmap》《Osmosis to Become a Bitcoin Secured Network...》等连续更新记录;可见 body 文本/og:description 因 Ember.js 需 JS 渲染而几乎为空,此前大概率因此被误判为空壳死站。/latest.rss 与 /feed 均只返回同一 SPA 壳(字节数与 blog 页相同 334555),非真实 RSS,故 best_entry 用 blog_url 本身,判定救回。"
+    },
+    {
+      "base_symbol": "PIPPIN",
+      "blog_url": "https://pippin.love/",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "probe_blog 200/2.3KB,body_text 仅 93 词量级产品页(Token/Unicorn/Framework/Shop 四个入口+感谢语),与原诊断'4页静态站、全站仅4链接'一致;/feed 404 为 GitHub Pages 404 页,确认无博客栏目,维持判死。"
+    }
+  ],
+  "patterns": [
+    "Discourse/论坛驱动博客(OSMO 型,本切片新发现的误判模式):真实文章不在可见 body 文本流,而是以转义 JSON 形式嵌在 <div data-preloaded> 属性里给 Ember.js 前端 hydrate,直接看正文/og:description 几乎为空或只有 CSS skeleton;旧判定逻辑若只看可见文本会把仍在更新的论坛型博客误判为死站。修复方向:探测到 data-preloaded/topic_list 等 Discourse 特征时,解析内嵌转义 JSON 取 title+created_at 而非依赖可见文本。",
+    "本切片其余 5/6 源(MOODENG/OL/OPEN/ORDI/PIPPIN)原判死结论经重探全部维持,且原 death_note 均给出了具体一手证据(sitemap 计数、正文关键句'No blog posts found'、mdbook 特征、导航链接枚举)——'有一手证据支撑'的判死可信度高,不应因个别源(如老板抽查的 MEGA)误判就怀疑整批已给出具体理由的判死记录。",
+    "OL(Open Loot)型 JS 骨架屏 + 外部聚合(内容经 JS 从 Medium/chainplay.gg 拉取)与真正的反爬拦截(403/challenge)是两种不同性质的'看不到内容':前者是架构上确实无自有内容,该判死;只有出现 403/challenge/边缘防火墙特征时才该进 to_suspended,不能把所有'HTTP 200 但正文空'都当反爬处理。"
+  ]
+}

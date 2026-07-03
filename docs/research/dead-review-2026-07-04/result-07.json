@@ -1,0 +1,64 @@
+{
+  "slice": "07",
+  "verdicts": [
+    {
+      "base_symbol": "PLAY",
+      "blog_url": "https://playsout.com/news.html",
+      "verdict": "keep_dead",
+      "alive": false,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "解封后(原 403 → 今日 200)blog_url 是『PlaysOut in the press』第三方媒体报道聚合页(h1='PlaysOut in the press.',内容为 Bloomberg/GamesBeat/Business Insider/Tencent Cloud/IBTimes 等外部报道链接列表),并非自有博客文章,印证原判死备注里已点出的 NO_REAL_BLOG 嫌疑成立;/feed 404。"
+    },
+    {
+      "base_symbol": "POPCAT",
+      "blog_url": "https://popcatsolana.xyz",
+      "verdict": "keep_dead",
+      "alive": false,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "200 OK 但页面是 $POPCAT meme 代币点击小游戏(title/og 均为'Popcat taptap',body_text 含合约地址 CA 与'Total Pops'点击计数器),无任何文章/博客内容;/feed 404,确认非博客站。"
+    },
+    {
+      "base_symbol": "POWER_2",
+      "blog_url": "https://powerprotocol.xyz/en",
+      "verdict": "to_suspended",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://powerprotocol.xyz/en",
+      "evidence": "blog_url 与 /feed 均返回 403 + title 'Just a moment...',是 Cloudflare JS 反爬挑战页(典型 anti-bot 拦截特征,不等于域名死亡),需 Playwright/住宅代理绕过验证码后才能判断博客是否存在。"
+    },
+    {
+      "base_symbol": "PRL",
+      "blog_url": "https://www.perle.xyz/blog",
+      "verdict": "to_suspended",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://www.perle.xyz/blog",
+      "evidence": "blog_url/feed 及追加复测的 sitemap.xml 均返回同一 1955 字节壳(仅 <div id=\"root\"></div> + title 'perle-labs');robots.txt 复测证实站点由 Cloudflare 正常托管、内容随任意路径 fallback 到同一 index.html(Vite 打包脚本 /assets/index-*.js),是纯客户端渲染 SPA,静态探针看不到真实正文,需 Playwright 渲染复核而非直接判死。"
+    },
+    {
+      "base_symbol": "PROMPT",
+      "blog_url": "https://wayfinder.ai/blog",
+      "verdict": "to_suspended",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://wayfinder.ai/blog",
+      "evidence": "blog_url/feed 及追加复测的 sitemap.xml 三者字节数完全相同(均 718 字节),仅含 <div id=\"root\"> 骨架与 title 'Wayfinder',确认是客户端渲染 SPA、任意路径 fallback 同一壳,静态抓取无法判断博客是否存在,需 Playwright 复核。"
+    },
+    {
+      "base_symbol": "PUMPBTC",
+      "blog_url": "https://mainnet.pumpbtc.xyz/blog",
+      "verdict": "to_suspended",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://mainnet.pumpbtc.xyz/blog",
+      "evidence": "blog_url/feed 及追加复测的 sitemap.xml 三者字节数完全相同(均 1789 字节),og:title/og:description 均为通用'Pump BTC'(非文章级 meta),确认是客户端渲染 SPA 空壳、任意路径 fallback 同一 index.html,需 Playwright 复核才能判断博客是否存在。"
+    }
+  ],
+  "patterns": [
+    "SPA 全路径同壳是本切片新发现的误判来源(6 源中 3 个命中:PRL/PROMPT/PUMPBTC):blog_url、feed、以及追加复测的 sitemap.xml 三条语义完全不同的路径返回字节数一致的同一份 index.html(仅 <div id=\"root\">),证明站点是纯客户端渲染(Vite/React)、任意路由 fallback 同一壳,而非反爬也非真的没有博客——静态探针(impit)天生看不到这类站的内容,不应判 keep_dead,应转 to_suspended 等 Playwright 复核。此模式与并行切片 result-01(APE 案例)、result-02(BEAT 案例)各自独立命中,是跨切片一致的系统性盲区。",
+    "Cloudflare 'Just a moment...' JS 挑战页(POWER_2,blog 与 feed 两个路径拿到一模一样的挑战页)应统一走 to_suspended 而非因为'打不开就判死',和早前战役里 Fastly/Vercel 边缘防火墙拦截案例同源同解法。",
+    "反爬解封 ≠ 真博客:PLAY 原本因整站 403 被判 ANTI_BOT(判死备注里已附带 NO_REAL_BLOG 嫌疑),今日解封后证实内容确是'第三方媒体报道聚合页'而非自有博客文章,原嫌疑坐实——'能打开了'只是判定第一步,还要看页面内容形状是不是真的博客。"
+  ]
+}

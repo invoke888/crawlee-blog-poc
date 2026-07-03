@@ -1,0 +1,54 @@
+{
+ "slice": "03",
+ "verdicts": [
+  {
+   "base_symbol": "MANA",
+   "blog_url": "https://decentraland.org/blog",
+   "verdict": "keep_hold",
+   "best_entry": "",
+   "evidence": "blog_url及全部5个feed变体、sitemap.txt三者返回同一份122KB SPA壳层(catch-all路由,正文全是'Hang Out From Anywhere'首页营销文案);复查sitemap.xml发现是带域名锁死混淆JS的伪404陷阱页,无法抽文章复核SSR,真SPA维持等Playwright"
+  },
+  {
+   "base_symbol": "XAUT",
+   "blog_url": "https://tether.to/en/blog/",
+   "verdict": "keep_hold",
+   "best_entry": "",
+   "evidence": "复查blog_url(/en/blog/)返回内容与首页完全一致(Gatsby同构壳,h1='Tether token'、通篇稳定币营销文案,无任何文章列表);5个feed变体均为5678B空壳且body为空字符串;sitemap仅1条URL不可用,判定blog已下线/合并进首页,站死"
+  },
+  {
+   "base_symbol": "SENT",
+   "blog_url": "https://blog.sentient.xyz/",
+   "verdict": "keep_hold",
+   "best_entry": "",
+   "evidence": "复查blog_url剥离script/tag后正文为空(仅剩title重复,无任何可见文字),确认纯前端渲染空壳;6个feed入口全不通;无sitemap,真SPA维持等Playwright"
+  },
+  {
+   "base_symbol": "MAVIA",
+   "blog_url": "https://medium.com/heroes-of-mavia",
+   "verdict": "keep_hold",
+   "best_entry": "",
+   "evidence": "blog_url返回403 Cloudflare式质询页('Just a moment...'),6个feed入口全不通;medium域账号已知模式(同SPELL),即使换用正确/feed/heroes-of-mavia路径大概率也是账号已迁移/空发布,不算救回"
+  },
+  {
+   "base_symbol": "POKT",
+   "blog_url": "https://blog.pokt.network/",
+   "verdict": "rescue_html",
+   "best_entry": "https://blog.pokt.network/",
+   "evidence": "blog_url直接返回真实文章列表(日期+标题+摘要,如'February 11,2026 News Pocket Network×AnChain.AI: Decentralized Infrastructure Meets Compliance Intelligence'),SSR非空壳;6个feed入口全不通但不影响,直接读blog页可救"
+  },
+  {
+   "base_symbol": "ZENT",
+   "blog_url": "https://blog.zentry.com/",
+   "verdict": "rescue_html",
+   "best_entry": "https://blog.zentry.com/",
+   "evidence": "blog_url返回真实文章列表(4篇带日期标题,如'27 May 2026 Engineering zTerminal's Advanced Charting Experience with TradingView'),SSR非空壳;5个feed变体虽200但body均为'Blog not found'客户端路由假壳,应直接读blog_url而非feed"
+  }
+ ],
+ "patterns": [
+  "五个feed变体(/feed /rss /atom.xml /feed.xml /rss.xml)返回完全相同size/body时,几乎必是SPA服务端catch-all路由把所有未知路径导向同一index.html壳层,不是真feed(MANA/XAUT/ZENT三例皆命中,其中ZENT的假壳body直接写着'Blog not found')",
+  "区分真假内容最快信号:probe_blog.body_text有没有具体日期+文章标题(真SSR,如POKT/ZENT)vs只有导航栏/营销slogan反复出现或为空(假壳,如MANA/XAUT/SENT)",
+  "sitemap_url字段不可全信:MANA的sitemap.txt实测被SPA路由接管返回同一壳层,真正sitemap.xml反而是域名锁死混淆JS的伪404陷阱页——部分站点对非白名单路径做了来源/域名校验反爬,sitemap_count历史值不代表当前可用",
+  "Medium域源(MAVIA同类SPELL)是独立已知模式:账号大概率已空/已迁移,即使补探正确/feed/<slug>路径也大概率0 posts,不建议为此类源消耗探测预算,直接keep_hold",
+  "feed body为空字符串且size远小于blog页本身(如XAUT的5678B vs 118591B),是识别'假200壳页'的额外信号,即使title看起来正常也不能采信"
+ ]
+}

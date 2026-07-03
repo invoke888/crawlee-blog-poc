@@ -1,0 +1,54 @@
+{
+  "slice": "04",
+  "verdicts": [
+    {
+      "base_symbol": "XNY",
+      "blog_url": "https://blog.codatta.io/",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "Cloudflare Error 1000「DNS points to prohibited IP」,域名 DNS 配置故障(站方问题非 SPA),6 个 feed 入口全不通,无 sitemap,报上游让站方修 DNS"
+    },
+    {
+      "base_symbol": "LYN",
+      "blog_url": "https://everlyn.ai/posts/",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "复查实锤假feed:atom/feed/rss.xml 虽 200 且 55KB,但直连验证内容是 Next.js 应用壳(html lang 属性被路由参数污染成'rss'),全文无 <rss>/<feed>/<?xml> 标签;posts 页面本体去除 script/style/标签后可见文本长度=0,纯客户端渲染真 SPA,无救"
+    },
+    {
+      "base_symbol": "PHAROS",
+      "blog_url": "https://www.pharos.xyz/blog",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "blog_url 直接 404 Not Found,无 sitemap(sitemap_count=0),6 个 feed 入口全不通,URL 错或站已下线,报上游找正确地址"
+    },
+    {
+      "base_symbol": "MANTRA",
+      "blog_url": "https://mantrachain.io/resources/announcements",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "blog 页 + 5 个 feed 变体 + 复查直连 sitemap.txt 全部返回字节数完全相同(1645)的 SPA 首页壳(sitemap.txt 实测返回的是 <!doctype html> 首页而非纯文本 URL 列表),站方对未知路径一律 200 回退首页,声称的 sitemap_count=25 在生产抓取管线下不可达,真 SPA 无救"
+    },
+    {
+      "base_symbol": "QTUM",
+      "blog_url": "https://qtum.org/blog",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "body_text 原始探测已见「Loading articles...」客户端渲染占位实锤;复查 sitemap.xml(11条)全是导航页(about/tech/developers/ecosystem/...),不含任何文章级 URL,连站方自己 sitemap 都没收录文章,5个 feed 变体全不通,无救"
+    },
+    {
+      "base_symbol": "TON",
+      "blog_url": "https://blog.ton.org",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "blog_url 及全部 5 个 feed 变体一致返回 Telegram 频道预览页(title=Telegram: View @toncoin,og_title=Gram of TON,747万订阅数文案),域名已被重定向/劫持到无关 Telegram 页面,非真实 blog 内容,URL 错需上游核实 TON 官方 blog 真实地址(sitemap_count=138 疑为历史遗留,当前域名下不可达)"
+    }
+  ],
+  "patterns": [
+    "假feed陷阱:200+size>300 不能只看数字,LYN 的 atom/feed/rss.xml 实为 Next.js 把未知路径当路由参数吞掉返回应用壳,复查内容才发现全文无 <rss>/<feed>/<?xml> 标签,body 去标签后可见文本=0",
+    "SPA全路径同壳指纹:MANTRA 全部 8 个探测路径(blog页/5个feed/sitemap.txt/首页)字节数完全相同(1645),是服务端对未知路径统一 200 回退首页壳的强信号,声称的 sitemap_count 在生产管线下可能不可达",
+    "Loading占位文本可直接实锤SPA:QTUM body_text 原始探测就带「Loading articles...」,无需复查即可定性,复查 sitemap 只是确认连文章级 URL 都不存在,进一步排除救回路径",
+    "域名劫持/重定向类死站:TON blog_url 与全部 feed 变体一致指向无关 Telegram 频道预览页,不是 SPA 也不是反爬,是域名指向问题,应归 keep_hold 并单独标注「报上游核实真实域名」而非「等 Playwright」",
+    "本切片 6 源 0 rescue:与「MAVIA/SPELL 式 medium 空账号 0 posts 不算救回」同理,本切片属于「表面像救回信号(高 size / 有 sitemap 计数)实为假阳性」类型,提醒后续切片对高 size feed 和高 sitemap_count 也要抽查验证内容而非只看数字达标"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "slice": "10",
+  "verdicts": [
+    {
+      "base_symbol": "VIRTUAL",
+      "blog_url": "https://www.virtuals.io/",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://www.virtuals.io/",
+      "evidence": "首页200但为Next.js纯前端SPA产品页(og_desc是协议介绍非文章)，补充探针显示/blog显式404、/sitemap.xml同为404模板尺寸(8918/8911字节一致)，原始HTML全文检索blog|news|mirror.xyz|medium.com|substack关键词0命中，确认站点无博客栏目，非误判。"
+    },
+    {
+      "base_symbol": "WEN",
+      "blog_url": "https://www.wenwencoin.com/",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://www.wenwencoin.com/",
+      "evidence": "probe body_text为meme币品牌页(About/Content/Map导航，'Wen is culture...airdrop')，无文章列表或日期信号，feed 404返回'This page could not be found'，与判死时'仅品牌营销站无blog/news'描述完全一致，维持判死。"
+    },
+    {
+      "base_symbol": "WET",
+      "blog_url": "https://humidifi.xyz",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://humidifi.xyz",
+      "evidence": "probe标题变为'HumidiFi || Leaderboard'，h1='Leaderboard'，body_text是交易排行榜/Aquarium产品公告而非文章列表，feed 404 'Not Found'，确认是纯DeFi产品功能页(排行榜)非博客，维持判死。"
+    },
+    {
+      "base_symbol": "我踏马来了",
+      "blog_url": "https://x.com/i/communities/2006728550356050179",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://x.com/i/communities/2006728550356050179",
+      "evidence": "probe_blog证实是X community页面，body_text为随机用户喊单贴('100x from here LFG'等)与项目方无关；probe_feed虽200但命中的是完全无关账号'Feed.(@feed)/X'(法国营养品牌)，证明这是源头URL配置错(community链接非官方博客)而非反爬，维持判死。"
+    },
+    {
+      "base_symbol": "龙虾",
+      "blog_url": "https://x.com/i/communities/2027552765266870491",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://x.com/i/communities/2027552765266870491",
+      "evidence": "probe_blog显示X community页面被登录墙挡住('Log in to access all content')，无可见博文；probe_feed同样命中无关账号'Feed.(@feed)/X'，证实blog_url本身配置错(community链接非项目方站点)，维持判死。"
+    }
+  ],
+  "patterns": [
+    "blog_url误填为X(Twitter) community链接的源(我踏马来了/龙虾)：origin/feed探测会巧合命中一个完全无关的第三方账号'@feed'(法国营养品牌)并返回200，极易被误判为'有效feed'——这是数据源配置错误(该用项目官网而非community链接)，不是反爬，复核时必须核对feed内容是否真的与项目相关，不能只看HTTP 200。",
+    "meme币/DeFi产品官网类源(WEN/WET)：站点确实存活(200)且标题正常，但页面本质是品牌营销首页或产品功能页(如Leaderboard/Tokenomics)，无文章列表和日期信号，容易被'200+正常标题'表面信号误判为救回，需细看h1/body_text是否为真实文章内容。",
+    "知名/仍活跃大项目(VIRTUAL/Virtuals Protocol)不能仅凭'项目仍火'就想当然救回：其官网是Next.js纯客户端渲染SPA，首页probe拿不到h1/body_text只有meta标签；需额外探测/blog、/sitemap.xml等路径 + 原始HTML关键词检索，确认无博客入口后才能维持判死，避免'知名度光环'导致误救。"
+  ]
+}

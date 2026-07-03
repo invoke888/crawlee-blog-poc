@@ -1,0 +1,65 @@
+{
+  "slice": "09",
+  "verdicts": [
+    {
+      "base_symbol": "SPORTFUN",
+      "blog_url": "https://sport.fun/blog",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "/blog 与 feed 返回完全相同的 200/2097B 首页壳,title/og_desc 都是 'Fantasy Sports Trading' 产品宣传语,无 body_text 可提取,证实原判(sitemap 僅15 URL 无 /blog、React/Vite SPA)成立,非误判。"
+    },
+    {
+      "base_symbol": "TRA",
+      "blog_url": "https://www.trabzonspor.org.tr/blog",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "/blog(238KB)与 feed 返回内容/title 完全一致,body_text 只有 'ClubDirectorsBranchesMatch CenterNewsOnline TransactionsContact' 导航栏+订阅框,无任何文章标题或日期,证实原判(52 href 关键词扫描零命中、Next.js 兜底 slug 渲染)成立,非误判。"
+    },
+    {
+      "base_symbol": "TRADOOR",
+      "blog_url": "https://tradoor.io/blog",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "/blog 与 feed 均返回同一 4843B SPA 壳,title 是交易产品宣传语('Trade crypto with leverage...')而非博客标题,body_text 剥离后仅剩 'Tradoor' 四字,无任何文章内容,判死成立。"
+    },
+    {
+      "base_symbol": "UB",
+      "blog_url": "https://www.unibase.com/blogs",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "灰色地带,已加验3次:title='Blog | Unibase'/h1='Unibase Blog'/og_desc 具体提及 AI agents、x402 payments 等话题,表面像真博客;但深挖发现(1)原始HTML里 href 以 /blog 开头的链接数=0,(2)全文本剥离后仅350字符且是导航菜单头尾重复,无任何文章标题/日期,(3)sitemap.xml 全站仅9条URL,/blogs 只有栏目页本身、无一篇独立文章URL。判定为纯前端(React)客户端渲染壳,当前非JS抓取方式看不到任何文章列表,不构成403/challenge式反爬拦截故不进 to_suspended,按'无可提取博客内容'维持 keep_dead;因非典型 NO_REAL_BLOG(有真实博客栏目意图),建议后续有 Playwright 资源时二次核实是否真有文章。"
+    },
+    {
+      "base_symbol": "USELESS",
+      "blog_url": "https://theuselesscoin.com/insights",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "/insights 与 feed 均返回同一 4288B 首页壳,title='Useless Coin - The Most Honest Cryptocurrency'(非 insights 专属标题),证实原判(sitemap 僅9页无 /insights,meme 币站无博客栏目)成立。"
+    },
+    {
+      "base_symbol": "VINE",
+      "blog_url": "https://vineco.in",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "body_text 显示 'Buy Now'/'Join the $VINE Community'/DEXScreener 价格延迟提示等典型 meme 币候位落地页内容,feed 返回404 'Page not found',证实原判(未上线 waitlist 落地页,无 blog/news 入口)成立。"
+    }
+  ],
+  "patterns": [
+    "SPA/客户端渲染壳类(SPORTFUN、TRADOOR):/blog 路径与首页返回完全相同的极小 HTML(2-5KB),title 是产品宣传语而非博客标题,body_text 为空或仅剩品牌名 —— 今天重探依旧如此,原判非误判,这类站点静态抓取确实拿不到内容。",
+    "meme 币/waitlist 落地页类(USELESS、VINE):sitemap 无对应路径 或 纯候位页+DEXScreener 价格条,今天重探依旧是纯营销落地页无博客栏目,原判成立。",
+    "官网导航壳误判'blog'字样类(TRA):/blog 被前端框架(Next.js)当通用兜底 slug 渲染成与首页相同的壳,body_text 只有导航菜单文字,原判经 52 href 关键词扫描零命中后判死,今天重探完全一致,非误判。",
+    "🆕 灰色地带值得关注(UB/Unibase):title/og/h1 三处都明确写着'Blog'且 og_desc 具体到位(AI agents/x402 payments 等真实话题),表面signal很像 MEGA 那种误判案例,但深挖链接扫描+全文本+sitemap 三个维度均查无任何文章标题/日期/独立URL —— 判断是纯前端JS渲染的博客列表页(内容需要执行JS才能看到)。这类'title像博客但静态抓取查无一文'的案例,与'确认无博客意图'的 NO_REAL_BLOG 性质不同,不属于反爬拦截(无403/challenge)所以按当前三分类规则只能落 keep_dead,但建议单独标记为'JS渲染疑似博客'白名单,后续有 Playwright/住宅池资源时优先复核,而非和真正的死站一起放弃。"
+  ]
+}

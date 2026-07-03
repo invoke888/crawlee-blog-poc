@@ -1,0 +1,65 @@
+{
+  "slice": "08",
+  "verdicts": [
+    {
+      "base_symbol": "PUNDIX",
+      "blog_url": "https://blog.pundix.com/",
+      "verdict": "rescue",
+      "alive": true,
+      "latest_post_hint": "2026-03-05",
+      "best_entry": "https://blog.pundix.com/feed/",
+      "evidence": "blog 与 feed 均 200,feed 内含真实 item《Notice: Latest Pundi X News Is Now Published on Medium (2025 Update)》,pubDate/published_meta 一致为 2026-03-05(距今仅约4个月),WordPress 博客(wp-content 路径可见)仍在正常运行且可被 RSS 抓取,内容提到未来新闻迁移至 Medium 不代表本站已死"
+    },
+    {
+      "base_symbol": "PYUSD",
+      "blog_url": "https://www.paypal.com/us/digital-wallet/manage-money/crypto/pyusd/zh/blog",
+      "verdict": "keep_dead",
+      "alive": false,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "blog_url 与 feed 均 404 Page Not Found,复核验证原判死结论(NO_REAL_BLOG):PYUSD 无专属博客路径,真实新闻在跨域 newsroom.paypal-corp.com 且非本站 CMS,超出可修复范围"
+    },
+    {
+      "base_symbol": "RATS",
+      "blog_url": "https://dev.unisat.io",
+      "verdict": "keep_dead",
+      "alive": false,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "dev.unisat.io 返回 200 但 title 为《BTC Tools - Experimental》,页面仅 2027 字节,是开发者工具/实验页而非博客;blog 与 feed 探测结果完全相同(同一 shell 页面),确认该 URL 从未指向真实博客"
+    },
+    {
+      "base_symbol": "SOLV",
+      "blog_url": "https://solvprotocol.medium.com/",
+      "verdict": "keep_dead",
+      "alive": false,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "Medium 账号返回 410『This account is under investigation or was found in violation of the Medium Rules』(账号被封),feed 端点 404 Not Found,账号已封无法恢复"
+    },
+    {
+      "base_symbol": "SOPH",
+      "blog_url": "https://blog.sophon.xyz/",
+      "verdict": "keep_dead",
+      "alive": false,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "初探 http -1(连接失败),用生产探针重探确认为 TLS 证书错误:域名 CNAME 解析到 Fastly 边缘但呈现的证书是 fallback.tls.fastly.net 而非 blog.sophon.xyz(InvalidCertificate/NotValidForNameContext),说明该域名在 CDN 侧配置已被撤下,DNS 悬空,判定域名已死"
+    },
+    {
+      "base_symbol": "SPACE",
+      "blog_url": "https://spacecoin.org/blog",
+      "verdict": "keep_dead",
+      "alive": false,
+      "latest_post_hint": "unknown",
+      "best_entry": "N/A",
+      "evidence": "复核确认原判死结论:/blog 路径与首页返回完全相同的 Vite SPA shell HTML(size 均为 16816 字节、title/body_text 完全一致),sitemap.xml 只有 5 个 URL 且无 /blog,站点是纯落地页无真实博客内容"
+    }
+  ],
+  "patterns": [
+    "公司在自有 CMS/WordPress 上发布『内容已迁移至第三方平台(如 Medium)』的通知贴,该贴本身仍是真实 RSS item(有 pubDate/link/正文),不应仅因内容提及『迁移』就判死 —— 需实际看 feed/blog 是否仍 200 返回有效 item 及发布时间是否近期(PUNDIX 案例:原无判死备注,直接被归入更早战役的死亡名单,实为误判)",
+    "dev./test. 等开发者子域名常被历史记录误当作博客 blog_url 收录,实为工具/实验页而非 CMS 博客,title 与页面体积(远小于正常博客页)是快速识别信号(RATS 案例)",
+    "TLS 证书 SNI 不匹配(呈现 CDN 通用 fallback 证书而非目标域名证书)是『域名服务已下线但 DNS CNAME 仍悬空指向 CDN』的确凿信号,可比普通 -1/超时更明确地判定域名已死(SOPH 案例)",
+    "SPA 落地页站点(Vite/React 等)对所有路径(含 /blog)返回同一份 shell HTML,/blog 与首页 size/body_text 完全一致是判断『无真实博客路由,纯落地页』的可靠依据,原判死备注已实证过 sitemap 无 /blog,本轮复核结果完全吻合"
+  ]
+}

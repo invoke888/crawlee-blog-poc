@@ -1,0 +1,64 @@
+{
+  "slice": "05",
+  "verdicts": [
+    {
+      "base_symbol": "ILV",
+      "blog_url": "https://illuvium.medium.com/",
+      "verdict": "keep_dead",
+      "alive": false,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://illuvium.medium.com/",
+      "evidence": "Medium 返回 410 account suspended,账号被 Medium 官方判定违规封禁不可恢复,非反爬拦截,原判死维持。"
+    },
+    {
+      "base_symbol": "LA",
+      "blog_url": "https://www.lagrangefoundation.org/blog",
+      "verdict": "rescue",
+      "alive": true,
+      "latest_post_hint": "2025-07-22",
+      "best_entry": "https://www.lagrangefoundation.org/blog",
+      "evidence": "200 返回真实博客列表页,含 6 篇带日期文章标题(最新 22/7/2025《Introducing Deep Dive: Hold $LA and Win a Trip to Token2049》),/feed 404 故用 blog_url 直采;原判死无任何证据记录(判死来自更早战役、note 为空),系漏判。"
+    },
+    {
+      "base_symbol": "LIT",
+      "blog_url": "https://lighter.xyz",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://lighter.xyz",
+      "evidence": "200 但页面是永续合约交易所首页(TRADE/ZK infra 介绍),无任何博客栏目或文章列表,与原三重证据(sitemap 仅 8 条 URL、/blog 404、全文搜索 blog 命中 0 次)一致,维持判死。"
+    },
+    {
+      "base_symbol": "M",
+      "blog_url": "https://memecore.com/announcements",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://memecore.com/announcements",
+      "evidence": "200 但页面是活动日历(Events)+ 外链新闻聚合索引(News);补测实证'MemeCore Wraps Up Memekathon Seoul 2025'条目 href 直接指向站外 koreaittimes.com,非自有文章,与原判死证据(/announcements 链接全部指向站外媒体报道)完全一致,维持判死。"
+    },
+    {
+      "base_symbol": "MEGA",
+      "blog_url": "https://www.megaeth.com/blog-news",
+      "verdict": "rescue",
+      "alive": true,
+      "latest_post_hint": "2026-06-17",
+      "best_entry": "https://www.megaeth.com/blog-news",
+      "evidence": "生产 impit 全指纹 + 代理池直接 200(无需手工补 Accept 头),body 含真实带日期博文列表(2026/6/17《MOSS IS LIVE》、2026/6/5《ECOSYSTEM HIGHLIGHT: MNSTR》等),坐实老板抽查发现的误判——原判死是探测方式(UA-only 被 Cloudflare 拦截)问题,非站点无博客。"
+    },
+    {
+      "base_symbol": "MOG",
+      "blog_url": "https://mogcoin.xyz/",
+      "verdict": "keep_dead",
+      "alive": true,
+      "latest_post_hint": "unknown",
+      "best_entry": "https://mogcoin.xyz/",
+      "evidence": "200 但为 meme 币营销单页(导航仅 About/How To Buy/How to Bridge/Memes/Merch),无 Blog 栏目、无文章列表,与原判死(全站仅 3 内部链接、/memes 是图集非文章)一致,维持判死。"
+    }
+  ],
+  "patterns": [
+    "反爬探测方式误判(MEGA 型):早期用 UA-only 请求被 Cloudflare/边缘防火墙拦截误判为'无博客',生产 impit 全指纹直接绕过拿到真实分页博文列表——站点本身有博客且在更新,是探测手段问题不是站点问题。",
+    "'无证据链'历史判死可信度低(LA 型):original_verdict 为空、note 写'判死来自更早战役'的样本(未做三重证据校验)复核命中率高——LA 一探即中,是真博客且最近更新在 1 年内,系早期粗判漏判。",
+    "活动日历/新闻聚合页伪装博客(MemeCore 型,新发现):页面 200 且有日期+标题列表格式,表面像博客,但实证展开 href 后发现条目全部外链到第三方媒体站(如 koreaittimes.com),站方自己并不产出内容——仅看列表格式会误判为可救,必须验证链接实际落地域名才能定案。"
+  ]
+}

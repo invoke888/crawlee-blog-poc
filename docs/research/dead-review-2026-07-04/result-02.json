@@ -1,0 +1,54 @@
+{
+  "slice": "02",
+  "verdicts": [
+    {
+      "base_symbol": "PROS",
+      "blog_url": "https://www.pharos.xyz/blog",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "blog_url 直接 404 Not Found,6 个 feed 入口(feed/rss/atom.xml/feed.xml/rss.xml)全不通,URL 已失效或站点改版,需上游核实新博客路径,非救回范畴"
+    },
+    {
+      "base_symbol": "USDT",
+      "blog_url": "https://tether.to/en/blog/",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "复验 tether.to/feed:5678B 返回体是 Gatsby 构建通用壳(html{scroll-behavior}/.Typist .Cursor 动画 CSS/gatsby-image-wrapper),无任何文章内容;5 个 feed 变体 size 完全相同(5678)证实同壳非真 feed;blog_url 本身 200 但 body 只是导航菜单+首页营销文案重复 3 次,无新闻列表 → 真 SPA"
+    },
+    {
+      "base_symbol": "FIDA",
+      "blog_url": "https://www.bonfida.org/blog",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "复验 blog_url:body 仅为头部导航(Bonfida/Latest news/Twitter/Telegram)+底部导航(About us/Build with us/Blog/Governance/CoinGecko)重复两次,无任何文章标题或摘要,og_desc 是模板描述非实际内容;6 feed 入口全不通 → 客户端渲染 SPA"
+    },
+    {
+      "base_symbol": "LAZIO",
+      "blog_url": "https://www.sslazio.it/en/latest-news",
+      "verdict": "rescue_html",
+      "best_entry": "https://www.sslazio.it/en/latest-news",
+      "evidence": "blog_url 本身 200 且 body 是真实 SSR 文章列表(标题+日期,如'In My Life - Maurizio Manzini'03.07.26、'#LazioStory | Buon compleanno ai gemelli Filippini'),非 SPA 空壳;复验 /feed 证实是假 feed(实为意大利语版 HTML 导航页,含 search/person 图标等站点 chrome,非 XML 结构),故不用 feed 而直接用 blog_url 抓取"
+    },
+    {
+      "base_symbol": "TRX",
+      "blog_url": "https://tron.network/blog/",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "复验 tron.network/feed:body 明示'This site requires JavaScript. Please enable it in your browser to continue.',与 blog_url 及全部 5 个 feed 变体 size 完全相同(4360B)→ 站点对所有路径返回同一无 JS 兜底页,纯客户端 SPA,证据最直接的一例"
+    },
+    {
+      "base_symbol": "SPELL",
+      "blog_url": "https://medium.com/@abracadabramoney",
+      "verdict": "keep_hold",
+      "best_entry": "",
+      "evidence": "blog_url 403 'Just a moment...'(Cloudflare 人机挑战),6 feed 入口全不通(被同一层 403 拦截);medium.com 域源据老板既有经验(MAVIA/SPELL 类)属已知不可救类别,非账号内容问题而是域名层反爬,维持等 Playwright 或报上游反爬升级"
+    }
+  ],
+  "patterns": [
+    "5 个 feed 变体(feed/rss/atom.xml/feed.xml/rss.xml)size 完全相同 = 强假阳性信号,通常是 SPA/SSG 站点对不存在路径返回同一份通用壳或 fallback 页,不能只凭'200 且 size>300'判定 rescue_feed,必须逐一 probe 验证 body 是否有真实 XML/文章结构(USDT、TRX 两例实锤)",
+    "probe_blog body_text 若只含导航栏/页脚菜单文字且重复出现(无文章标题/日期/摘要),即使 http 200 也是 SPA 客户端渲染壳,而非真实文章列表(FIDA、USDT 两例)",
+    "feed 路径 200 但返回内容里出现 search/person/导航菜单等站点 UI 文案(而非纯文本/日期/摘要),说明服务器把该路径重写成了某语言版本的 HTML 页面而非真 XML feed,需单独判断 blog_url 本身是否可作为 rescue_html 入口(LAZIO 一例:feed 假但 blog_url 本身是真 SSR)",
+    "medium.com 域源(如 SPELL、MAVIA)命中 Cloudflare 403 挑战页是域名层反爬,不是内容问题,按老板既有经验归为已知不可救类别,不再逐条深挖",
+    "blog_url 直接 404 且无 sitemap 兜底(如 PROS)时优先级最低,应上游核实新地址而非本轮判定"
+  ]
+}
