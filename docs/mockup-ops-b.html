@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案 B · 深色控制台(假数据)</title>
+<style>
+:root {
+  --bg: #1B1A17; --panel: #232119; --ink: #E8E4D8; --mute: #8F8A78; --line: #38352B;
+  --ok: #7FBF8E; --ok-dim: rgba(127,191,142,.16); --warn: #D9B45B; --warn-dim: rgba(217,180,91,.15);
+  --bad: #D97C7C; --bad-dim: rgba(217,124,124,.16); --link: #8FB8DE;
+  --mono: "SF Mono", Menlo, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 13.5px/1.5 var(--mono); display: flex; min-height: 100vh; }
+h1, h2 { font-family: "Iowan Old Style", Georgia, serif; font-weight: 600; }
+
+/* 左侧栏 */
+aside { width: 172px; background: var(--panel); border-right: 1px solid var(--line); padding: 20px 0; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; }
+aside .brand { font-family: "Iowan Old Style", Georgia, serif; font-size: 16px; padding: 0 18px 18px; border-bottom: 1px solid var(--line); }
+aside a { display: block; padding: 10px 18px; color: var(--mute); text-decoration: none; cursor: pointer; border-left: 3px solid transparent; }
+aside a.on { color: var(--ink); border-left-color: var(--ok); background: rgba(127,191,142,.06); }
+aside .foot { margin-top: auto; padding: 14px 18px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--mute); line-height: 1.9; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: 0.5px; }
+.dot.g { background: var(--ok); box-shadow: 0 0 6px rgba(127,191,142,.7); }
+.dot.y { background: var(--warn); box-shadow: 0 0 6px rgba(217,180,91,.6); }
+.dot.r { background: var(--bad); box-shadow: 0 0 6px rgba(217,124,124,.7); }
+
+main { margin-left: 172px; flex: 1; padding: 22px 28px 80px; max-width: 1160px; }
+.page { display: none; } .page.on { display: block; }
+.note { background: var(--warn-dim); border: 1px solid rgba(217,180,91,.3); border-radius: 6px; padding: 7px 13px; font-size: 12px; margin-bottom: 16px; color: var(--warn); }
+
+/* 脉搏行(深色版更机房) */
+.pulse { display: flex; gap: 30px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 15px 20px; margin-bottom: 12px; flex-wrap: wrap; }
+.pulse .st { font-size: 17px; }
+.pulse .kv { font-size: 11px; color: var(--mute); }
+.pulse .kv b { display: block; font-size: 15px; color: var(--ink); font-weight: 500; }
+.pulse .next { margin-left: auto; text-align: right; }
+.pulse .next b { color: var(--ok); }
+
+.runband { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 20px; margin-bottom: 12px; }
+.runband .lab { font-size: 11px; color: var(--mute); margin-bottom: 7px; }
+.cells { display: flex; gap: 4px; }
+.cell { flex: 1; height: 26px; border-radius: 3px; background: var(--ok-dim); border: 1px solid rgba(127,191,142,.35); cursor: pointer; position: relative; }
+.cell.bad { background: var(--bad-dim); border-color: rgba(217,124,124,.5); }
+.cell.warn { background: var(--warn-dim); border-color: rgba(217,180,91,.5); }
+.cell:hover::after { content: attr(data-tip); position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); font-size: 11px; padding: 4px 8px; border-radius: 4px; white-space: pre; z-index: 9; }
+
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; }
+.card .lab { font-size: 11px; color: var(--mute); }
+.card .v { font-size: 24px; margin-top: 2px; }
+.card .sub { font-size: 11px; color: var(--mute); margin-top: 2px; }
+
+table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+th { text-align: left; font-size: 10.5px; color: var(--mute); font-weight: 400; padding: 8px 12px; border-bottom: 1px solid var(--line); text-transform: uppercase; letter-spacing: .06em; }
+td { padding: 7px 12px; border-bottom: 1px solid #2B2921; font-size: 12.5px; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #262418; }
+.chip { display: inline-block; border-radius: 3px; padding: 0 6px; font-size: 11px; border: 1px solid var(--line); color: var(--mute); }
+.chip.g { color: var(--ok); border-color: rgba(127,191,142,.4); background: var(--ok-dim); }
+.chip.y { color: var(--warn); border-color: rgba(217,180,91,.4); background: var(--warn-dim); }
+.chip.r { color: var(--bad); border-color: rgba(217,124,124,.4); background: var(--bad-dim); }
+a { color: var(--link); text-decoration: none; } a:hover { text-decoration: underline; }
+h2.sec { font-size: 15px; margin: 18px 0 9px; color: var(--ink); }
+.alertrow { display: flex; gap: 14px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: 6px; padding: 11px 16px; margin-bottom: 8px; }
+.alertrow.y { border-left-color: var(--warn); }
+.alertrow .type { width: 112px; font-size: 12px; }
+.alertrow .sym { width: 70px; font-weight: 700; }
+.alertrow .dur { width: 70px; color: var(--mute); font-size: 11px; }
+.alertrow .det { flex: 1; font-size: 12.5px; font-family: -apple-system, "PingFang SC", sans-serif; }
+.btn { border: 1px solid var(--line); background: transparent; color: var(--mute); border-radius: 5px; padding: 2px 10px; font-size: 11.5px; cursor: pointer; font-family: var(--mono); }
+.btn:hover { color: var(--ink); border-color: var(--mute); }
+.filters { display: flex; gap: 9px; margin-bottom: 11px; flex-wrap: wrap; }
+.filters input, .filters select { border: 1px solid var(--line); border-radius: 6px; padding: 5px 9px; font-size: 12px; background: var(--panel); color: var(--ink); font-family: var(--mono); }
+.det-sans { font-family: -apple-system, "PingFang SC", sans-serif; }
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand">采集运维台</div>
+  <a class="on" data-p="p1">总览</a>
+  <a data-p="p2">告警 <span style="color:var(--bad)">3</span></a>
+  <a data-p="p3">源管理</a>
+  <div class="foot">
+    <div><span class="dot g"></span> 上次 12:00 ok</div>
+    <div>下次 00:23:41</div>
+    <div style="margin-top:6px; opacity:.6">hk-prod · hourly</div>
+  </div>
+</aside>
+
+<main>
+<div class="note">⚠️ 方案 B · 深色控制台 · 假数据 mockup</div>
+
+<div class="page on" id="p1">
+  <div class="pulse">
+    <span class="st"><span class="dot g"></span> RUN OK</span>
+    <span class="kv">完成时间<b>07-04 12:00:34</b></span>
+    <span class="kv">耗时<b>5m24s</b></span>
+    <span class="kv">新增<b>+47</b></span>
+    <span class="kv">失败<b>6/2691</b></span>
+    <span class="kv">吞吐<b>498 rpm</b></span>
+    <span class="next kv">NEXT RUN<b>T-00:23:41</b></span>
+  </div>
+
+  <div class="runband">
+    <div class="lab">RUNS · 最近 24 批次</div>
+    <div class="cells" id="cells"></div>
+  </div>
+
+  <div class="grid3">
+    <div class="card"><div class="lab">今日新增博文</div><div class="v">312</div><div class="sub">昨日 289 · +8%</div></div>
+    <div class="card"><div class="lab">活跃告警</div><div class="v" style="color:var(--bad)">3</div><div class="sub">R1 · Y2 · 已恢复 12</div></div>
+    <div class="card"><div class="lab">有数据源</div><div class="v">501<span style="font-size:13px;color:var(--mute)">/634</span></div><div class="sub">挂起 61 · 放弃 42 · 排除 5</div></div>
+  </div>
+
+  <h2 class="sec">最近批次</h2>
+  <table>
+    <thead><tr><th>run</th><th>完成</th><th>耗时</th><th>新增</th><th>失败</th><th>rpm</th><th>告警</th><th>状态</th></tr></thead>
+    <tbody>
+      <tr><td>run-0704-1200</td><td>12:00:34</td><td>5m24s</td><td>47</td><td>6</td><td>498</td><td>0</td><td><span class="chip g">ok</span></td></tr>
+      <tr><td>run-0704-1100</td><td>11:00:29</td><td>5m19s</td><td>31</td><td>4</td><td>512</td><td>1</td><td><span class="chip g">ok</span></td></tr>
+      <tr><td>run-0704-1000</td><td>10:07:52</td><td>12m41s</td><td>12</td><td>88</td><td>201</td><td>2</td><td><span class="chip y">slow</span></td></tr>
+      <tr><td>run-0704-0900</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>1</td><td><span class="chip r">failed</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="page" id="p2">
+  <h2 class="sec" style="margin-top:0">活跃告警(3)</h2>
+  <div class="alertrow"><span class="type" style="color:var(--bad)">source_gone</span><span class="sym">QNT</span><span class="dur">6 轮</span><span class="det">近 7 天有产出 · 本轮 12 请求全部 403 — 疑似被 ban 或站挂 <a href="#">查看源 ›</a></span><button class="btn">ack</button></div>
+  <div class="alertrow y"><span class="type" style="color:var(--warn)">list_shrink</span><span class="sym">LAZIO</span><span class="dur">2 轮</span><span class="det">列表页候选 12 → 0 — 疑似站点改版,规则可能失效 <a href="#">查看源 ›</a></span><button class="btn">ack</button></div>
+  <div class="alertrow y"><span class="type" style="color:var(--warn)">feed_dead</span><span class="sym">CELR</span><span class="dur">3 轮</span><span class="det">feed 连续 3 轮 0 条(此前每轮 4-10 条)— feed 失效或搬家 <a href="#">查看源 ›</a></span><button class="btn">ack</button></div>
+  <p style="color:var(--mute); font-size:12px; margin-top:14px">▸ 已 ack(1) &nbsp;&nbsp; ▸ 已自动恢复(12)</p>
+</div>
+
+<div class="page" id="p3">
+  <div class="filters">
+    <input placeholder="搜 symbol / URL…" style="width:200px">
+    <select><option>全部管线</option></select>
+    <select><option>处置:采集中</option></select>
+    <select><option>只看有告警</option></select>
+    <select><option>排序:最后出文 ↓</option></select>
+  </div>
+  <table>
+    <thead><tr><th>symbol</th><th>blog url</th><th>管线</th><th>最后出文</th><th>7d新增</th><th>近轮失败</th><th>告警</th></tr></thead>
+    <tbody>
+      <tr><td><b>QNT</b></td><td><a href="#">quant.network/blog</a></td><td><span class="chip">detail</span></td><td>06-28</td><td>3</td><td style="color:var(--bad)">12/12</td><td><span class="dot r"></span></td></tr>
+      <tr><td><b>SEI</b></td><td><a href="#">blog.sei.io</a></td><td><span class="chip">rss</span></td><td>07-04</td><td>5</td><td>0</td><td></td></tr>
+      <tr><td><b>LAZIO</b></td><td><a href="#">sslazio.it/en/latest-news</a></td><td><span class="chip">detail</span></td><td>06-19</td><td>0</td><td>0</td><td><span class="dot y"></span></td></tr>
+      <tr><td><b>GLM</b></td><td><a href="#">blog.golem.network</a></td><td><span class="chip">rss</span></td><td>07-03</td><td>2</td><td>0</td><td></td></tr>
+      <tr><td><b>TAO</b></td><td><a href="#">blog.bittensor.com</a></td><td><span class="chip">medium</span></td><td>07-02</td><td>1</td><td>0</td><td></td></tr>
+    </tbody>
+  </table>
+  <p class="det-sans" style="color:var(--mute); font-size:12px; margin-top:9px">点行展开详情(30 轮趋势 + 最近博文 + 告警史)· 交互同方案 A</p>
+</div>
+
+</main>
+<script>
+document.querySelectorAll('aside a[data-p]').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('aside a[data-p]').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById(t.dataset.p).classList.add('on');
+}));
+const cells = document.getElementById('cells');
+const runs = [['ok','12:00 +47'],['ok','11:00 +31'],['warn','10:07 slow'],['bad','09:00 failed'],['ok','08:00 +18'],['ok','07:00 +9'],['ok','06:00 +22'],['ok','05:00 +5'],['ok','04:00 +11'],['ok','03:00 +7'],['ok','02:00 +40'],['ok','01:00 +13'],['ok','00:00 +25'],['ok','23:00 +19'],['ok','22:00 +33'],['ok','21:00 +8'],['ok','20:00 +14'],['ok','19:00 +51'],['ok','18:00 +12'],['ok','17:00 +6'],['ok','16:00 +28'],['ok','15:00 +16'],['ok','14:00 +38'],['ok','13:00 +21']];
+runs.reverse().forEach(([st, tip]) => {
+  const d = document.createElement('div');
+  d.className = 'cell' + (st === 'bad' ? ' bad' : st === 'warn' ? ' warn' : '');
+  d.dataset.tip = tip;
+  cells.appendChild(d);
+});
+</script>
+</body>
+</html>

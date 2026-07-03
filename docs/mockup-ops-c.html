@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案 C · 单页流(假数据)</title>
+<style>
+:root {
+  --paper: #FBFAF5; --ink: #2B2A26; --mute: #8A8676; --line: #E6E2D6;
+  --card: #FFFFFF; --chip-bg: #F3F0E6;
+  --ok: #2D5A3D; --ok-bg: #DCEAD5; --warn: #8B6914; --warn-bg: #F4E9C8;
+  --bad: #9C2A2A; --bad-bg: #F1D6D6; --link: #2C4F75; --link-bg: #D8E4F2;
+  --mono: "SF Mono", Menlo, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--paper); color: var(--ink); font: 14px/1.55 -apple-system, "PingFang SC", sans-serif; }
+h1, h2 { font-family: "Iowan Old Style", "Songti SC", Georgia, serif; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: 1px; }
+.dot.g { background: var(--ok); } .dot.y { background: var(--warn); } .dot.r { background: var(--bad); }
+
+nav { display: flex; align-items: center; gap: 18px; padding: 11px 26px; border-bottom: 1px solid var(--line); background: rgba(251,250,245,.95); backdrop-filter: blur(6px); position: sticky; top: 0; z-index: 5; font-size: 13px; }
+nav .brand { font-family: "Iowan Old Style", Georgia, serif; font-size: 16.5px; font-weight: 600; margin-right: 4px; }
+nav a { color: var(--mute); text-decoration: none; }
+nav a:hover { color: var(--ink); }
+nav .sched { margin-left: auto; font-size: 12.5px; color: var(--mute); }
+
+main { max-width: 1200px; margin: 0 auto; padding: 18px 26px 90px; }
+.note { background: var(--warn-bg); border: 1px solid rgba(139,105,20,.3); border-radius: 8px; padding: 8px 14px; font-size: 12.5px; margin-bottom: 14px; }
+
+/* 单页流:告警最先(有事先看事) */
+.alertbox { border: 1px solid rgba(156,42,42,.35); background: #FDF6F6; border-radius: 10px; padding: 13px 18px; margin-bottom: 14px; }
+.alertbox h2 { font-size: 15px; margin-bottom: 8px; color: var(--bad); }
+.arow { display: flex; gap: 13px; align-items: baseline; padding: 6px 0; border-top: 1px dashed #EAD8D8; font-size: 13px; }
+.arow:first-of-type { border-top: none; }
+.arow .type { font-family: var(--mono); font-size: 12px; width: 108px; }
+.arow .sym { font-weight: 650; width: 66px; }
+.arow .det { flex: 1; }
+.arow .dur { color: var(--mute); font-size: 12px; }
+.btn { border: 1px solid var(--line); background: var(--paper); border-radius: 6px; padding: 2px 10px; font-size: 12px; cursor: pointer; }
+
+.pulse { display: flex; align-items: center; gap: 24px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 15px 20px; margin-bottom: 12px; flex-wrap: wrap; }
+.pulse .big { font-size: 19px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
+.pulse .kv { font-size: 12px; color: var(--mute); }
+.pulse .kv b { display: block; font-size: 15px; color: var(--ink); margin-top: 1px; }
+.pulse .next { margin-left: auto; text-align: right; }
+
+.runband { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 20px; margin-bottom: 12px; }
+.runband .lab { font-size: 12px; color: var(--mute); margin-bottom: 7px; }
+.cells { display: flex; gap: 4px; }
+.cell { flex: 1; height: 26px; border-radius: 4px; background: var(--ok-bg); border: 1px solid rgba(45,90,61,.25); }
+.cell.bad { background: var(--bad-bg); border-color: rgba(156,42,42,.35); }
+.cell.warn { background: var(--warn-bg); border-color: rgba(139,105,20,.35); }
+
+.statline { display: flex; gap: 26px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 13px 20px; margin-bottom: 12px; font-size: 13px; flex-wrap: wrap; }
+.statline b { font-family: var(--mono); font-size: 16px; }
+
+table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+th { text-align: left; font-size: 11.5px; color: var(--mute); font-weight: 500; padding: 9px 12px; border-bottom: 1px solid var(--line); background: #F7F5EC; }
+td { padding: 8px 12px; border-bottom: 1px solid #F0EDE2; font-size: 13px; }
+tr:last-child td { border-bottom: none; }
+.chip { display: inline-block; background: var(--chip-bg); border-radius: 4px; padding: 1px 7px; font-size: 11.5px; }
+.chip.b { background: var(--link-bg); color: var(--link); }
+.chip.g { background: var(--ok-bg); color: var(--ok); }
+.chip.y { background: var(--warn-bg); color: var(--warn); }
+.chip.r { background: var(--bad-bg); color: var(--bad); }
+a { color: var(--link); text-decoration: none; } a:hover { text-decoration: underline; }
+h2.sec { font-size: 16px; margin: 22px 0 10px; }
+.filters { display: flex; gap: 10px; margin: 0 0 10px; flex-wrap: wrap; }
+.filters input, .filters select { border: 1px solid var(--line); border-radius: 7px; padding: 5px 10px; font-size: 13px; background: var(--card); }
+.mini { font-size: 12px; color: var(--mute); }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">采集运维台</span>
+  <a href="#alerts">告警</a><a href="#runs">批次</a><a href="#sources">源</a>
+  <span class="sched"><span class="dot g"></span> 12:00 ok · 下次 <span class="num">00:23:41</span></span>
+</nav>
+
+<main>
+<div class="note">⚠️ 方案 C · 单页流(无 tab · 一页从上往下:告警 → 脉搏 → 批次 → 源表)· 假数据 mockup</div>
+
+<!-- ① 告警置顶:有事先看事 · 无告警时此块整体隐藏 -->
+<div class="alertbox" id="alerts">
+  <h2>⚠ 活跃告警 3(🔴1 🟡2)</h2>
+  <div class="arow"><span class="dot r"></span><span class="type">source_gone</span><span class="sym">QNT</span><span class="det">近 7 天有产出 · 本轮 12 请求全 403 — 疑似被 ban <a href="#">查看 ›</a></span><span class="dur">6 轮</span><button class="btn">ack</button></div>
+  <div class="arow"><span class="dot y"></span><span class="type">list_shrink</span><span class="sym">LAZIO</span><span class="det">列表候选 12 → 0 — 疑似改版 <a href="#">查看 ›</a></span><span class="dur">2 轮</span><button class="btn">ack</button></div>
+  <div class="arow"><span class="dot y"></span><span class="type">feed_dead</span><span class="sym">CELR</span><span class="det">feed 连续 3 轮 0 条 — 失效或搬家 <a href="#">查看 ›</a></span><span class="dur">3 轮</span><button class="btn">ack</button></div>
+</div>
+
+<!-- ② 脉搏 -->
+<div class="pulse" id="runs">
+  <div class="big"><span class="dot g" style="width:11px;height:11px"></span> 上次批次 正常</div>
+  <div class="kv">完成时间<b class="num">07-04 12:00:34</b></div>
+  <div class="kv">耗时<b class="num">5m24s</b></div>
+  <div class="kv">新增<b class="num">47</b></div>
+  <div class="kv">失败<b class="num">6/2691</b></div>
+  <div class="next kv">下次运行<b class="num">00:23:41</b></div>
+</div>
+
+<!-- ③ 批次带 -->
+<div class="runband">
+  <div class="lab">最近 24 批次</div>
+  <div class="cells" id="cells"></div>
+</div>
+
+<!-- ④ 关键数字一行 -->
+<div class="statline">
+  <span>今日新增 <b>312</b> <span class="mini">(昨日 289)</span></span>
+  <span>有数据源 <b>501</b><span class="mini">/634</span></span>
+  <span>rss <b>128</b> · medium <b>96</b> · detail <b>65</b> · substack <b>17</b> · paragraph <b>6</b></span>
+</div>
+
+<!-- ⑤ 源表(直接在同页) -->
+<h2 class="sec" id="sources">源(634 · 默认按最后出文排序)</h2>
+<div class="filters">
+  <input placeholder="搜 symbol / URL…" style="width:210px">
+  <select><option>全部管线</option></select>
+  <select><option>处置:采集中</option></select>
+  <select><option>只看有告警</option></select>
+</div>
+<table>
+  <thead><tr><th>symbol</th><th>blog URL</th><th>管线</th><th>最后出文</th><th>7天新增</th><th>近轮失败</th><th>告警</th></tr></thead>
+  <tbody>
+    <tr><td><b>SEI</b></td><td><a href="#">blog.sei.io</a></td><td><span class="chip b">rss</span></td><td class="num">07-04</td><td class="num">5</td><td class="num">0</td><td></td></tr>
+    <tr><td><b>GLM</b></td><td><a href="#">blog.golem.network</a></td><td><span class="chip b">rss</span></td><td class="num">07-03</td><td class="num">2</td><td class="num">0</td><td></td></tr>
+    <tr><td><b>TAO</b></td><td><a href="#">blog.bittensor.com</a></td><td><span class="chip b">medium</span></td><td class="num">07-02</td><td class="num">1</td><td class="num">0</td><td></td></tr>
+    <tr><td><b>QNT</b></td><td><a href="#">quant.network/blog</a></td><td><span class="chip b">detail</span></td><td class="num">06-28</td><td class="num">3</td><td class="num" style="color:var(--bad)">12/12</td><td><span class="dot r"></span></td></tr>
+    <tr><td><b>LAZIO</b></td><td><a href="#">sslazio.it/en/latest-news</a></td><td><span class="chip b">detail</span></td><td class="num">06-19</td><td class="num">0</td><td class="num">0</td><td><span class="dot y"></span></td></tr>
+    <tr><td><b>MEGA</b></td><td><a href="#">megaeth.com/blog-news</a></td><td><span class="chip b">detail</span></td><td class="num">06-17</td><td class="num">0</td><td class="num">1/9</td><td></td></tr>
+  </tbody>
+</table>
+<p class="mini" style="margin-top:9px">点行展开详情(30 轮趋势 + 最近博文 + 告警史 · 交互同方案 A)· 批次明细表在本页底部继续下翻</p>
+</main>
+
+<script>
+const cells = document.getElementById('cells');
+const runs = ['ok','ok','warn','bad','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok','ok'];
+runs.reverse().forEach(st => {
+  const d = document.createElement('div');
+  d.className = 'cell' + (st === 'bad' ? ' bad' : st === 'warn' ? ' warn' : '');
+  cells.appendChild(d);
+});
+</script>
+</body>
+</html>

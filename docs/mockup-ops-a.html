@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>采集运维台 · 布局 Mockup(假数据)</title>
+<style>
+:root {
+  --paper: #FBFAF5; --ink: #2B2A26; --mute: #8A8676; --line: #E6E2D6;
+  --card: #FFFFFF; --chip-bg: #F3F0E6;
+  --ok: #2D5A3D; --ok-bg: #DCEAD5; --warn: #8B6914; --warn-bg: #F4E9C8;
+  --bad: #9C2A2A; --bad-bg: #F1D6D6; --link: #2C4F75; --link-bg: #D8E4F2;
+  --mono: "SF Mono", Menlo, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 14px/1.55 -apple-system, "PingFang SC", sans-serif; }
+h1, h2, h3 { font-family: "Iowan Old Style", "Songti SC", Georgia, serif; }
+.num, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* ── 顶部导航 ── */
+nav { display: flex; align-items: center; gap: 22px; padding: 12px 28px; border-bottom: 1px solid var(--line); background: var(--card); position: sticky; top: 0; z-index: 5; }
+nav .brand { font-family: "Iowan Old Style", Georgia, serif; font-size: 17px; font-weight: 600; margin-right: 8px; }
+nav a.tab { color: var(--mute); text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; cursor: pointer; }
+nav a.tab.on { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+nav .sched { margin-left: auto; font-size: 12.5px; color: var(--mute); display: flex; gap: 14px; align-items: center; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: 1px; }
+.dot.g { background: var(--ok); } .dot.y { background: var(--warn); } .dot.r { background: var(--bad); } .dot.gray { background: #C9C4B4; }
+
+main { max-width: 1240px; margin: 0 auto; padding: 22px 28px 80px; }
+.page { display: none; } .page.on { display: block; }
+
+/* ── 签名:脉搏条 ── */
+.pulse { display: flex; align-items: center; gap: 26px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 22px; margin-bottom: 14px; flex-wrap: wrap; }
+.pulse .big { font-size: 21px; font-weight: 650; display: flex; align-items: center; gap: 9px; }
+.pulse .big .dot { width: 11px; height: 11px; }
+.pulse .kv { font-size: 12px; color: var(--mute); }
+.pulse .kv b { display: block; font-size: 16px; color: var(--ink); font-weight: 600; margin-top: 1px; }
+.pulse .next { margin-left: auto; text-align: right; }
+.pulse .next b { font-size: 19px; }
+
+/* ── 签名:批次健康带 ── */
+.runband { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 22px 12px; margin-bottom: 14px; }
+.runband .lab { font-size: 12px; color: var(--mute); margin-bottom: 8px; }
+.cells { display: flex; gap: 5px; }
+.cell { flex: 1; height: 30px; border-radius: 4px; background: var(--ok-bg); border: 1px solid rgba(45,90,61,.25); cursor: pointer; position: relative; }
+.cell.bad { background: var(--bad-bg); border-color: rgba(156,42,42,.35); }
+.cell.warn { background: var(--warn-bg); border-color: rgba(139,105,20,.35); }
+.cell:hover::after { content: attr(data-tip); position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); font-size: 11.5px; padding: 5px 9px; border-radius: 5px; white-space: pre; z-index: 9; font-family: var(--mono); }
+
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; }
+.card .lab { font-size: 12px; color: var(--mute); }
+.card .v { font-size: 26px; font-weight: 650; margin-top: 2px; }
+.card .sub { font-size: 12px; color: var(--mute); margin-top: 3px; }
+.grid2 { display: grid; grid-template-columns: 3fr 2fr; gap: 14px; margin-bottom: 14px; }
+.spark { width: 100%; height: 68px; }
+.pipe { display: flex; align-items: center; gap: 8px; font-size: 12.5px; margin: 7px 0; }
+.pipe .name { width: 92px; color: var(--mute); }
+.pipe .bar { height: 12px; border-radius: 3px; background: var(--link-bg); }
+.pipe .n { font-family: var(--mono); }
+
+table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+th { text-align: left; font-size: 11.5px; color: var(--mute); font-weight: 500; padding: 9px 12px; border-bottom: 1px solid var(--line); background: #F7F5EC; white-space: nowrap; }
+td { padding: 8px 12px; border-bottom: 1px solid #F0EDE2; font-size: 13px; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #FDFCF7; }
+.chip { display: inline-block; background: var(--chip-bg); border-radius: 4px; padding: 1px 7px; font-size: 11.5px; }
+.chip.g { background: var(--ok-bg); color: var(--ok); } .chip.y { background: var(--warn-bg); color: var(--warn); }
+.chip.r { background: var(--bad-bg); color: var(--bad); } .chip.b { background: var(--link-bg); color: var(--link); }
+a { color: var(--link); text-decoration: none; } a:hover { text-decoration: underline; }
+h2.sec { font-size: 16px; margin: 20px 0 10px; }
+
+/* 告警页 */
+.alertrow { display: flex; gap: 14px; align-items: baseline; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 13px 18px; margin-bottom: 9px; }
+.alertrow .type { font-family: var(--mono); font-size: 12.5px; width: 118px; }
+.alertrow .sym { font-weight: 650; width: 74px; }
+.alertrow .dur { color: var(--mute); font-size: 12px; width: 74px; }
+.alertrow .det { flex: 1; font-size: 13px; }
+.btn { border: 1px solid var(--line); background: var(--paper); border-radius: 6px; padding: 3px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
+.btn:hover { border-color: var(--mute); }
+.fold { color: var(--mute); font-size: 13px; cursor: pointer; margin: 16px 0 8px; }
+
+/* 源管理 */
+.filters { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.filters input, .filters select { border: 1px solid var(--line); border-radius: 7px; padding: 6px 10px; font-size: 13px; background: var(--card); color: var(--ink); }
+.drawer { background: #F7F5EC; border-bottom: 1px solid #F0EDE2; }
+.drawer td { padding: 14px 18px; }
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 46px; margin: 6px 0 4px; }
+.bars i { width: 9px; background: var(--link); opacity: .75; border-radius: 2px 2px 0 0; display: block; }
+.mini { font-size: 12px; color: var(--mute); }
+.artline { font-size: 12.5px; margin: 3px 0; }
+.artline .d { font-family: var(--mono); color: var(--mute); margin-right: 8px; }
+.note { background: var(--warn-bg); border: 1px solid rgba(139,105,20,.3); border-radius: 8px; padding: 8px 14px; font-size: 12.5px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">采集运维台</span>
+  <a class="tab on" data-p="p1">总览</a>
+  <a class="tab" data-p="p2">告警 <span class="chip r">3</span></a>
+  <a class="tab" data-p="p3">源管理</a>
+  <span class="sched"><span><span class="dot g"></span> 上次 12:00 ok</span><span>下次 <b class="num">00:23:41</b></span></span>
+</nav>
+
+<main>
+<div class="note">⚠️ 布局 Mockup · 全部假数据 · 用于敲定界面布局,非真系统</div>
+
+<!-- ═══════════ 页1 总览 ═══════════ -->
+<div class="page on" id="p1">
+
+  <div class="pulse">
+    <div class="big"><span class="dot g"></span> 上次批次 正常</div>
+    <div class="kv">完成时间<b class="num">07-04 12:00:34</b></div>
+    <div class="kv">耗时<b class="num">5m 24s</b></div>
+    <div class="kv">新增博文<b class="num">47</b></div>
+    <div class="kv">失败请求<b class="num">6 / 2691</b></div>
+    <div class="kv">实际吞吐<b class="num">498 rpm</b></div>
+    <div class="next kv">下次运行<b class="num">00:23:41</b></div>
+  </div>
+
+  <div class="runband">
+    <div class="lab">最近 24 批次(每小时一格 · 悬停看详情 · 点击进批次)</div>
+    <div class="cells" id="cells"></div>
+  </div>
+
+  <div class="grid3">
+    <div class="card"><div class="lab">今日新增博文</div><div class="v num">312</div><div class="sub">昨日 289 · 环比 +8%</div></div>
+    <div class="card"><div class="lab">活跃告警</div><div class="v num" style="color:var(--bad)">3</div><div class="sub">🔴 1 · 🟡 2 · 已恢复 12</div></div>
+    <div class="card"><div class="lab">有数据源</div><div class="v num">501<span style="font-size:15px;color:var(--mute)"> / 634</span></div><div class="sub">挂起 61 · 放弃 42 · 排除 5</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="lab">近 7 天每日新增</div>
+      <svg class="spark" viewBox="0 0 300 68" preserveAspectRatio="none">
+        <polyline points="0,50 43,44 86,47 129,30 171,38 214,18 257,26 300,22" fill="none" stroke="#2C4F75" stroke-width="2"/>
+        <circle cx="300" cy="22" r="3" fill="#2C4F75"/>
+      </svg>
+      <div class="mini num">6/28 ─────────────────────────── 7/4</div>
+    </div>
+    <div class="card">
+      <div class="lab" style="margin-bottom:4px">今日新增 · 按管线</div>
+      <div class="pipe"><span class="name">rss</span><span class="bar" style="width:62%"></span><span class="n">128</span></div>
+      <div class="pipe"><span class="name">medium</span><span class="bar" style="width:48%"></span><span class="n">96</span></div>
+      <div class="pipe"><span class="name">article-detail</span><span class="bar" style="width:34%"></span><span class="n">65</span></div>
+      <div class="pipe"><span class="name">substack</span><span class="bar" style="width:9%"></span><span class="n">17</span></div>
+      <div class="pipe"><span class="name">paragraph</span><span class="bar" style="width:3%"></span><span class="n">6</span></div>
+    </div>
+  </div>
+
+  <h2 class="sec">最近批次</h2>
+  <table>
+    <thead><tr><th>批次</th><th>完成时间</th><th>耗时</th><th>新增</th><th>失败</th><th>吞吐</th><th>新告警</th><th>状态</th></tr></thead>
+    <tbody>
+      <tr><td class="num">run-0704-1200</td><td class="num">12:00:34</td><td class="num">5m24s</td><td class="num">47</td><td class="num">6</td><td class="num">498</td><td class="num">0</td><td><span class="chip g">ok</span></td></tr>
+      <tr><td class="num">run-0704-1100</td><td class="num">11:00:29</td><td class="num">5m19s</td><td class="num">31</td><td class="num">4</td><td class="num">512</td><td class="num">1</td><td><span class="chip g">ok</span></td></tr>
+      <tr><td class="num">run-0704-1000</td><td class="num">10:07:52</td><td class="num">12m41s</td><td class="num">12</td><td class="num">88</td><td class="num">201</td><td class="num">2</td><td><span class="chip y">慢</span></td></tr>
+      <tr><td class="num">run-0704-0900</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">1</td><td><span class="chip r">failed</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════ 页2 告警 ═══════════ -->
+<div class="page" id="p2">
+  <h2 class="sec" style="margin-top:4px">活跃告警(3)</h2>
+
+  <div class="alertrow">
+    <span class="dot r"></span><span class="type">source_gone</span><span class="sym">QNT</span><span class="dur">持续 6 轮</span>
+    <span class="det">近 7 天有产出 · 本轮 12 请求全部 403 — 疑似被 ban 或站挂 <a href="#">查看源 ›</a></span>
+    <button class="btn">ack 已读</button>
+  </div>
+  <div class="alertrow">
+    <span class="dot y"></span><span class="type">list_shrink</span><span class="sym">LAZIO</span><span class="dur">持续 2 轮</span>
+    <span class="det">列表页候选 12 → 0 — 疑似站点改版,规则可能失效 <a href="#">查看源 ›</a></span>
+    <button class="btn">ack 已读</button>
+  </div>
+  <div class="alertrow">
+    <span class="dot y"></span><span class="type">feed_dead</span><span class="sym">CELR</span><span class="dur">持续 3 轮</span>
+    <span class="det">feed 连续 3 轮 0 条(此前每轮 4-10 条)— feed 失效或搬家 <a href="#">查看源 ›</a></span>
+    <button class="btn">ack 已读</button>
+  </div>
+
+  <div class="fold">▸ 已 ack(1)</div>
+  <div class="fold">▸ 已自动恢复(12)— 条件消失自动关闭,点开可查历史</div>
+</div>
+
+<!-- ═══════════ 页3 源管理 ═══════════ -->
+<div class="page" id="p3">
+  <div class="filters">
+    <input placeholder="搜 symbol / URL…" style="width:220px">
+    <select><option>全部管线</option><option>rss</option><option>medium</option><option>article-detail</option><option>substack</option><option>paragraph</option></select>
+    <select><option>处置:采集中</option><option>挂起</option><option>永久放弃</option><option>token 排除</option><option>全部</option></select>
+    <select><option>只看有告警</option><option>全部</option></select>
+    <select><option>排序:最后出文 ↓</option><option>7天新增 ↓</option><option>失败率 ↓</option></select>
+  </div>
+
+  <table>
+    <thead><tr><th></th><th>symbol</th><th>blog URL</th><th>管线</th><th>最后出文</th><th>7天新增</th><th>近轮失败</th><th>告警</th></tr></thead>
+    <tbody>
+      <tr><td>▸</td><td><b>QNT</b></td><td><a href="#">quant.network/blog</a></td><td><span class="chip b">detail</span></td><td class="num">06-28</td><td class="num">3</td><td class="num" style="color:var(--bad)">12/12</td><td><span class="dot r"></span></td></tr>
+      <tr class="open"><td>▾</td><td><b>SEI</b></td><td><a href="#">blog.sei.io</a></td><td><span class="chip b">rss</span></td><td class="num">07-04</td><td class="num">5</td><td class="num">0</td><td></td></tr>
+      <tr class="drawer"><td></td><td colspan="7">
+        <div style="display:flex; gap:40px; flex-wrap:wrap">
+          <div>
+            <div class="mini">近 30 轮新增(每格一轮)</div>
+            <div class="bars"><i style="height:8%"></i><i style="height:0%"></i><i style="height:22%"></i><i style="height:0"></i><i style="height:0"></i><i style="height:41%"></i><i style="height:12%"></i><i style="height:0"></i><i style="height:0"></i><i style="height:0"></i><i style="height:60%"></i><i style="height:8%"></i><i style="height:0"></i><i style="height:18%"></i><i style="height:0"></i><i style="height:0"></i><i style="height:100%"></i><i style="height:10%"></i><i style="height:0"></i><i style="height:0"></i><i style="height:28%"></i><i style="height:0"></i><i style="height:8%"></i><i style="height:0"></i><i style="height:0"></i><i style="height:44%"></i><i style="height:0"></i><i style="height:12%"></i><i style="height:0"></i><i style="height:33%"></i></div>
+            <div class="mini num">7/1 ──────────── 7/4</div>
+          </div>
+          <div style="flex:1; min-width:340px">
+            <div class="mini" style="margin-bottom:4px">最近博文</div>
+            <div class="artline"><span class="d">07-04</span><a href="#">Sei Giga Whitepaper V2 发布</a></div>
+            <div class="artline"><span class="d">07-01</span><a href="#">Parallel EVM 性能报告</a></div>
+            <div class="artline"><span class="d">06-25</span><a href="#">Sei x Circle 合作公告</a></div>
+            <div class="mini" style="margin-top:8px">该源告警史:无</div>
+          </div>
+        </div>
+      </td></tr>
+      <tr><td>▸</td><td><b>LAZIO</b></td><td><a href="#">sslazio.it/en/latest-news</a></td><td><span class="chip b">detail</span></td><td class="num">06-19</td><td class="num">0</td><td class="num">0</td><td><span class="dot y"></span></td></tr>
+      <tr><td>▸</td><td><b>GLM</b></td><td><a href="#">blog.golem.network</a></td><td><span class="chip b">rss</span></td><td class="num">07-03</td><td class="num">2</td><td class="num">0</td><td></td></tr>
+      <tr><td>▸</td><td><b>TAO</b></td><td><a href="#">blog.bittensor.com</a></td><td><span class="chip b">medium</span></td><td class="num">07-02</td><td class="num">1</td><td class="num">0</td><td></td></tr>
+      <tr><td>▸</td><td><b>MEGA</b></td><td><a href="#">megaeth.com/blog-news</a></td><td><span class="chip b">detail</span></td><td class="num">06-17</td><td class="num">0</td><td class="num">1/9</td><td></td></tr>
+    </tbody>
+  </table>
+  <p class="mini" style="margin-top:10px">634 源 · 筛选后 501 · 点行展开详情(30 轮趋势 + 最近博文 + 告警史)· 不采集源在「处置」筛选里查(挂起/放弃/排除,含原因)</p>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('nav .tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('nav .tab').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById(t.dataset.p).classList.add('on');
+}));
+const cells = document.getElementById('cells');
+const runs = [['ok','12:00 · +47'],['ok','11:00 · +31'],['warn','10:07 · 慢 12m41s'],['bad','09:00 · failed'],['ok','08:00 · +18'],['ok','07:00 · +9'],['ok','06:00 · +22'],['ok','05:00 · +5'],['ok','04:00 · +11'],['ok','03:00 · +7'],['ok','02:00 · +40'],['ok','01:00 · +13'],['ok','00:00 · +25'],['ok','23:00 · +19'],['ok','22:00 · +33'],['ok','21:00 · +8'],['ok','20:00 · +14'],['ok','19:00 · +51'],['ok','18:00 · +12'],['ok','17:00 · +6'],['ok','16:00 · +28'],['ok','15:00 · +16'],['ok','14:00 · +38'],['ok','13:00 · +21']];
+runs.reverse().forEach(([st, tip]) => {
+  const d = document.createElement('div');
+  d.className = 'cell' + (st === 'bad' ? ' bad' : st === 'warn' ? ' warn' : '');
+  d.dataset.tip = tip;
+  cells.appendChild(d);
+});
+</script>
+</body>
+</html>
