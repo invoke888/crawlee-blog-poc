@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import { createHash } from 'node:crypto';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { isSeen, markSeen } from '../utils/seen-store.js';
+import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
 
 export const mediumRouter = createCheerioRouter();
 
@@ -79,7 +80,9 @@ export async function fetchAndPushSubstack(
                 const guid = $item.find('guid').first().text().trim();
                 for (const src of assoc) {
                     if (isSeen(src.token_id, postUrl)) continue; // 🆕 article 级 dedupe(老板拍 a)
+                    if (!underSourceCap(src.token_id)) continue; // 自测模式:该 token 已满额
                     markSeen(src.token_id, postUrl);
+                    countSourcePush(src.token_id);
                     tasks.push(dataset.pushData({
                         crawler: 'substack',
                         token_id: src.token_id,
@@ -189,7 +192,9 @@ mediumRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
         const crawlerLabel = (request.userData?.crawler_label as string | undefined) ?? 'medium';
         for (const src of sourcesForUrl) {
             if (isSeen(src.token_id, postUrl)) continue; // 🆕 article 级 dedupe(老板拍 a)
+            if (!underSourceCap(src.token_id)) continue; // 自测模式:该 token 已满额
             markSeen(src.token_id, postUrl);
+            countSourcePush(src.token_id);
             tasks.push(pushData({
                 crawler: crawlerLabel,
                 token_id: src.token_id,

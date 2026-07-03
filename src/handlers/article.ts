@@ -5,6 +5,10 @@ import { isValidHttpUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
 import { extractH1, extractJsonLdMeta, extractNextDataDate } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
+import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
+
+// 🆕 2026-07-03 自测模式可调:LIST 每页 enqueue 上限(生产默认 30 · 每源限 1 自测传 5 降载)
+const LIST_ENQUEUE_LIMIT = Number(process.env.LIST_ENQUEUE_LIMIT ?? 30);
 
 interface TokenAssoc {
     token_id: number;
@@ -39,7 +43,7 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
             // (docs.tac.build / docs.chiliz.com / docs.sia.tech / build.avax.network / platform.minimax.io)
             strategy: 'same-hostname',
             label: 'DETAIL',
-            limit: 30,
+            limit: LIST_ENQUEUE_LIMIT,
             transformRequestFunction: (req) => {
                 // 🆕 2026-07-02 严格 http 验证 · 防非法 URL 进 addRequests 异步 batch 炸全进程
                 if (!isValidHttpUrl(req.url)) return false;
@@ -76,6 +80,8 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         log.warning(`⊘ [DETAIL] 无 sources_for_url · ${request.loadedUrl}`);
         return;
     }
+    // 🆕 自测模式:关联 token 全部满额 → 跳过解析(请求已发出 · 只省解析/存储)
+    if (sources.every((s) => !underSourceCap(s.token_id))) return;
     const loaded = request.loadedUrl ?? request.url;
 
     // 双保险 1:URL 等于任一 source 的博客首页 · 跳过(防 enqueueLinks 把首页加回来)
@@ -200,6 +206,8 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
     // P3.5 Bug A · 1-to-N · 每个 source 一条 dataset(KLAC vs TTMI 都有数据)
     const crawledAt = new Date().toISOString();
     for (const src of sources) {
+        if (!underSourceCap(src.token_id)) continue; // 自测模式:该 token 已满额
+        countSourcePush(src.token_id);
         await pushData({
             crawler: 'article-detail',
             token_id: src.token_id,
