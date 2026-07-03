@@ -83,6 +83,7 @@ export const URL_OVERRIDES: Record<string, string> = {
     // 🆕 2026-07-03 第二批(17 agent pattern 审计 · 证据 docs/research/)
     DEEP: 'https://blog.sui.io/', // 原记成一篇具体文章 · prefix_ratio 假阳性根因
     PROS: 'https://www.pharos.xyz/blog', // 原 /resources 是资源页 · 真文章在 /blog(已采 14/26 命中)
+    PHAROS: 'https://www.pharos.xyz/blog', // 同 PROS 共域 · 2026-07-03 补(之前漏)
     HYPER: 'https://www.hyperlane.xyz/blog-posts-new', // 旧 /blog 零文章 · 73 篇已迁 /blog-posts-new
     SPURS: 'https://www.tottenhamhotspur.com/news', // 原 /media 301 失效 · 真新闻 /news/<id>/<slug>
     LYN: 'https://everlyn.ai/posts/', // 原采样全落姊妹域 everlyn.app 工具页 · 真博客 everlyn.ai/posts
