@@ -1,33 +1,34 @@
 {
-    "name": "crawlee-cheerio-ts",
-    "version": "0.0.1",
-    "private": true,
-    "type": "module",
-    "description": "This is an example of a Crawlee project.",
-    "dependencies": {
-        "@crawlee/impit-client": "^3.0.0",
-        "@types/better-sqlite3": "^7.6.13",
-        "better-sqlite3": "^12.11.1",
-        "crawlee": "^3.0.0"
-    },
-    "devDependencies": {
-        "@apify/tsconfig": "^0.2.0",
-        "@types/node": "^24.0.0",
-        "tsx": "^4.4.0",
-        "typescript": "~6.0.0"
-    },
-    "scripts": {
-        "start": "npm run start:dev",
-        "start:prod": "node dist/main.js",
-        "start:dev": "tsx src/main.ts",
-        "fetch": "tsx src/fetch-sources.ts",
-        "probe": "NODE_OPTIONS='--max-old-space-size=3072' tsx src/probe.ts",
-        "report": "tsx src/report.ts",
-        "push": "tsx src/push.ts",
-        "start:prod-mem": "NODE_OPTIONS='--max-old-space-size=3072' tsx src/main.ts",
-        "build": "tsc",
-        "test": "TSX_TSCONFIG_PATH= node --import tsx --test \"test/**/*.test.ts\""
-    },
-    "author": "It's not you it's me",
-    "license": "ISC"
+  "name": "crawlee-cheerio-ts",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "This is an example of a Crawlee project.",
+  "dependencies": {
+    "@crawlee/impit-client": "^3.0.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.11.1",
+    "crawlee": "^3.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@apify/tsconfig": "^0.2.0",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.4.0",
+    "typescript": "~6.0.0"
+  },
+  "scripts": {
+    "start": "npm run start:dev",
+    "start:prod": "node dist/main.js",
+    "start:dev": "tsx src/main.ts",
+    "fetch": "tsx src/fetch-sources.ts",
+    "probe": "NODE_OPTIONS='--max-old-space-size=3072' tsx src/probe.ts",
+    "report": "tsx src/report.ts",
+    "push": "tsx src/push.ts",
+    "start:prod-mem": "NODE_OPTIONS='--max-old-space-size=3072' tsx src/main.ts",
+    "build": "tsc",
+    "test": "TSX_TSCONFIG_PATH= node --import tsx --test \"test/**/*.test.ts\""
+  },
+  "author": "It's not you it's me",
+  "license": "ISC"
 }
