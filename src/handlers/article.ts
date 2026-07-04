@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
 import { isValidHttpUrl, isWhitelistedArticleUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
-import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt, titleRuleFor, bodyRuleFor } from '../utils/date-extract.js';
+import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt, titleRuleFor, bodyRuleFor, extractBodyByHtmlRegex } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
 import { statCount, statSet, statRequest, recordError } from '../../shared/run-stats.js';
@@ -195,13 +195,15 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('meta[name="description"]').attr('content')?.trim() ||
         '';
     // 🆕 2026-07-04 body_excerpt(计划书定案:正文搜索用 · 始终抽全文前 3000)
-    // 🆕 地基工程:per-source body 规则(正文容器定点 · 容器落空回退通用防改版)
-    const bSel = bodyRuleFor(loaded)?.selector;
+    // 🆕 地基工程:per-source body 规则(正文容器定点 · 容器落空回退通用防改版 · html_regex 提取 RSC JSON 正文)
+    const bRule = bodyRuleFor(loaded);
+    const regexBody = bRule ? extractBodyByHtmlRegex($, bRule) : '';
+    const bSel = bRule?.selector;
     let paras = bSel ? $(bSel).find('p') : $('article p, main p');
     // 规则 selector 自身就是段落集合(如 '.content p')时 find('p') 为空 → 直接用;仍空回退通用防改版
     if (bSel && paras.length === 0) paras = $(bSel) as unknown as typeof paras;
     if (bSel && paras.length === 0) paras = $('article p, main p');
-    const fullText = paras
+    const fullText = regexBody || paras
         .map((_, el) => $(el).text().trim())
         .get()
         .filter((t) => t.length >= 20)

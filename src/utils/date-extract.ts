@@ -24,7 +24,17 @@ export interface DateRule {
     strategy?: 'url_date' | 'none' | 'spa_only' | 'html_regex';
 }
 export interface TitleRule { ban?: string[]; selector?: string } // ban: ['og'] 跳过站级 og:title
-export interface BodyRule { selector?: string }                  // 正文容器 · 替换通用 'article p, main p'
+export interface BodyRule { selector?: string; strategy?: string; regex?: string } // 容器定点;strategy=html_regex 时对整页源码提取(RSC JSON articleBody 型 · Ondo 系实锤)
+
+// RSC/Next.js flight payload 正文提取(body html_regex 策略):捕获的是 JSON 转义态字符串 · 还原成正文
+export function extractBodyByHtmlRegex($: CheerioAPI, rule: BodyRule): string {
+    if (rule.strategy !== 'html_regex' || !rule.regex) return '';
+    const m = new RegExp(rule.regex, 'i').exec($.html() ?? '');
+    if (!m) return '';
+    let v = m[1] ?? m[0];
+    try { v = JSON.parse(`"${v}"`) as string; } catch { /* 非转义态原样用 */ }
+    return v.replace(/\s+/g, ' ').trim();
+}
 export interface FieldRules { date?: DateRule; title?: TitleRule; body?: BodyRule }
 const extractRulesCfg = require('./extract-rules.json') as { rules: Record<string, FieldRules> };
 function stripWww(h: string): string { return h.startsWith('www.') ? h.slice(4) : h; }
