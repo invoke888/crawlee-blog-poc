@@ -145,3 +145,7 @@ bash scripts/storage-report.sh
 
 ---
 **本文档由 Claude Fable 5 于 2026-07-03 生成 · P0/P1/P2 收官 · P3 待启。**
+
+---
+## 🆕 2026-07-04 追记:运维台一期已上线
+两组件一项目:采集器(src/)+ 运维台(ops/ · 调度+账本+告警+push+六页 dashboard)+ shared/ 数据层。**systemd timer 已废弃 · 调度内置运维台**。全部细节见 `docs/plan-ops-dashboard-2026-07-04.md` + `ops/README.md`。正式采集经运维台跑(裸跑仅调试)。
