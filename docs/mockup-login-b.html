@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登录 mockup · 方案 B 终端握手 · 采集运维台</title>
+<style>
+:root {
+  --bg: #1B1A17; --ink: #E8E4D8; --mute: #8F8A78; --line: #38352B;
+  --ok: #7FBF8E; --bad: #D97C7C; --warn: #D9B45B;
+  --mono: "SF Mono", Menlo, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 14px/2.2 var(--mono); min-height: 100vh; }
+.tag { position: fixed; top: 14px; right: 16px; font-size: 11px; color: var(--mute); text-align: right; line-height: 1.8; }
+.term { padding: 16vh 0 0 max(10vw, 24px); max-width: 560px; }
+.brand { font-family: "Iowan Old Style", Georgia, serif; font-size: 21px; font-weight: 600; margin-bottom: 10px; }
+.brand .v { font: 11px var(--mono); color: var(--mute); margin-left: 8px; vertical-align: 2px; }
+.ln { opacity: 0; animation: rise .35s forwards; }
+.ln:nth-child(2) { animation-delay: .15s; } .ln:nth-child(3) { animation-delay: .35s; }
+.ln:nth-child(4) { animation-delay: .6s; } .ln:nth-child(5) { animation-delay: .75s; }
+.ln:nth-child(6) { animation-delay: .9s; }
+@keyframes rise { to { opacity: 1; } }
+.k { color: var(--mute); }
+.ok { color: var(--ok); } .wait { color: var(--warn); } .good { color: var(--ok); }
+.in label { color: var(--mute); cursor: pointer; }
+.in input { border: none; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); font: 14px var(--mono); padding: 2px 6px; width: 240px; margin-left: 10px; outline: none; border-radius: 0; }
+.in input:focus { border-bottom-color: var(--ok); }
+.in input:focus-visible { outline: none; box-shadow: 0 2px 0 rgba(127,191,142,.35); }
+button { border: 1px solid rgba(127,191,142,.4); background: rgba(127,191,142,.12); color: var(--ok); border-radius: 5px; padding: 3px 18px; font: 13px var(--mono); cursor: pointer; margin-top: 6px; }
+button:hover { border-color: var(--ok); }
+button:focus-visible { outline: 2px solid rgba(127,191,142,.5); outline-offset: 1px; }
+.err { display: none; color: var(--bad); }
+.term.no .err { display: block; animation: rise .2s; }
+@media (prefers-reduced-motion: reduce) { .ln { animation: none; opacity: 1; } }
+@media (max-width: 480px) { .term { padding-left: 20px; padding-top: 10vh; } .in input { width: min(60vw, 240px); } }
+</style>
+</head>
+<body>
+<div class="tag">mockup · 方案 B 终端握手<br>演示:密码输 demo 走成功流</div>
+<form class="term" id="t">
+  <p class="ln brand">采集运维台<span class="v">v1</span></p>
+  <p class="ln"><span class="k">链路</span> ……………… <span class="ok">ok</span></p>
+  <p class="ln"><span class="k">身份校验</span> …………… <span class="wait" id="st">等待输入</span></p>
+  <p class="ln in"><label for="u">账号&gt;</label><input id="u" autocomplete="username"></p>
+  <p class="ln in"><label for="p">密码&gt;</label><input id="p" type="password" autocomplete="current-password"></p>
+  <p class="ln"><button>进入 ↵</button></p>
+  <p class="err">× 账号或密码不对 · 再试一次</p>
+</form>
+<script>
+document.getElementById('t').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const t = e.currentTarget, st = document.getElementById('st');
+  t.classList.remove('no');
+  if (document.getElementById('p').value === 'demo') {
+    st.textContent = '✓ 已确认 · 进入面板…'; st.className = 'good';
+  } else { void t.offsetWidth; t.classList.add('no'); }
+});
+</script>
+</body>
+</html>

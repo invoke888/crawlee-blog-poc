@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登录 mockup · 方案 C 门厅 · 采集运维台</title>
+<style>
+:root {
+  --bg: #1B1A17; --panel: #232119; --ink: #E8E4D8; --mute: #8F8A78; --line: #38352B;
+  --ok: #7FBF8E; --ok-dim: rgba(127,191,142,.16); --bad: #D97C7C; --bad-dim: rgba(217,124,124,.16);
+  --lock: #5A564A;
+  --mono: "SF Mono", Menlo, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 13.5px/1.5 var(--mono); display: flex; min-height: 100vh; }
+.tag { position: fixed; top: 14px; right: 16px; font-size: 11px; color: var(--mute); text-align: right; line-height: 1.8; z-index: 9; }
+aside { width: 172px; background: var(--panel); border-right: 1px solid var(--line); padding: 20px 0; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; }
+aside .brand { font-family: "Iowan Old Style", Georgia, serif; font-size: 16px; padding: 0 18px 18px; border-bottom: 1px solid var(--line); }
+aside a { display: block; padding: 10px 18px; color: var(--lock); border-left: 3px solid transparent; cursor: not-allowed; transition: color .4s; }
+aside .foot { margin-top: auto; padding: 14px 18px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--mute); line-height: 1.9; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--lock); vertical-align: .5px; }
+.dot.g { background: var(--ok); box-shadow: 0 0 6px rgba(127,191,142,.7); }
+main { margin-left: 172px; flex: 1; display: flex; align-items: center; justify-content: center; }
+.gate { width: 300px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 22px 24px 20px; margin-top: -6vh; }
+.gate h1 { font-family: "Iowan Old Style", Georgia, serif; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.gate .sub { font-size: 11px; color: var(--mute); margin-bottom: 16px; }
+label { display: block; font-size: 11px; color: var(--mute); margin-bottom: 12px; letter-spacing: .06em; }
+input { display: block; width: 100%; margin-top: 5px; border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; background: var(--bg); color: var(--ink); font: 13px var(--mono); outline: none; }
+input:focus { border-color: rgba(127,191,142,.55); box-shadow: 0 0 0 2px rgba(127,191,142,.12); }
+button { width: 100%; margin-top: 4px; border: 1px solid rgba(127,191,142,.4); background: var(--ok-dim); color: var(--ok); border-radius: 6px; padding: 7px; font: 13px var(--mono); cursor: pointer; }
+button:hover { border-color: var(--ok); }
+button:focus-visible, input:focus-visible { outline: 2px solid rgba(127,191,142,.5); outline-offset: 1px; }
+.err { display: none; margin-top: 10px; font-size: 12px; color: var(--bad); background: var(--bad-dim); border: 1px solid rgba(217,124,124,.35); border-radius: 6px; padding: 6px 10px; }
+body.no .err { display: block; }
+body.no .gate { animation: shake .3s; }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+body.yes aside a { color: var(--mute); cursor: default; }
+body.yes aside a:nth-child(2) { transition-delay: .05s; } body.yes aside a:nth-child(3) { transition-delay: .1s; }
+body.yes aside a:nth-child(4) { transition-delay: .15s; } body.yes aside a:nth-child(5) { transition-delay: .2s; }
+body.yes aside a:nth-child(6) { transition-delay: .25s; } body.yes aside a:nth-child(7) { transition-delay: .3s; }
+body.yes aside a.first { color: var(--ink); border-left-color: var(--ok); background: rgba(127,191,142,.06); }
+body.yes .gate { animation: sink .5s .4s forwards; }
+@keyframes sink { to { opacity: 0; transform: translateY(-8px); } }
+body.yes #footdot { background: var(--ok); box-shadow: 0 0 6px rgba(127,191,142,.7); }
+body.yes #footst::after { content: " 已进入"; color: var(--ok); }
+@media (prefers-reduced-motion: reduce) { .gate, aside a { animation: none !important; transition: none !important; } }
+@media (max-width: 640px) { aside { display: none; } main { margin-left: 0; } }
+</style>
+</head>
+<body>
+<div class="tag">mockup · 方案 C 门厅<br>演示:密码输 demo 走成功流</div>
+<aside>
+  <div class="brand">采集运维台</div>
+  <a class="first">总览</a><a>告警</a><a>源管理</a><a>博文</a><a>错误日志</a><a>设置</a>
+  <div class="foot"><span class="dot" id="footdot"></span> <span id="footst">未登录</span></div>
+</aside>
+<main>
+  <form class="gate" id="g">
+    <h1>身份校验</h1>
+    <p class="sub">登录后左侧点亮</p>
+    <label>账号<input autocomplete="username" id="u"></label>
+    <label>密码<input type="password" autocomplete="current-password" id="p"></label>
+    <button>进入</button>
+    <p class="err">账号或密码不对</p>
+  </form>
+</main>
+<script>
+document.getElementById('g').addEventListener('submit', (e) => {
+  e.preventDefault();
+  document.body.classList.remove('no', 'yes');
+  void document.body.offsetWidth;
+  document.body.classList.add(document.getElementById('p').value === 'demo' ? 'yes' : 'no');
+});
+</script>
+</body>
+</html>
