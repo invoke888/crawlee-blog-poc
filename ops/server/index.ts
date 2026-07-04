@@ -149,18 +149,25 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
                        (SELECT sr.crawler FROM source_runs sr WHERE sr.token_id = s.token_id ORDER BY sr.run_id DESC LIMIT 1) AS crawler,
                        (SELECT COUNT(*) FROM alerts a WHERE a.token_id = s.token_id AND a.status = 'open' AND a.severity = 'red') AS red_alerts,
                        (SELECT COUNT(*) FROM alerts a WHERE a.token_id = s.token_id AND a.status = 'open' AND a.severity = 'yellow') AS yellow_alerts,
-                       COALESCE(la.total, 0) AS articles_total,
-                       la.published_at AS latest_pub_at,
-                       CASE WHEN la.title != '' THEN 1 ELSE 0 END AS latest_title_ok,
-                       CASE WHEN COALESCE(NULLIF(la.body_excerpt,''), NULLIF(la.description,'')) IS NOT NULL THEN 1 ELSE 0 END AS latest_body_ok,
-                       CASE WHEN la.published_at != '' THEN 1 ELSE 0 END AS latest_pub_ok
+                       COALESCE(la.articles_total, 0) AS articles_total,
+                       la.latest_pub_at,
+                       la.latest_title_ok, la.latest_body_ok, la.latest_pub_ok
                 FROM sources s
                 LEFT JOIN (
-                    SELECT token_id, title, body_excerpt, description, published_at,
-                           COUNT(*) OVER (PARTITION BY token_id) AS total,
-                           ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY COALESCE(NULLIF(published_at,''), crawled_at) DESC) AS rn
-                    FROM articles
-                ) la ON la.token_id = s.token_id AND la.rn = 1
+                    -- 2026-07-05 老板抓 bug:完整度改"最近采集 3 条全部齐"口径(原来只看发布时间最新一条 · 与浮窗所见断层)
+                    SELECT token_id,
+                           MAX(articles_total) AS articles_total,
+                           MAX(NULLIF(published_at, '')) AS latest_pub_at,
+                           MIN(CASE WHEN title != '' THEN 1 ELSE 0 END) AS latest_title_ok,
+                           MIN(CASE WHEN COALESCE(NULLIF(body_excerpt,''), NULLIF(description,'')) IS NOT NULL THEN 1 ELSE 0 END) AS latest_body_ok,
+                           MIN(CASE WHEN published_at != '' THEN 1 ELSE 0 END) AS latest_pub_ok
+                    FROM (
+                        SELECT token_id, title, body_excerpt, description, published_at,
+                               COUNT(*) OVER (PARTITION BY token_id) AS articles_total,
+                               ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY crawled_at DESC) AS rn
+                        FROM articles
+                    ) WHERE rn <= 3 GROUP BY token_id
+                ) la ON la.token_id = s.token_id
                 ORDER BY s.last_article_at DESC NULLS LAST
             `).all();
             json(res, 200, rows);

@@ -113,9 +113,9 @@ async function loadSources() {
 }
 /* 列头排序(2026-07-04 老板拍:id/symbol/最近发布/博文数)· dir 1=asc -1=desc */
 let srcSort = { key: '', dir: 1 };
-function fdots(s) { // 最近一条博文完整度:标题/正文/时间 三点
+function fdots(s) { // 完整度三点:最近采集 3 条全部有才亮(2026-07-05 老板抓口径 bug 后统一)
   if (!s.articles_total) return '<span class="mini">—</span>';
-  const dot = (ok, lab) => `<span class="fdot ${ok ? 'on' : ''}" title="${lab}:${ok ? '有' : '无'}"></span>`;
+  const dot = (ok, lab) => `<span class="fdot ${ok ? 'on' : ''}" title="${lab}:最近3条${ok ? '均有' : '有缺'}"></span>`;
   return dot(s.latest_title_ok, '标题') + dot(s.latest_body_ok, '正文') + dot(s.latest_pub_ok, '发布时间');
 }
 function renderSources() {
