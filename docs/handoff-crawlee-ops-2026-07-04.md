@@ -72,6 +72,7 @@ storage/logs/<run_id>.log(批次日志 · 30天)
 8. 自测战役期间拍:a=RSS化60源 · b=Ondo 系共享博客合法保留 · c=EDGE/RE 重复登记去重 · d=OPENAI/PTB/AHT_3 挂起(USAT 复核后不挂)· e=display 切换已上线
 9. 全局铁律 13a 已立(CLAUDE.md):**开发新前端必调设计 skill + 2-3 套方案老板选**
 10. 🆕 2026-07-04 晚批拍板:UI 登录门厅(方案 C · 弹窗绝迹);dashboard 时间显示**一律北京 UTC+8 到秒**;博文列序=博客(跳博客站)/标题/正文/发布/采集;源详情=可拖拽浮窗(修告警查看源跳转);页面铺满去 max-width;**存量 6185 篇已全标 skipped_backlog**(此后新采=none=未推 · 行内推送按钮 · push 未接通时按钮走 dry 演练不回写)
+11. 🆕 2026-07-04 深夜质量战役(老板拍"多花时间打地基 · 反复直到没问题/彻底无法解决"):**per-source 抽取规则库 extract-rules.json 135 host**(date/title/body 三字段 · 引擎 ban/selector/strategy/html_regex)· 收割层四层过滤+回填通道(known 行 COALESCE 补空 · 修"抽取器升级旧行永不自愈"机制债)· 5 轮全量重跑 3 轮复检循环收敛 · 全程 73 个 agent · 终态 article-detail 时间覆盖 91.4%/正文 74.6%(无解清单与 desc 缺口见 memory `project-extract-rules-foundation`)· **调度仍关闭等老板验收重开**
 
 ## §4 本会话大战役成果(证据全在 docs/research/)
 
