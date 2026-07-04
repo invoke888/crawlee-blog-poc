@@ -60,9 +60,19 @@
       <input id="src-q" placeholder="搜 symbol / URL…" style="width:200px">
       <select id="src-crawler"><option value="">全部管线</option><option>rss</option><option>medium</option><option>substack</option><option>paragraph</option><option>article-detail</option></select>
       <select id="src-alert"><option value="">全部</option><option value="alert">只看有告警</option><option value="nodata">只看无数据</option></select>
+      <select id="src-fields"><option value="">完整度:全部</option><option value="no_title">缺标题</option><option value="no_body">缺正文</option><option value="no_pub">缺时间</option><option value="full">三全</option></select>
       <span class="mini" id="src-count"></span>
     </div>
-    <table><thead><tr><th></th><th>symbol</th><th>blog url</th><th>管线</th><th>最后出文</th><th>7d新增</th><th>近轮失败</th><th>告警</th><th></th></tr></thead><tbody id="src-body"></tbody></table>
+    <table><thead><tr>
+      <th></th>
+      <th class="sortable" data-sort="token_id">id</th>
+      <th class="sortable" data-sort="base_symbol">symbol</th>
+      <th>blog url</th><th>管线</th>
+      <th title="最近一条博文的 标题/正文/发布时间 有无">完整度</th>
+      <th class="sortable" data-sort="latest_pub_at">最近发布</th>
+      <th class="sortable" data-sort="articles_total">博文数</th>
+      <th>7d新增</th><th>近轮失败</th><th>告警</th><th></th>
+    </tr></thead><tbody id="src-body"></tbody></table>
   </div>
 
   <div class="page" id="p-articles">

@@ -111,28 +111,66 @@ async function loadSources() {
   srcCache = await api('/api/sources');
   renderSources();
 }
+/* 列头排序(2026-07-04 老板拍:id/symbol/最近发布/博文数)· dir 1=asc -1=desc */
+let srcSort = { key: '', dir: 1 };
+function fdots(s) { // 最近一条博文完整度:标题/正文/时间 三点
+  if (!s.articles_total) return '<span class="mini">—</span>';
+  const dot = (ok, lab) => `<span class="fdot ${ok ? 'on' : ''}" title="${lab}:${ok ? '有' : '无'}"></span>`;
+  return dot(s.latest_title_ok, '标题') + dot(s.latest_body_ok, '正文') + dot(s.latest_pub_ok, '发布时间');
+}
 function renderSources() {
   const kw = ($('src-q').value || '').toLowerCase();
   const cr = $('src-crawler').value;
   const af = $('src-alert').value;
-  const rows = srcCache.filter((s) => {
+  const ff = $('src-fields').value;
+  let rows = srcCache.filter((s) => {
     if (kw && !(`${s.base_symbol} ${s.blog_url}`.toLowerCase().includes(kw))) return false;
     if (cr && s.crawler !== cr) return false;
     if (af === 'alert' && !(s.red_alerts + s.yellow_alerts)) return false;
     if (af === 'nodata' && s.last_article_at) return false;
+    if (ff === 'no_title' && !(s.articles_total && !s.latest_title_ok)) return false;
+    if (ff === 'no_body' && !(s.articles_total && !s.latest_body_ok)) return false;
+    if (ff === 'no_pub' && !(s.articles_total && !s.latest_pub_ok)) return false;
+    if (ff === 'full' && !(s.latest_title_ok && s.latest_body_ok && s.latest_pub_ok)) return false;
     return true;
+  });
+  if (srcSort.key) {
+    const k = srcSort.key, dir = srcSort.dir;
+    rows = rows.slice().sort((a, b) => {
+      if (k === 'base_symbol') return dir * String(a[k] || '').localeCompare(String(b[k] || ''));
+      if (k === 'latest_pub_at') { // 空值恒沉底
+        const av = a[k] || '', bv = b[k] || '';
+        if (!av && !bv) return 0; if (!av) return 1; if (!bv) return -1;
+        return dir * av.localeCompare(bv);
+      }
+      return dir * ((Number(a[k]) || 0) - (Number(b[k]) || 0));
+    });
+  }
+  document.querySelectorAll('#p-sources th.sortable').forEach((t) => {
+    t.classList.toggle('asc', t.dataset.sort === srcSort.key && srcSort.dir === 1);
+    t.classList.toggle('desc', t.dataset.sort === srcSort.key && srcSort.dir === -1);
   });
   $('src-count').textContent = `${rows.length}/${srcCache.length}`;
   $('src-body').innerHTML = rows.slice(0, 400).map((s) => `
-    <tr class="clickable" onclick="openSource(${s.token_id})"><td>▸</td><td><b>${esc(s.base_symbol)}</b></td>
-    <td><a href="${esc(s.blog_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(s.blog_url.replace(/^https?:\/\//, '').slice(0, 46))}</a></td>
+    <tr class="clickable" onclick="openSource(${s.token_id})"><td>▸</td>
+    <td class="mini">${s.token_id}</td><td><b>${esc(s.base_symbol)}</b></td>
+    <td><a href="${esc(s.blog_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(s.blog_url.replace(/^https?:\/\//, '').slice(0, 44))}</a></td>
     <td>${s.crawler ? `<span class="chip">${esc(s.crawler)}</span>` : '—'}</td>
-    <td>${fmtD(s.last_article_at)}</td><td>${s.added_7d ?? 0}</td>
+    <td style="white-space:nowrap">${fdots(s)}</td>
+    <td>${fmtPub(s.latest_pub_at)}</td>
+    <td>${s.articles_total ? `<b>${s.articles_total}</b>` : '<span class="mini">0</span>'}</td>
+    <td>${s.added_7d ?? 0}</td>
     <td${s.last_failed && s.last_requests && s.last_failed >= s.last_requests ? ' style="color:var(--bad)"' : ''}>${s.last_failed ?? 0}/${s.last_requests ?? 0}</td>
     <td>${s.red_alerts ? '<span class="dot r"></span>' : ''}${s.yellow_alerts ? '<span class="dot y"></span>' : ''}</td>
     <td><button class="btn" onclick="event.stopPropagation();recrawl(${s.token_id},'${esc(s.base_symbol)}')">重采</button></td></tr>`).join('');
 }
-['src-q', 'src-crawler', 'src-alert'].forEach((id) => $(id).addEventListener('input', renderSources));
+['src-q', 'src-crawler', 'src-alert', 'src-fields'].forEach((id) => $(id).addEventListener('input', renderSources));
+document.querySelectorAll('#p-sources th.sortable').forEach((t) => t.addEventListener('click', () => {
+  const k = t.dataset.sort;
+  if (srcSort.key === k) srcSort.dir = -srcSort.dir;
+  else srcSort = { key: k, dir: (k === 'latest_pub_at' || k === 'articles_total') ? -1 : 1 };
+  renderSources();
+}));
 window.recrawl = async (tokenId, sym) => {
   if (!confirm(`单独重采 ${sym}?`)) return;
   try { const r = await api(`/api/sources/${tokenId}/recrawl`, { method: 'POST', body: '{}' }); toast(r.message); } catch (e) { toast(e.status === 409 ? '当前有批次在跑,请稍后' : e.message); }

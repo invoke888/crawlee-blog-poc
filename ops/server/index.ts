@@ -137,6 +137,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
             return;
         }
         if (path === '/api/sources' && req.method === 'GET') {
+            // 🆕 2026-07-04 老板拍:最近一条博文完整度(title/正文/pub)+ 最近发布时间 + 博文总数(窗口取每源最新一条)
             const rows = d.prepare(`
                 SELECT s.token_id, s.base_symbol, s.blog_url, s.host_platform, s.last_article_at,
                        (SELECT COALESCE(SUM(sr.items_added),0) FROM source_runs sr JOIN runs r ON r.run_id = sr.run_id
@@ -147,8 +148,20 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
                         WHERE sr.token_id = s.token_id ORDER BY r.started_at DESC LIMIT 1) AS last_requests,
                        (SELECT sr.crawler FROM source_runs sr WHERE sr.token_id = s.token_id ORDER BY sr.run_id DESC LIMIT 1) AS crawler,
                        (SELECT COUNT(*) FROM alerts a WHERE a.token_id = s.token_id AND a.status = 'open' AND a.severity = 'red') AS red_alerts,
-                       (SELECT COUNT(*) FROM alerts a WHERE a.token_id = s.token_id AND a.status = 'open' AND a.severity = 'yellow') AS yellow_alerts
-                FROM sources s ORDER BY s.last_article_at DESC NULLS LAST
+                       (SELECT COUNT(*) FROM alerts a WHERE a.token_id = s.token_id AND a.status = 'open' AND a.severity = 'yellow') AS yellow_alerts,
+                       COALESCE(la.total, 0) AS articles_total,
+                       la.published_at AS latest_pub_at,
+                       CASE WHEN la.title != '' THEN 1 ELSE 0 END AS latest_title_ok,
+                       CASE WHEN COALESCE(NULLIF(la.body_excerpt,''), NULLIF(la.description,'')) IS NOT NULL THEN 1 ELSE 0 END AS latest_body_ok,
+                       CASE WHEN la.published_at != '' THEN 1 ELSE 0 END AS latest_pub_ok
+                FROM sources s
+                LEFT JOIN (
+                    SELECT token_id, title, body_excerpt, description, published_at,
+                           COUNT(*) OVER (PARTITION BY token_id) AS total,
+                           ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY COALESCE(NULLIF(published_at,''), crawled_at) DESC) AS rn
+                    FROM articles
+                ) la ON la.token_id = s.token_id AND la.rn = 1
+                ORDER BY s.last_article_at DESC NULLS LAST
             `).all();
             json(res, 200, rows);
             return;

@@ -81,6 +81,13 @@ h2.sec { font-size: 15px; margin: 18px 0 9px; }
 .setrow input { border: 1px solid var(--line); border-radius: 5px; padding: 4px 8px; background: var(--bg); color: var(--ink); font-family: var(--mono); font-size: 12px; width: 130px; }
 .setrow input.wide { width: 380px; }
 .pager { display: flex; gap: 10px; align-items: center; margin-top: 10px; font-size: 12px; color: var(--mute); }
+/* ── 源管理:完整度三点 + 列头排序(2026-07-04 老板拍)── */
+.fdot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #5A564A; margin-right: 4px; vertical-align: 0.5px; }
+.fdot.on { background: var(--ok); box-shadow: 0 0 4px rgba(127,191,142,.5); }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable:hover { color: var(--ink); }
+th.sortable.asc::after { content: " ▲"; color: var(--ok); font-size: 9px; }
+th.sortable.desc::after { content: " ▼"; color: var(--ok); font-size: 9px; }
 /* ── 源详情浮窗(2026-07-04 老板拍:可拖拽/可调大小/置顶 · 替代行内 drawer)── */
 #src-float { position: fixed; top: 64px; right: 36px; width: 620px; height: 460px; min-width: 380px; min-height: 240px; max-width: 92vw; max-height: 88vh; background: var(--panel); border: 1px solid var(--mute); border-radius: 8px; z-index: 20; display: flex; flex-direction: column; box-shadow: 0 14px 44px rgba(0,0,0,.55); resize: both; overflow: hidden; }
 #src-float[hidden] { display: none; }
