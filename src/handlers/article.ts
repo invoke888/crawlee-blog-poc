@@ -198,7 +198,8 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
     // 🆕 地基工程:per-source body 规则(正文容器定点 · 容器落空回退通用防改版)
     const bSel = bodyRuleFor(loaded)?.selector;
     let paras = bSel ? $(bSel).find('p') : $('article p, main p');
-    if (bSel && paras.length === 0) paras = $(bSel);
+    // 规则 selector 自身就是段落集合(如 '.content p')时 find('p') 为空 → 直接用;仍空回退通用防改版
+    if (bSel && paras.length === 0) paras = $(bSel) as unknown as typeof paras;
     if (bSel && paras.length === 0) paras = $('article p, main p');
     const fullText = paras
         .map((_, el) => $(el).text().trim())
