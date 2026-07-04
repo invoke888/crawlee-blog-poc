@@ -94,6 +94,8 @@ storage/logs/<run_id>.log(批次日志 · 30天)
 | reset"清 storage"字面执行会删账本 | `ops/reset.ts` 固化三目录 · sources.db 永不清 |
 | 服务器 remote https 不能 push | 服务器只 pull;本地 SSH remote push |
 | `nohup A & sleep && tail B` 的 & 作用域坑(cd 只在后台段生效)| tail 用绝对路径 |
+| **收割层曾零过滤**(垃圾进账本 · dashboard 裸暴露 · "报告干净"是聚合层过滤的错觉)| 2026-07-04 质量战役:四层同语义(LIST/收割/push/聚合)· memory `project-quality-filter-layers` 必读 |
+| 白名单优先按"本批组内"判定会漏放(DIA zktls-oracle 实锤)| 全库口径 tokenHasWhite(run-batch/clean-articles 已固化)|
 | 账本/埋点必须失败隔离 | flushRun try/catch 不上抛 · persistSeen 排账本前 |
 | playwright MCP 沙箱无 require/Buffer/btoa | page.evaluate 里算 base64 |
 
