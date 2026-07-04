@@ -23,7 +23,7 @@
 | GitHub | `git@github.com:invoke888/crawlee-blog-poc.git`(本地 SSH remote · **服务器 remote 是 https 不能 push,只 pull**)|
 | 服务器 | hk-prod `119.28.68.105` · ubuntu · `~/crawlee-blog-poc/` · SSH 走 SOCKS5 `127.0.0.1:10808` |
 | HEAD | `0229ce3`(handoff 补记)· 三端一致 |
-| **运维台** | `https://blog-picker.hhwlnet.com`(2026-07-04 切正式域名:nginx 443 反代 8787 · Let's Encrypt 证书 · certbot.timer 自动续期 · 80 自动跳 https · 旧 8788 入口已下线)· basic auth 凭据在服务器 `.env.local`(DASH_USER=boss / DASH_PASS)· auth 在 node 层 · nginx 纯反代不加 auth(老板拍)|
+| **运维台** | `https://blog-picker.hhwlnet.com`(2026-07-04 切正式域名:nginx 443 反代 8787 · Let's Encrypt 证书 · certbot.timer 自动续期 · 80 自动跳 https · 旧 8788 入口已下线)· **UI 登录门厅**(老板拍方案 C:cookie 30 天免登 · curl/脚本仍可 Basic 头 · 凭据在服务器 `.env.local` DASH_USER/DASH_PASS)· auth 全在 node 层(ops/server/auth.ts · 4 组单测)· nginx 纯反代不加 auth(老板拍)|
 | 进程 | `sudo systemctl status ops-dashboard`(**仅保活** · Restart=always · 调度 100% 在进程内)· 日志 `journalctl -u ops-dashboard` |
 | 调度 | 内置 · 每 60min 自动跑批(interval 在面板设置页可改 · 下 tick 生效)· 首批 2026-07-04 15:27 起 |
 | 数据 | 634 源 · 采集池 ~508(黑名单4/挂起61/判死42/token排除5)· 有数据 501 · articles 6109 · 单轮全量 ~4.6min |
@@ -71,6 +71,7 @@ storage/logs/<run_id>.log(批次日志 · 30天)
 7. 🔴 push 铁律(memory 有档):同 url 多 token 合并一条推送(token_ids list)· **首次接通存量不推**(skipped_backlog 机制已实现)
 8. 自测战役期间拍:a=RSS化60源 · b=Ondo 系共享博客合法保留 · c=EDGE/RE 重复登记去重 · d=OPENAI/PTB/AHT_3 挂起(USAT 复核后不挂)· e=display 切换已上线
 9. 全局铁律 13a 已立(CLAUDE.md):**开发新前端必调设计 skill + 2-3 套方案老板选**
+10. 🆕 2026-07-04 晚批拍板:UI 登录门厅(方案 C · 弹窗绝迹);dashboard 时间显示**一律北京 UTC+8 到秒**;博文列序=博客(跳博客站)/标题/正文/发布/采集;源详情=可拖拽浮窗(修告警查看源跳转);页面铺满去 max-width;**存量 6185 篇已全标 skipped_backlog**(此后新采=none=未推 · 行内推送按钮 · push 未接通时按钮走 dry 演练不回写)
 
 ## §4 本会话大战役成果(证据全在 docs/research/)
 
