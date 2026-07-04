@@ -11,7 +11,7 @@ import {
 } from '../shared/ledger.js';
 import { cfgNum } from '../shared/config.js';
 import { getProxyUrl, hashProxy } from '../shared/proxy-config.js';
-import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlockedSubdomainUrl, hostOfUrl, filterArticlesWhitelistFirst } from '../src/utils/article-filter.js';
+import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlockedSubdomainUrl, hostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
 import { runDetector } from './detector.js';
 import { runPusher } from './pusher.js';
 
@@ -61,7 +61,17 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
         && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)));
     const byToken = new Map<number, ArticleInput[]>();
     for (const a of kept) { const g = byToken.get(a.token_id) ?? []; g.push(a); byToken.set(a.token_id, g); }
-    const passed = [...byToken.values()].flatMap((g) => filterArticlesWhitelistFirst(g));
+    // 白名单优先必须用全库口径(DIA 实锤:本批无白名单新文时组内判定全放行 → zktls-oracle 类产品页溜入)
+    const tokenHasWhite = new Set<number>();
+    for (const r of db().prepare('SELECT token_id, url FROM articles').all() as { token_id: number; url: string }[]) {
+        if (isWhitelistedArticleUrl(r.url)) tokenHasWhite.add(r.token_id);
+    }
+    const passed = [...byToken.values()].flatMap((g) => {
+        const groupWhite = g.filter((a) => isWhitelistedArticleUrl(a.url));
+        if (groupWhite.length > 0) return groupWhite;              // 组内有白名单文 → 只留白名单
+        if (tokenHasWhite.has(g[0].token_id)) return [];           // 组内无但库里有 → 非白名单增量全拦
+        return g;                                                  // 该源从无白名单 → 信任放行(白名单不全的源不漏采)
+    });
     if (passed.length < fresh.length) console.log(`🧹 收割过滤:${fresh.length} → ${passed.length}(拦 ${fresh.length - passed.length} 条非博文/噪音 · 不进账本)`);
     const added = upsertArticles(passed, runId);
     return { added, sourcesWithNew: new Set(passed.map((a) => a.token_id)).size };
