@@ -1,0 +1,18 @@
+# 运维台进程守护(老板拍 C:极简 systemd service 仅保活 · 无任何 timer · 调度 100% 在进程内)
+# 安装:sudo cp ops/deploy/ops-dashboard.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now ops-dashboard
+[Unit]
+Description=crawlee ops dashboard (scheduler + API + UI)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/crawlee-blog-poc
+Environment=PATH=/home/ubuntu/.local/share/fnm/aliases/default/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/ubuntu/.local/share/fnm/aliases/default/bin/npx tsx ops/server/index.ts
+Restart=always
+RestartSec=5
+MemoryMax=400M
+
+[Install]
+WantedBy=multi-user.target

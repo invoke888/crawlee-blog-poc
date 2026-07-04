@@ -6,7 +6,7 @@ import Database from 'better-sqlite3';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-const DB_PATH = resolve(process.cwd(), 'storage/sources.db');
+const DB_PATH = resolve(process.cwd(), process.env.OPS_DB_PATH ?? 'storage/sources.db'); // OPS_DB_PATH:单测隔离用
 const REGISTRY_SCHEMA = resolve(import.meta.dirname, '../src/registry/schema.sql');
 const OPS_SCHEMA = resolve(import.meta.dirname, 'schema.sql');
 

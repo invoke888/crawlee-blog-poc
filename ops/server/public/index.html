@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>采集运维台</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<aside>
+  <div class="brand">采集运维台</div>
+  <a class="on" data-p="p-overview">总览</a>
+  <a data-p="p-alerts">告警 <span id="nav-alert-n" style="color:var(--bad)"></span></a>
+  <a data-p="p-sources">源管理</a>
+  <a data-p="p-articles">博文</a>
+  <a data-p="p-errors">错误日志</a>
+  <a data-p="p-settings">设置</a>
+  <div class="foot">
+    <div class="toggle" id="sched-toggle" title="点击 暂停/恢复 调度"><span class="dot g" id="sched-dot"></span> <span id="sched-label">…</span></div>
+    <div>下次 <span id="sched-next">…</span></div>
+    <div id="sched-heartbeat" style="margin-top:4px; opacity:.7"></div>
+    <div style="margin-top:6px; opacity:.6">hk-prod · <span id="sched-interval"></span></div>
+  </div>
+</aside>
+
+<main>
+  <div class="page on" id="p-overview">
+    <div class="pulse" id="ov-pulse">载入中…</div>
+    <div class="runband"><div class="lab">RUNS · 最近 24 批次(hover 详情)</div><div class="cells" id="ov-cells"></div></div>
+    <div class="grid3" id="ov-cards"></div>
+    <div class="grid3" style="grid-template-columns: 3fr 2fr">
+      <div class="card"><div class="lab">近 7 天每日新增</div><svg class="spark" id="ov-spark" viewBox="0 0 300 54" preserveAspectRatio="none"></svg></div>
+      <div class="card"><div class="lab" style="margin-bottom:4px">今日新增 · 按管线</div><div id="ov-pipes"></div></div>
+    </div>
+    <h2 class="sec">最近批次 <button class="btn primary" id="btn-trigger" style="margin-left:12px">▶ 立即跑一轮</button></h2>
+    <table><thead><tr><th>run</th><th>触发</th><th>完成</th><th>耗时</th><th>新增</th><th>失败</th><th>rpm</th><th>状态</th></tr></thead><tbody id="ov-runs"></tbody></table>
+  </div>
+
+  <div class="page" id="p-alerts">
+    <h2 class="sec" style="margin-top:0">活跃告警 <span id="al-count"></span></h2>
+    <div id="al-open"></div>
+    <h2 class="sec mini" style="cursor:pointer" id="al-more-toggle">▸ 已 ack / 已恢复(点开)</h2>
+    <div id="al-closed" style="display:none"></div>
+  </div>
+
+  <div class="page" id="p-sources">
+    <div class="filters">
+      <input id="src-q" placeholder="搜 symbol / URL…" style="width:200px">
+      <select id="src-crawler"><option value="">全部管线</option><option>rss</option><option>medium</option><option>substack</option><option>paragraph</option><option>article-detail</option></select>
+      <select id="src-alert"><option value="">全部</option><option value="alert">只看有告警</option><option value="nodata">只看无数据</option></select>
+      <span class="mini" id="src-count"></span>
+    </div>
+    <table><thead><tr><th></th><th>symbol</th><th>blog url</th><th>管线</th><th>最后出文</th><th>7d新增</th><th>近轮失败</th><th>告警</th><th></th></tr></thead><tbody id="src-body"></tbody></table>
+  </div>
+
+  <div class="page" id="p-articles">
+    <div class="filters">
+      <input id="art-q" placeholder="搜标题/摘要/正文…" style="width:190px">
+      <input id="art-sym" placeholder="博客 symbol…" style="width:100px">
+      <select id="art-crawler"><option value="">全部管线</option><option>rss</option><option>medium</option><option>substack</option><option>paragraph</option><option>article-detail</option></select>
+      <select id="art-push"><option value="">push:全部</option><option value="none">未推</option><option value="pushed">已推</option><option value="failed">推送失败</option><option value="skipped_backlog">存量不推</option></select>
+      <select id="art-fields"><option value="">完整度:全部</option><option value="no_title">缺 title</option><option value="no_desc">缺 desc</option><option value="no_pub">缺 pub</option></select>
+      <input type="date" id="art-pub-from" title="发布起"> <span class="mini">→</span> <input type="date" id="art-pub-to" title="发布止">
+      <button class="btn" id="art-search">搜索</button>
+      <span class="mini" id="art-count"></span>
+    </div>
+    <table><thead><tr><th>标题</th><th>博客</th><th>管线</th><th>发布</th><th>采集</th><th>push</th><th></th></tr></thead><tbody id="art-body"></tbody></table>
+    <div class="pager"><button class="btn" id="art-prev">‹ 上页</button><span id="art-page">1</span><button class="btn" id="art-next">下页 ›</button></div>
+  </div>
+
+  <div class="page" id="p-errors">
+    <div class="grid3" id="err-dist"></div>
+    <div class="filters">
+      <select id="err-run"><option value="">近期全部批次</option></select>
+      <select id="err-kind"><option value="">全部错误类型</option><option>proxy_error</option><option>unreachable</option><option>timeout</option><option>http_403</option><option>http_404</option><option>http_429</option><option>http_4xx</option><option>http_5xx</option><option>tls_error</option><option>parse_error</option><option>cf_challenge</option><option>soft_404</option><option>error_page</option><option>internal</option></select>
+      <input id="err-q" placeholder="搜源 / URL…" style="width:170px">
+      <button class="btn" id="err-search">筛选</button>
+    </div>
+    <table><thead><tr><th>时间</th><th>源</th><th>URL</th><th>类型</th><th>HTTP</th><th>信息</th><th>重试</th></tr></thead><tbody id="err-body"></tbody></table>
+  </div>
+
+  <div class="page" id="p-settings">
+    <h2 class="sec" style="margin-top:0">代理池(下次批次生效)</h2>
+    <div id="set-proxy"></div>
+    <h2 class="sec">运行参数</h2>
+    <div id="set-config"></div>
+    <div class="mini" style="margin:10px 0">规则版本(git):<span id="set-rules"></span> · 规则/名单改动走 Claude + git,面板不提供编辑</div>
+    <h2 class="sec mini" style="cursor:pointer" id="set-audit-toggle">▸ 最近配置变更(点开)</h2>
+    <div id="set-audit" style="display:none"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
