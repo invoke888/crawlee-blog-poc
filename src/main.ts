@@ -7,7 +7,7 @@ import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushS
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost, URL_OVERRIDES } from './config.js';
-import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion } from './utils/article-filter.js';
+import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion, extractDateFromUrl } from './utils/article-filter.js';
 import { checkSourceRuleMulti, getSitemapOnly } from './utils/source-rules.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
 // 🆕 2026-07-04 运维台对接(计划书 §3 契约):埋点/账本/配置中心/代理 DB 读 — 全部可选,零参数裸跑行为不变
@@ -265,9 +265,38 @@ const sitemapResults = await Promise.allSettled(
         for await (const item of parseSitemap([{ type: 'url', url: sitemapUrl }])) {
             items.push({ loc: item.loc, lastmod: item.lastmod });
         }
-        // lastmod 降序(无 lastmod 的排最后 · 保持原序)· 新文章天然靠前
-        items.sort((a, b) => (b.lastmod?.getTime() ?? 0) - (a.lastmod?.getTime() ?? 0));
-        return { source: srcs[0], urls: items.map((i) => i.loc) };
+        // 🆕 2026-07-05 B 战役:sitemapindex 一层递归(BNB 实锤:顶层是索引 · 真文在子 sitemap 未展开)
+        const childXml = items.filter((it) => /\.xml(\?|$)/i.test(it.loc));
+        if (childXml.length > 0 && childXml.length >= items.length * 0.5 && items.length < 60) {
+            for (const c of childXml.slice(0, 10)) {
+                try {
+                    for await (const item of parseSitemap([{ type: 'url', url: c.loc }])) {
+                        items.push({ loc: item.loc, lastmod: item.lastmod });
+                    }
+                } catch { /* 子表失败不拖垮 */ }
+            }
+        }
+        // 🆕 2026-07-05 B 战役实锤(26 源漏采诊断):lastmod 大面积缺失(KAVA/XRP)或全站同一构建时间戳
+        // (MNT/GLMR/MOVR)时 · 排序退化为原始文件序 · 旧序站取前 N 永远是老文 → 失效检测 + 双兜底
+        const withLm = items.filter((it) => it.lastmod);
+        const lmUnique = new Set(withLm.map((it) => it.lastmod!.getTime()));
+        const lastmodValid = withLm.length >= items.length * 0.5 && lmUnique.size > 2;
+        let needListFallback = false;
+        if (lastmodValid) {
+            items.sort((a, b) => (b.lastmod?.getTime() ?? 0) - (a.lastmod?.getTime() ?? 0));
+        } else {
+            // 兜底 1:URL 路径日期排序(XMR 型 /YYYY/MM/DD/)
+            const urlTime = (it: { loc: string }) => Date.parse(extractDateFromUrl(it.loc) || '') || 0;
+            const dated = items.filter((it) => urlTime(it) > 0).sort((a, b) => urlTime(b) - urlTime(a));
+            if (dated.length >= 3) {
+                const undated = items.filter((it) => urlTime(it) === 0);
+                items.length = 0;
+                items.push(...dated, ...undated);
+            } else {
+                needListFallback = true; // 兜底 2:降级 LIST 双保险(blog_url 列表页新文天然在前)
+            }
+        }
+        return { source: srcs[0], urls: items.map((i) => i.loc), needListFallback };
     }),
 );
 let sitemapFailed = 0;
@@ -285,7 +314,8 @@ const sitemapReqs = sitemapResults.flatMap((r, i) => {
         for (const s of srcs) sitemapFallbackUrls.add(s.blog_url);
         return [];
     }
-    const { urls } = r.value;
+    const { urls, needListFallback } = r.value;
+    if (needListFallback) for (const s of srcs) sitemapFallbackUrls.add(s.blog_url); // lastmod+URL日期双失效 → LIST 双保险
     // P3.5 · 用 isLikelyArticleUrl 过滤 article-only · 再取前 N
     // 🆕 2026-07-03 per-source 规则(17 agent 审计):高置信源强制 pattern 过滤(SPACE 类跑歪根治)
     const chunkSyms = srcs.map((s) => s.base_symbol);
