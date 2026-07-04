@@ -200,10 +200,11 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
             if (q.get('pub_to')) { conds.push('published_at <= ?'); params.push(q.get('pub_to') + 'T23:59:59'); }
             if (q.get('crawled_from')) { conds.push('crawled_at >= ?'); params.push(q.get('crawled_from')); }
             if (q.get('crawled_to')) { conds.push('crawled_at <= ?'); params.push(q.get('crawled_to') + 'T23:59:59'); }
-            const fields = q.get('fields'); // 字段完整度筛选(审计 A2-P1-4)
+            const fields = q.get('fields'); // 字段完整度筛选(2026-07-05 老板抓口径:与显示列一致 · 正文=body_excerpt||description)
             if (fields === 'no_title') conds.push("(title IS NULL OR title = '')");
-            if (fields === 'no_desc') conds.push("(description IS NULL OR description = '')");
+            if (fields === 'no_desc') conds.push("(COALESCE(body_excerpt,'') = '' AND COALESCE(description,'') = '')");
             if (fields === 'no_pub') conds.push("(published_at IS NULL OR published_at = '')");
+            if (fields === 'full') conds.push("(title != '' AND (COALESCE(body_excerpt,'') != '' OR COALESCE(description,'') != '') AND COALESCE(published_at,'') != '')");
             const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
             const total = (d.prepare(`SELECT COUNT(*) c FROM articles ${where}`).get(...params) as { c: number }).c;
             const rows = d.prepare(`
