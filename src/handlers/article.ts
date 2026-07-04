@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
 import { isValidHttpUrl, isWhitelistedArticleUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
-import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt } from '../utils/date-extract.js';
+import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt, titleRuleFor, bodyRuleFor } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
 import { statCount, statSet, statRequest, recordError } from '../../shared/run-stats.js';
@@ -159,8 +159,11 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
     const jsonLdMeta = extractJsonLdMeta($);
     const h1Text = extractH1($);
 
+    // 🆕 2026-07-04 地基工程:per-source title 规则(selector 定点 > ban og 跳站级口号 > 通用梯队)
+    const tRule = titleRuleFor(loaded);
     const title =
-        $('meta[property="og:title"]').attr('content')?.trim() ||
+        (tRule?.selector ? $(tRule.selector).first().text().trim() : '') ||
+        (tRule?.ban?.includes('og') ? '' : $('meta[property="og:title"]').attr('content')?.trim()) ||
         h1Text ||
         $('title').first().text().trim() ||
         '';
@@ -192,7 +195,12 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('meta[name="description"]').attr('content')?.trim() ||
         '';
     // 🆕 2026-07-04 body_excerpt(计划书定案:正文搜索用 · 始终抽全文前 3000)
-    const fullText = $('article p, main p')
+    // 🆕 地基工程:per-source body 规则(正文容器定点 · 容器落空回退通用防改版)
+    const bSel = bodyRuleFor(loaded)?.selector;
+    let paras = bSel ? $(bSel).find('p') : $('article p, main p');
+    if (bSel && paras.length === 0) paras = $(bSel);
+    if (bSel && paras.length === 0) paras = $('article p, main p');
+    const fullText = paras
         .map((_, el) => $(el).text().trim())
         .get()
         .filter((t) => t.length >= 20)
