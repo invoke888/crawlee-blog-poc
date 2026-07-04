@@ -6,6 +6,8 @@ import { checkSourceRuleMulti } from '../utils/source-rules.js';
 import { extractH1, extractJsonLdMeta, extractNextDataDate, extractVisibleDate } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
+import { statCount, statSet, statRequest, recordError } from '../../shared/run-stats.js';
+import { classifySoftErrorPage } from '../../shared/error-classify.js';
 
 // 🆕 2026-07-03 自测模式可调:LIST 每页 enqueue 上限(生产默认 30 · 每源限 1 自测传 5 降载)
 const LIST_ENQUEUE_LIMIT = Number(process.env.LIST_ENQUEUE_LIMIT ?? 30);
@@ -68,6 +70,13 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
         });
         candidates.sort((a, b) => Number(b.white) - Number(a.white)); // 稳定排序 · 白名单内保持页面出现顺序
         const picked = candidates.slice(0, LIST_ENQUEUE_LIMIT);
+        // 🆕 运维台埋点:LIST 候选数(骤降=改版信号)· 被过滤链接数计 blocked_noise
+        for (const src of sources) {
+            statSet(src.token_id, src.base_symbol, 'article-detail', 'list_candidates', candidates.length);
+            statCount(src.token_id, src.base_symbol, 'article-detail', 'blocked_noise', Math.max(0, seen.size - candidates.length));
+            statCount(src.token_id, src.base_symbol, 'article-detail', 'requests');
+        }
+        statRequest(false);
         await crawler.addRequests(picked.map((c) => ({
             url: c.url,
             label: 'DETAIL',
@@ -102,6 +111,8 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
     // 🆕 自测模式:关联 token 全部满额 → 跳过解析(请求已发出 · 只省解析/存储)
     if (sources.every((s) => !underSourceCap(s.token_id))) return;
     const loaded = request.loadedUrl ?? request.url;
+    statRequest(false);
+    for (const src of sources) statCount(src.token_id, src.base_symbol, 'article-detail', 'requests');
 
     // 双保险 1:URL 等于任一 source 的博客首页 · 跳过(防 enqueueLinks 把首页加回来)
     if (sources.some((s) => request.url === s.original_url || loaded === s.original_url)) {
@@ -127,6 +138,7 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         }));
         if (loadedRoot && !sourceRoots.has(loadedRoot)) {
             log.info(`⊘ [DETAIL] 外链拦截 ${loadedRoot} ∉ 源域 | ${loaded}`);
+            for (const src of sources) statCount(src.token_id, src.base_symbol, 'article-detail', 'blocked_external');
             return;
         }
     } catch { /* URL 解析失败走后续流程 */ }
@@ -157,12 +169,19 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
     const BAD_TITLE_RE = /(^|\s|\|)(404|page not found|not found|access denied|just a moment|error)(\s|\||$)/i;
     if (BAD_TITLE_RE.test(title)) {
         log.info(`⊘ [DETAIL] 错误页 title 跳过 "${title.slice(0, 50)}" | ${loaded}`);
+        for (const src of sources) statCount(src.token_id, src.base_symbol, 'article-detail', 'blocked_error_page');
+        recordError({
+            token_id: sources[0]?.token_id, base_symbol: sources[0]?.base_symbol, url: loaded,
+            kind: classifySoftErrorPage(title), http_status: 200, message: `软错误页 title: ${title.slice(0, 120)}`,
+            at: new Date().toISOString(),
+        });
         return;
     }
     // 🆕 2026-07-03 自测战役:列表页 title 拦截(实锤 "Blog - Page 2" / "597 articles, page 2 of 50" / "(Page 1)")
     const LIST_TITLE_RE = /\(page\s+\d+\)|page\s+\d+\s+of\s+\d+|(^|\|\s*)page\s+\d+(\s*$|\s*\|)|\b\d+\s+articles?,/i;
     if (LIST_TITLE_RE.test(title) || LIST_TITLE_RE.test(h1Text)) {
         log.info(`⊘ [DETAIL] 列表页 title 跳过 "${title.slice(0, 50)}" | ${loaded}`);
+        for (const src of sources) statCount(src.token_id, src.base_symbol, 'article-detail', 'blocked_error_page');
         return;
     }
 
@@ -172,20 +191,22 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('meta[property="og:description"]').attr('content')?.trim() ||
         $('meta[name="description"]').attr('content')?.trim() ||
         '';
+    // 🆕 2026-07-04 body_excerpt(计划书定案:正文搜索用 · 始终抽全文前 3000)
+    const fullText = $('article p, main p')
+        .map((_, el) => $(el).text().trim())
+        .get()
+        .filter((t) => t.length >= 20)
+        .join(' ')
+        .replace(/\s+/g, ' ');
+    const bodyExcerpt = fullText.slice(0, 3000);
     let description = metaDesc;
     if (!description || description.length < 30 || description === title) {
         const jd = (jsonLdMeta.description || '').trim();
         if (jd && jd.length >= 30 && jd !== title) {
             description = jd;
-        } else {
-            // 🆕 2026-07-03 老板拍:摘要够用 · 没摘要就给全文(article/main 全段落合并 · 截 2000)
-            const fullText = $('article p, main p')
-                .map((_, el) => $(el).text().trim())
-                .get()
-                .filter((t) => t.length >= 20)
-                .join(' ')
-                .replace(/\s+/g, ' ');
-            if (fullText) description = fullText.slice(0, 2000);
+        } else if (fullText) {
+            // 2026-07-03 老板拍:摘要够用 · 没摘要就给全文(截 2000)
+            description = fullText.slice(0, 2000);
         }
     }
     const image =
@@ -248,6 +269,7 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
     for (const src of sources) {
         if (!underSourceCap(src.token_id)) continue; // 自测模式:该 token 已满额
         countSourcePush(src.token_id);
+        statCount(src.token_id, src.base_symbol, 'article-detail', 'items_added');
         await pushData({
             crawler: 'article-detail',
             token_id: src.token_id,
@@ -258,6 +280,7 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
             h1: h1Text,
             description,
             jsonld_description: jsonLdMeta.description,
+            body_excerpt: bodyExcerpt,
             image,
             published_at: publishedAtFinal,
             author,

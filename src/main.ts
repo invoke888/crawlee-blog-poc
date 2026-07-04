@@ -10,6 +10,13 @@ import { isLikelyArticleUrl, isBlacklistedHost, URL_OVERRIDES } from './config.j
 import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion } from './utils/article-filter.js';
 import { checkSourceRuleMulti, getSitemapOnly } from './utils/source-rules.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
+// 🆕 2026-07-04 运维台对接(计划书 §3 契约):埋点/账本/配置中心/代理 DB 读 — 全部可选,零参数裸跑行为不变
+import { statCount, statRequest, recordError, snapshotStats } from '../shared/run-stats.js';
+import { flushRun } from '../shared/ledger.js';
+import { classifyError } from '../shared/error-classify.js';
+import { cfgNum, cfgBool } from '../shared/config.js';
+import { getProxyUrl } from '../shared/proxy-config.js';
+import type { CheerioCrawlingContext } from 'crawlee';
 
 // 🆕 2026-07-02 crash 教训:crawlee addRequests 的异步 batch 验证失败 = unhandledRejection = 全进程死
 // (实测 22:29 全量跑 · 某 LIST 源抽出非法 request · 进程直接退 · dataset 半途 1472 条)
@@ -18,7 +25,42 @@ process.on('unhandledRejection', (reason) => {
     console.error('⚠️ unhandledRejection(已兜底不杀进程):', reason instanceof Error ? reason.message : reason);
 });
 
-const SITEMAP_URLS_PER_SOURCE = Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20);
+const SITEMAP_URLS_PER_SOURCE = cfgNum('sitemap_urls_per_source', Number(process.env.SITEMAP_URLS_PER_SOURCE ?? 20));
+
+// 🆕 错误采集(计划书 §4 · errorHandler 每次尝试失败都记 · failedRequestHandler 终判失败记)
+function makeErrorHooks(crawlerLabel: string) {
+    const record = (ctx: CheerioCrawlingContext, error: Error, isFinal: boolean) => {
+        try {
+            const req = ctx.request;
+            const assoc = (req.userData?.sources_for_url ?? []) as { token_id: number; base_symbol: string }[];
+            const t = assoc[0];
+            const cls = classifyError({
+                message: error?.message,
+                statusCode: (error as { statusCode?: number }).statusCode ?? null,
+                code: (error as { code?: string }).code ?? null,
+            });
+            recordError({
+                token_id: t?.token_id, base_symbol: t?.base_symbol, url: req.url,
+                kind: cls.kind, http_status: cls.http_status, retry_after_s: cls.retry_after_s,
+                error_code: cls.error_code, message: error?.message, retries: req.retryCount, at: new Date().toISOString(),
+            });
+            statRequest(true);
+            if (t) {
+                statCount(t.token_id, t.base_symbol, crawlerLabel, 'requests');
+                if (isFinal) statCount(t.token_id, t.base_symbol, crawlerLabel, 'failed');
+                if (cls.kind === 'http_403') statCount(t.token_id, t.base_symbol, crawlerLabel, 'http_403');
+                if (cls.kind === 'http_404') statCount(t.token_id, t.base_symbol, crawlerLabel, 'http_404');
+                if (cls.kind === 'http_429') statCount(t.token_id, t.base_symbol, crawlerLabel, 'http_429');
+                if (cls.kind === 'timeout') statCount(t.token_id, t.base_symbol, crawlerLabel, 'timeout');
+                if (cls.kind === 'proxy_error') statCount(t.token_id, t.base_symbol, crawlerLabel, 'proxy_error');
+            }
+        } catch { /* 埋点绝不拖垮采集 */ }
+    };
+    return {
+        errorHandler: async (ctx: CheerioCrawlingContext, error: Error) => record(ctx, error, false),
+        failedRequestHandler: async (ctx: CheerioCrawlingContext, error: Error) => record(ctx, error, true),
+    };
+}
 
 // 🆕 2026-07-03 增量死锁修复:入口 request(RSS/LIST)uniqueKey 加轮次盐 · 每轮必重抓
 // DETAIL(文章页)不加盐 → 持久 dedupe = 老文章不重抓 · 新文章从入口进来
@@ -41,7 +83,13 @@ const sourcesDcBanned = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) 
 const sourcesDead = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url) && isDeadHost(s.blog_url));
 // 🆕 2026-07-03 老板拍 c/d:token 级排除(重复登记去重 + 上游 blog_url 错配挂起)
 const sourcesExcluded = sourcesRaw.filter((s) => getTokenExclusion(s.token_id));
-const sources = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url) && !isDeadHost(s.blog_url) && !getTokenExclusion(s.token_id));
+let sources = sourcesRaw.filter((s) => !isBlacklistedHost(s.blog_url) && !isDcBannedHost(s.blog_url) && !isDeadHost(s.blog_url) && !getTokenExclusion(s.token_id));
+// 🆕 2026-07-04 单源采集(计划书 §2 · 运维台"单独重采"按钮):ONLY_SYMBOLS=SEI,GLM
+const ONLY_SYMBOLS = (process.env.ONLY_SYMBOLS ?? '').split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+if (ONLY_SYMBOLS.length > 0) {
+    sources = sources.filter((s) => ONLY_SYMBOLS.includes(s.base_symbol.toUpperCase()));
+    console.log(`🎯 单源模式:仅采 ${ONLY_SYMBOLS.join(',')}(命中 ${sources.length} 源)`);
+}
 if (sourcesBlocked.length > 0) {
     console.log(`⊘ 黑名单过滤 ${sourcesBlocked.length} 源(${sourcesBlocked.map(s => s.base_symbol).join(', ')})`);
 }
@@ -358,9 +406,10 @@ await mirrorQueue.addRequests(mirrorReqs);
 // PROXY_URL        主力池(10 节点)· general 队列
 // PROXY_URL_MEDIUM medium 专用池 · mediumCrawler(RSS)+ slow 队列的 medium 域
 // PROXY_URL_SLOW   403 四强专用池 · slow 队列的 slow403 域
-const PROXY_URL = process.env.PROXY_URL ?? '';
-const PROXY_URL_MEDIUM = process.env.PROXY_URL_MEDIUM || PROXY_URL;
-const PROXY_URL_SLOW = process.env.PROXY_URL_SLOW || PROXY_URL;
+// 🆕 2026-07-04 代理读取点 1/3(计划书 §5.5):DB(面板)优先 · env 兜底 · 回落主池语义留在本地
+const PROXY_URL = getProxyUrl('main');
+const PROXY_URL_MEDIUM = getProxyUrl('medium') || PROXY_URL;
+const PROXY_URL_SLOW = getProxyUrl('slow') || PROXY_URL;
 // 🆕 2026-07-03 老板拍 b:direct_hosts(steemit 等)代理被单独挑战 · 直连正常 → newUrlFunction 返 null 跳过代理
 const proxyConfiguration = PROXY_URL ? new ProxyConfiguration({
     newUrlFunction: (_sessionId, options) => {
@@ -390,14 +439,15 @@ const mediumCrawler = new CheerioCrawler({
     requestHandler: mediumRouter,
     proxyConfiguration: mediumProxyConfiguration,
     // 池 B 专用后不用怕 medium 限频 · 但 RSS 一共 ~170 个 · RPM 150 也就 1 分钟 · 稳字优先
-    maxRequestsPerMinute: PROXY_URL ? 150 : 60,
-    maxConcurrency: PROXY_URL ? 5 : 3,
+    maxRequestsPerMinute: PROXY_URL ? cfgNum('medium_rpm', 150) : 60,
+    maxConcurrency: PROXY_URL ? cfgNum('medium_cc', 5) : 3,
     sameDomainDelaySecs: 0,
     useSessionPool: true,
     persistCookiesPerSession: true,
     additionalMimeTypes: ['application/xml', 'application/rss+xml', 'text/xml', 'application/atom+xml'],
     maxRequestRetries: 2,
     maxRequestsPerCrawl: process.env.MEDIUM_LIMIT ? Number(process.env.MEDIUM_LIMIT) : undefined,
+    ...makeErrorHooks('medium'),
 });
 
 const generalCrawler = new CheerioCrawler({
@@ -406,12 +456,13 @@ const generalCrawler = new CheerioCrawler({
     requestHandler: defaultRouter,
     proxyConfiguration,
     // 有代理:每请求换 IP · 同域串行限制没必要 → delay 0 + 并发/RPM 拉高(实测 65 min 瓶颈就在这)
-    maxRequestsPerMinute: PROXY_URL ? 600 : 300,
-    maxConcurrency: PROXY_URL ? 20 : 10,
+    maxRequestsPerMinute: PROXY_URL ? cfgNum('general_rpm', 600) : 300,
+    maxConcurrency: PROXY_URL ? cfgNum('general_cc', 20) : 10,
     sameDomainDelaySecs: PROXY_URL ? 0 : 1,
     useSessionPool: true,
     persistCookiesPerSession: true,
     maxRequestRetries: 2,
+    ...makeErrorHooks('article-detail'),
 });
 
 // 🆕 2026-07-03 slow crawler · 限频域专用(medium 域 + 403 四强)· 双池按域动态选
@@ -421,12 +472,13 @@ const slowCrawler = new CheerioCrawler({
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: defaultRouter,
     proxyConfiguration: slowProxyConfiguration,
-    maxRequestsPerMinute: 60,
-    maxConcurrency: 3,
+    maxRequestsPerMinute: cfgNum('slow_rpm', 60),
+    maxConcurrency: cfgNum('slow_cc', 3),
     sameDomainDelaySecs: 1,
     useSessionPool: true,
     persistCookiesPerSession: true,
     maxRequestRetries: 2,
+    ...makeErrorHooks('article-detail'),
 });
 
 // 🆕 2026-06-30 mirror 独立 crawler · Atom feed · cf 反爬严 · sessionPool 高 retry
@@ -436,8 +488,8 @@ const mirrorCrawler = new CheerioCrawler({
     httpClient: new ImpitHttpClient({ browser: Browser.Chrome }),
     requestHandler: mirrorRouter,
     proxyConfiguration,
-    maxRequestsPerMinute: 60,
-    maxConcurrency: 3,
+    maxRequestsPerMinute: cfgNum('mirror_rpm', 60),
+    maxConcurrency: cfgNum('mirror_cc', 3),
     sameDomainDelaySecs: 2,
     useSessionPool: true,
     persistCookiesPerSession: true,
@@ -448,8 +500,8 @@ const mirrorCrawler = new CheerioCrawler({
 // 🆕 2026-07-03 全并行(老板拍 全量 ≤20min):各 crawler 独立 named queue · 无共享 state · 可安全并行
 // (当年串行是防共享 default queue 的 ENOENT race · 分 queue 后此顾虑不存在 · 本轮真跑验证)
 const t0 = performance.now();
-const SKIP_MEDIUM = process.env.SKIP_MEDIUM === '1';
-const RUN_MIRROR = process.env.RUN_MIRROR === '1';
+const SKIP_MEDIUM = process.env.SKIP_MEDIUM === '1' || cfgBool('skip_medium');
+const RUN_MIRROR = process.env.RUN_MIRROR === '1' || cfgBool('run_mirror');
 
 const jobs: Promise<void>[] = [];
 
@@ -512,7 +564,27 @@ if (RUN_MIRROR && mirrorReqs.length > 0) {
     console.log(`⊘ mirror ${mirrorReqs.length} 源跳过(cf challenge 待 Playwright · RUN_MIRROR=1 打开)`);
 }
 
-await Promise.all(jobs);
+// 🆕 2026-07-04 收尾容错(计划书 §3 契约):
+// - SIGTERM(run-batch 超时先礼后兵):保存 seen + 部分账本再退(不再丢整轮)
+// - 管线部分失败:照常 persistSeen + 按已完成部分写账本 · exitCode=1(run-batch 记 partial)
+let exiting = false;
+async function gracefulFinish(exitCode: number, reason: string): Promise<never> {
+    if (exiting) process.exit(exitCode);
+    exiting = true;
+    try { await persistSeen(); } catch (e) { console.error('⚠️ persistSeen 失败:', (e as Error).message); }
+    try { flushRun(snapshotStats()); } catch { /* flushRun 内部已隔离 · 双保险 */ }
+    console.log(`🏁 收尾(${reason})· exit=${exitCode}`);
+    process.exit(exitCode);
+}
+process.on('SIGTERM', () => { console.warn('⚠️ SIGTERM(超时被杀)· 保存已得部分…'); void gracefulFinish(1, 'SIGTERM'); });
+
+let pipelineError: Error | null = null;
+try {
+    await Promise.all(jobs);
+} catch (e) {
+    pipelineError = e as Error;
+    console.error(`🔴 管线整体失败(其余管线产出仍保留):${pipelineError.message}`);
+}
 
 const dt = ((performance.now() - t0) / 1000).toFixed(1);
 
@@ -527,8 +599,4 @@ const byCrawler = items.reduce<Record<string, number>>((a, it) => {
 console.log(`\n✅ 总耗时 ${dt} 秒 · dataset ${count} 条`);
 for (const [k, v] of Object.entries(byCrawler)) console.log(`   · ${k}: ${v}`);
 
-await persistSeen();
-
-// 🆕 2026-07-03 并行化后 event loop 残留 keep-alive/定时器 · 统计打完进程挂着不退(实测挂 19min+)
-// 批处理任务标准做法:显式退出
-process.exit(0);
+await gracefulFinish(pipelineError ? 1 : 0, pipelineError ? `partial: ${pipelineError.message.slice(0, 80)}` : 'ok');

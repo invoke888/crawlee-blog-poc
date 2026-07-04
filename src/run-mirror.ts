@@ -3,6 +3,7 @@
 // 用 mirrorRouter(Atom 解析)+ mirrorToAtom · 独立 RequestQueue 'mirror-test'
 // mirror.xyz cf 反爬严 · 用 ImpitHttpClient Chrome fingerprint + sessionPool 试错
 
+import { getProxyUrl } from '../shared/proxy-config.js';
 import { Browser, ImpitHttpClient } from '@crawlee/impit-client';
 import { CheerioCrawler, Configuration, RequestQueue, Dataset, ProxyConfiguration } from 'crawlee';
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
@@ -14,7 +15,7 @@ Configuration.getGlobalConfig().set('purgeOnStart', false);
 await loadSeen();
 
 // 2026-07-01 代理池 · PROXY_URL 在服务器 .env.local · 不进 git
-const PROXY_URL = process.env.PROXY_URL ?? '';
+const PROXY_URL = getProxyUrl('main');
 const proxyConfiguration = PROXY_URL ? new ProxyConfiguration({ proxyUrls: [PROXY_URL] }) : undefined;
 console.log(PROXY_URL ? '🌐 代理池已接入' : '⚠️ 无代理直连');
 

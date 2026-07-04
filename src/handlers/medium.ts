@@ -4,6 +4,10 @@ import { createHash } from 'node:crypto';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { isSeen, markSeen } from '../utils/seen-store.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
+import { statCount, statSet, statRequest, recordError } from '../../shared/run-stats.js';
+import { classifyError } from '../../shared/error-classify.js';
+import { cfgNum } from '../../shared/config.js';
+import { getProxyUrl } from '../../shared/proxy-config.js';
 
 export const mediumRouter = createCheerioRouter();
 
@@ -60,8 +64,15 @@ export async function fetchAndPushSubstack(
             if (!res.ok) {
                 console.log(`❌ [substack] ${rssUrl} HTTP=${res.status}`);
                 failed += 1;
+                statRequest(true);
+                const t0 = assoc[0];
+                if (t0) statCount(t0.token_id, t0.base_symbol, 'substack', 'failed');
+                recordError({ token_id: t0?.token_id, base_symbol: t0?.base_symbol, url: rssUrl,
+                    kind: res.status === 403 ? 'http_403' : res.status === 429 ? 'http_429' : res.status >= 500 ? 'http_5xx' : 'http_4xx',
+                    http_status: res.status, message: `substack feed HTTP ${res.status}`, at: new Date().toISOString() });
                 return;
             }
+            statRequest(false);
             const xml = await res.text();
             await saveRawFeed(assoc[0]?.token_id, rssUrl, xml);
             const $ = cheerio.load(xml, { xmlMode: true });
@@ -83,6 +94,7 @@ export async function fetchAndPushSubstack(
                     if (!underSourceCap(src.token_id)) continue; // 自测模式:该 token 已满额
                     markSeen(src.token_id, postUrl);
                     countSourcePush(src.token_id);
+                    statCount(src.token_id, src.base_symbol, 'substack', 'items_added');
                     tasks.push(dataset.pushData({
                         crawler: 'substack',
                         token_id: src.token_id,
@@ -104,9 +116,19 @@ export async function fetchAndPushSubstack(
             await Promise.all(tasks);
             ok += 1;
             pushed += tasks.length;
+            for (const src of assoc) {
+                statSet(src.token_id, src.base_symbol, 'substack', 'feed_items', itemCount);
+                statCount(src.token_id, src.base_symbol, 'substack', 'requests');
+            }
             console.log(`✅ [substack] ${rssUrl} ${itemCount}×${assoc.length}=${tasks.length} | ${channelTitle || '(no channel)'}`);
         } catch (e) {
             failed += 1;
+            statRequest(true);
+            const t0 = assoc[0];
+            const cls = classifyError({ message: (e as Error).message, code: (e as { code?: string }).code ?? null });
+            if (t0) statCount(t0.token_id, t0.base_symbol, 'substack', 'failed');
+            recordError({ token_id: t0?.token_id, base_symbol: t0?.base_symbol, url: rssUrl, kind: cls.kind,
+                error_code: cls.error_code, message: (e as Error).message, at: new Date().toISOString() });
             console.log(`❌ [substack] ${rssUrl} ${(e as Error).message ?? e}`);
         }
     }));
@@ -122,16 +144,17 @@ export async function fetchAndPushRssFeeds(
     dataset: Dataset,
 ): Promise<{ ok: number; failed: number; pushed: number }> {
     const { Impit } = await import('impit');
+    // 🆕 2026-07-04 代理读取点 3/3(计划书 §5.5):rss 直拉走主力池(有意设计 · 60 源非 medium 域)
     const impit = new Impit({
         browser: 'chrome',
-        proxyUrl: process.env.PROXY_URL || undefined,
-        timeout: 25000,
+        proxyUrl: getProxyUrl('main') || undefined,
+        timeout: cfgNum('rss_timeout_ms', 25000),
     });
     let ok = 0;
     let failed = 0;
     let pushed = 0;
     const entries = Array.from(byFeed.entries());
-    const CONCURRENCY = 6;
+    const CONCURRENCY = cfgNum('rss_cc', 6);
     let cursor = 0;
     async function worker(): Promise<void> {
         while (cursor < entries.length) {
@@ -147,8 +170,15 @@ export async function fetchAndPushRssFeeds(
                 if (res.status !== 200) {
                     console.log(`❌ [rss] ${feedUrl} HTTP=${res.status}`);
                     failed += 1;
+                    statRequest(true);
+                    const t0 = assoc[0];
+                    if (t0) statCount(t0.token_id, t0.base_symbol, 'rss', 'failed');
+                    recordError({ token_id: t0?.token_id, base_symbol: t0?.base_symbol, url: feedUrl,
+                        kind: res.status === 403 ? 'http_403' : res.status === 429 ? 'http_429' : res.status >= 500 ? 'http_5xx' : 'http_4xx',
+                        http_status: res.status, message: `rss feed HTTP ${res.status}`, at: new Date().toISOString() });
                     continue;
                 }
+                statRequest(false);
                 const xml = await res.text();
                 await saveRawFeed(assoc[0]?.token_id, feedUrl, xml);
                 const $ = cheerio.load(xml, { xmlMode: true });
@@ -178,6 +208,7 @@ export async function fetchAndPushRssFeeds(
                         if (!underSourceCap(src.token_id)) continue;
                         markSeen(src.token_id, postUrl);
                         countSourcePush(src.token_id);
+                        statCount(src.token_id, src.base_symbol, 'rss', 'items_added');
                         tasks.push(dataset.pushData({
                             crawler: 'rss',
                             token_id: src.token_id,
@@ -199,9 +230,19 @@ export async function fetchAndPushRssFeeds(
                 await Promise.all(tasks);
                 ok += 1;
                 pushed += tasks.length;
+                for (const src of assoc) {
+                    statSet(src.token_id, src.base_symbol, 'rss', 'feed_items', itemCount);
+                    statCount(src.token_id, src.base_symbol, 'rss', 'requests');
+                }
                 console.log(`✅ [rss] ${feedUrl} ${itemCount} items → ${tasks.length} 条 | ${channelTitle || '(no channel)'}`);
             } catch (e) {
                 failed += 1;
+                statRequest(true);
+                const t0 = assoc[0];
+                const cls = classifyError({ message: (e as Error).message, code: (e as { code?: string }).code ?? null });
+                if (t0) statCount(t0.token_id, t0.base_symbol, 'rss', 'failed');
+                recordError({ token_id: t0?.token_id, base_symbol: t0?.base_symbol, url: feedUrl, kind: cls.kind,
+                    error_code: cls.error_code, message: (e as Error).message, at: new Date().toISOString() });
                 console.log(`❌ [rss] ${feedUrl} ${((e as Error).message ?? e)}`.slice(0, 160));
             }
         }
@@ -299,6 +340,7 @@ mediumRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
             if (!underSourceCap(src.token_id)) continue; // 自测模式:该 token 已满额
             markSeen(src.token_id, postUrl);
             countSourcePush(src.token_id);
+            statCount(src.token_id, src.base_symbol, crawlerLabel, 'items_added');
             tasks.push(pushData({
                 crawler: crawlerLabel,
                 token_id: src.token_id,
@@ -322,6 +364,12 @@ mediumRouter.addDefaultHandler(async (ctx: CheerioCrawlingContext) => {
     });
     await Promise.all(tasks);
 
+    const mediumLabel = (request.userData?.crawler_label as string | undefined) ?? 'medium';
+    for (const src of sourcesForUrl) {
+        statSet(src.token_id, src.base_symbol, mediumLabel, 'feed_items', itemCount);
+        statCount(src.token_id, src.base_symbol, mediumLabel, 'requests');
+    }
+    statRequest(false);
     if (itemCount === 0) {
         log.warning(`⚠️ [medium] 0 posts | ${request.url}(${sourcesForUrl.length} tokens 关联)`);
     } else {
