@@ -26,6 +26,11 @@ export function normalizePublishedAt(raw: string | null | undefined): string {
         }
         return '';
     }
+    // 🆕 2026-07-04 收敛轮(COLLECT 27/01/2026 实锤):D/M/YYYY 仅在日>12 无歧义时救 · ≤12 分不清日月不猜
+    const dmy = /^(\d{1,2})\/(\d{1,2})\/((?:19|20)\d{2})$/.exec(s);
+    if (dmy && Number(dmy[1]) > 12 && Number(dmy[2]) >= 1 && Number(dmy[2]) <= 12) {
+        return new Date(Date.UTC(Number(dmy[3]), Number(dmy[2]) - 1, Number(dmy[1]))).toISOString();
+    }
     const t = Date.parse(s);
     if (Number.isNaN(t)) {
         // 🆕 2026-07-04 复检实锤(QUICK "March 15th 2025"):序数词/多余点号 Date.parse 不认 · 清洗后重试

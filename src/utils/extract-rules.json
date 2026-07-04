@@ -864,6 +864,12 @@
     "strategy": "html_regex",
     "_sym": "TTMI",
     "_conf": "high"
+   },
+   "body": {
+    "strategy": "html_regex",
+    "regex": "\\\\\"articleBody\\\\\":\\\\\"((?:[^\"\\\\]|\\\\.){80,}?)\\\\\"",
+    "_sym": "ONDO系",
+    "_note": "RSC flight payload 双转义 articleBody · 实测 2466 字命中"
    }
   },
   "optimism.io": {
