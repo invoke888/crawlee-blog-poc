@@ -292,6 +292,7 @@
     "csv"
   ],
   "host_blacklist": [
+    "epicchain.io",
     "gitbook.io",
     "github.com",
     "github.io"

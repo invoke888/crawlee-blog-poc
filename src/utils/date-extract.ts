@@ -35,7 +35,8 @@ export function extractBodyByHtmlRegex($: CheerioAPI, rule: BodyRule): string {
     try { v = JSON.parse(`"${v}"`) as string; } catch { /* 非转义态原样用 */ }
     return v.replace(/\s+/g, ' ').trim();
 }
-export interface FieldRules { date?: DateRule; title?: TitleRule; body?: BodyRule }
+export interface DescRule { ban?: string[]; selector?: string } // ban: ['og','meta'] 跳站级口号 desc → 自动落 jsonld/正文
+export interface FieldRules { date?: DateRule; title?: TitleRule; body?: BodyRule; desc?: DescRule }
 const extractRulesCfg = require('./extract-rules.json') as { rules: Record<string, FieldRules> };
 function stripWww(h: string): string { return h.startsWith('www.') ? h.slice(4) : h; }
 export function rulesFor(url: string): FieldRules | null {
@@ -53,6 +54,7 @@ export function rulesFor(url: string): FieldRules | null {
 export function dateRuleFor(url: string): DateRule | null { return rulesFor(url)?.date ?? null; }
 export function titleRuleFor(url: string): TitleRule | null { return rulesFor(url)?.title ?? null; }
 export function bodyRuleFor(url: string): BodyRule | null { return rulesFor(url)?.body ?? null; }
+export function descRuleFor(url: string): DescRule | null { return rulesFor(url)?.desc ?? null; }
 
 const ARTICLE_TYPES = new Set(['blogposting', 'article', 'newsarticle']);
 

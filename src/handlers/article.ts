@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
 import { isValidHttpUrl, isWhitelistedArticleUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
-import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt, titleRuleFor, bodyRuleFor, extractBodyByHtmlRegex } from '../utils/date-extract.js';
+import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt, titleRuleFor, bodyRuleFor, descRuleFor, extractBodyByHtmlRegex } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
 import { statCount, statSet, statRequest, recordError } from '../../shared/run-stats.js';
@@ -190,9 +190,12 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
 
     // 🆕 2026-07-03 P1#8 desc 质量 fallback(体检:desc==title 35 条 · <30 字符 150 条)
     // 梯队:og/meta → json-ld description → article/main 首个有意义 <p>(轻量 · 不是全文抽取)
+    // 🆕 2026-07-04 老板拍 C1:per-source desc 规则(站级口号 og:description 型 ban 掉 → 自动落 jsonld/真正文)
+    const dRule = descRuleFor(loaded);
     const metaDesc =
-        $('meta[property="og:description"]').attr('content')?.trim() ||
-        $('meta[name="description"]').attr('content')?.trim() ||
+        (dRule?.selector ? $(dRule.selector).first().text().trim() : '') ||
+        (dRule?.ban?.includes('og') ? '' : $('meta[property="og:description"]').attr('content')?.trim()) ||
+        (dRule?.ban?.includes('meta') ? '' : $('meta[name="description"]').attr('content')?.trim()) ||
         '';
     // 🆕 2026-07-04 body_excerpt(计划书定案:正文搜索用 · 始终抽全文前 3000)
     // 🆕 地基工程:per-source body 规则(正文容器定点 · 容器落空回退通用防改版 · html_regex 提取 RSC JSON 正文)
