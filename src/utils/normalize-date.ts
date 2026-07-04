@@ -27,6 +27,12 @@ export function normalizePublishedAt(raw: string | null | undefined): string {
         return '';
     }
     const t = Date.parse(s);
-    if (Number.isNaN(t)) return '';
+    if (Number.isNaN(t)) {
+        // 🆕 2026-07-04 复检实锤(QUICK "March 15th 2025"):序数词/多余点号 Date.parse 不认 · 清洗后重试
+        const cleaned = s.replace(/(\d)(?:st|nd|rd|th)\b/gi, '$1').replace(/(\w)\.(\s)/g, '$1$2');
+        const t2 = Date.parse(cleaned);
+        if (Number.isNaN(t2)) return '';
+        return new Date(t2).toISOString();
+    }
     return new Date(t).toISOString();
 }

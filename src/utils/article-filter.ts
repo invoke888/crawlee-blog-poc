@@ -73,9 +73,13 @@ export function isNoiseUrl(url: string): boolean {
         const last = (segs[segs.length - 1] ?? '').replace(PAGE_EXT_RE, '');
         if (last && (PAGINATION_LAST_RE.test(last) || NOISE_LAST_SEGMENTS.has(last) || last.startsWith('sitemap'))) return true;
         if (last && LANDING_SEGMENTS.has(last) && !segs.some((s) => WHITELIST_SEGMENTS.has(s))) return true;
+        // 🆕 2026-07-04 复检:法律页复合词末段(MEGA /rabbithole-terms-of-use 实锤 · 整段词穷举不动这类)
+        if (last && /-(terms(-of-(use|service))?|privacy(-policy)?|disclaimer)$/.test(last)) return true;
         // medium 系统页/列表页 query 特征(合集主页来源标记 · 列表排序参数)
         if ((u.searchParams.get('source') ?? '').includes('collection_home_page')) return true;
         if (u.searchParams.has('orderBy')) return true;
+        // 🆕 2026-07-04 复检:营销活动 UTM(SPURS 球衣发售推广卡实锤)
+        if (/retail|promo/i.test(u.searchParams.get('utm_campaign') ?? '')) return true;
         return false;
     } catch {
         return false;

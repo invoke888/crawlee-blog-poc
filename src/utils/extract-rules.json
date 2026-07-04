@@ -141,7 +141,7 @@
    "date": {
     "selector": ".blog-item-meta .label--blog:not(.label--div)",
     "attr": "text",
-    "regex": "([A-Za-z]{3,9})\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(\\d{4})",
+    "regex": "([A-Za-z]{3,9}\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s+\\d{4})",
     "_conf": "high",
     "_sym": "AZTEC",
     "_note": "3 篇提取值与现有 db_pub 完全一致(2023-09-14/2021-12-20/2019-08-30),推测 no_pub 是因为日期文本带序数后缀'th/nd/rd'导致通用日期正则/解析失败,并非页面没有日期。同类下还有一个阅读时长 div(文案'## min read',##是未渲染占位符),用正则过滤可"
@@ -522,7 +522,8 @@
     "regex": "\"date\",\"([0-9T:.Z-]+)\"",
     "_conf": "high",
     "_sym": "H",
-    "_note": "Framer 站点,可见区域全是 hash class(如 framer-14bfmlc),无法写语义 selector;真日期藏在页面内嵌的 Framer CMS JSON payload 里,字面量键名就是 \"date\",三篇值互不相同、且与相邻的作者名字段(在同源 PRCL 样本里验证为紧邻 \"Gus Marqu"
+    "_note": "Framer 站点,可见区域全是 hash class(如 framer-14bfmlc),无法写语义 selector;真日期藏在页面内嵌的 Framer CMS JSON payload 里,字面量键名就是 \"date\",三篇值互不相同、且与相邻的作者名字段(在同源 PRCL 样本里验证为紧邻 \"Gus Marqu",
+    "strategy": "html_regex"
    }
   },
   "hyperlane.xyz": {
@@ -737,7 +738,8 @@
     "regex": "datePublished[^0-9]*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z)",
     "_conf": "high",
     "_sym": "TTMI",
-    "_note": "Next.js App Router(self.__next_f 流式 RSC payload)。cheerio 抓到的静态 HTML 里 <body> 几乎是空壳(仅 1 个 hidden 占位 div + 一堆 <script>),真正的可见 DOM 没有任何日期文本、没有 <time> 标签、没有日期相关 met"
+    "_note": "Next.js App Router(self.__next_f 流式 RSC payload)。cheerio 抓到的静态 HTML 里 <body> 几乎是空壳(仅 1 个 hidden 占位 div + 一堆 <script>),真正的可见 DOM 没有任何日期文本、没有 <time> 标签、没有日期相关 met",
+    "strategy": "html_regex"
    }
   },
   "orbs.com": {
@@ -773,7 +775,8 @@
     "regex": "\"date\",\"([0-9T:.Z-]+)\"",
     "_conf": "high",
     "_sym": "PRCL",
-    "_note": "与 H 同为 Framer 站,同一套抽取规则(regex 扫 \"date\",\"...\" 字面量)。此样本里验证更充分:该字段紧跟在 {\"type\":18,\"value\":19},\"date\",\"2025-09-10T00:00:00.000Z\",{\"type\":6,\"value\":21},\"Gus Marquez\" "
+    "_note": "与 H 同为 Framer 站,同一套抽取规则(regex 扫 \"date\",\"...\" 字面量)。此样本里验证更充分:该字段紧跟在 {\"type\":18,\"value\":19},\"date\",\"2025-09-10T00:00:00.000Z\",{\"type\":6,\"value\":21},\"Gus Marquez\" ",
+    "strategy": "html_regex"
    }
   },
   "polygon.technology": {
@@ -830,7 +833,8 @@
     "regex": "\\\\\"first_published_at\\\\\":\\\\\"([0-9T:.Z-]+)\\\\\"",
     "_conf": "high",
     "_sym": "SAFE",
-    "_note": "Next.js + Storyblok CMS,页面没有可见 meta/jsonld/time 标签(故标 no_pub),但正文里的 Next.js RSC <script> 流(self.__next_f.push(...))里转义嵌了 story 对象,带 created_at/published_at/upda"
+    "_note": "Next.js + Storyblok CMS,页面没有可见 meta/jsonld/time 标签(故标 no_pub),但正文里的 Next.js RSC <script> 流(self.__next_f.push(...))里转义嵌了 story 对象,带 created_at/published_at/upda",
+    "strategy": "html_regex"
    }
   },
   "safepal.com": {
@@ -1007,7 +1011,8 @@
     "regex": "publishedAt\\\\?\":\\\\?\"([0-9T:-]+)",
     "_conf": "high",
     "_sym": "TREE",
-    "_note": "Next.js RSC 流;页面里有 4 个 publishedAt,第 1 个(组件 $L20,detail-post 主区)是本文真实日期,后 3 个(组件 $L27)是底部相关文章卡片日期——取全文首个 publishedAt 即可;已跨文章交叉验证:teth-turns-one 自己的日期与 tree-buyb"
+    "_note": "Next.js RSC 流;页面里有 4 个 publishedAt,第 1 个(组件 $L20,detail-post 主区)是本文真实日期,后 3 个(组件 $L27)是底部相关文章卡片日期——取全文首个 publishedAt 即可;已跨文章交叉验证:teth-turns-one 自己的日期与 tree-buyb",
+    "strategy": "html_regex"
    }
   },
   "trustwallet.com": {
@@ -1043,7 +1048,7 @@
    "date": {
     "selector": "div[data-framer-name='Changelog Item'] p.framer-text",
     "attr": "text",
-    "regex": ">((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, \\d{4})<",
+    "regex": "((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, \\d{4})<",
     "_conf": "medium",
     "_sym": "USUAL",
     "_note": "Framer 站点;真实日期是 Changelog Item 块内最后一个 p.framer-text 的可见文本;同名 data-framer-name=\"January 24, 2025\" 是设计时占位属性值且在文档里出现在真日期之前,若不做 selector 精确限定、只裸用正则扫全文会误中这个占位符(已踩坑并修"
@@ -1157,15 +1162,9 @@
   },
   "zora.co": {
    "date": {
-    "ban": [
-     "jsonld"
-    ],
-    "selector": ".blog-details .publish-date",
-    "attr": "text",
-    "regex": "(\\d{1,2}) ([A-Z][a-z]{2})",
-    "_conf": "medium",
+    "strategy": "none",
     "_sym": "ZORA",
-    "_note": "已实锤 jsonld 污染:zora-is-live 和 the-ticker-is-zora 两篇完全不同的文章,jsonld BlogPosting.datePublished 精确到毫秒完全相同(2025-11-04T16:45:01.477Z),必须 ban;dateModified 也可疑(两篇仅差 70 秒"
+    "_note": "页面可见日期无年份(D Mon)· 不推断年份 · 显式放弃"
    }
   }
  }
