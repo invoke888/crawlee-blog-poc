@@ -1,0 +1,1172 @@
+{
+ "_comment": "2026-07-04 老板拍:per-source 抽取规则统一库(地基工程 · 没有统一标准就站点定制)。host 整域匹配(含子域)。三字段:date(ban=禁用被污染层 jsonld/meta/time_tag/nextdata · selector+attr+regex 定点 · strategy: url_date/none/spa_only)· title(ban:['og'] 跳过站级 og:title · selector 定点)· body(selector=正文容器 · 替换通用 'article p, main p')。规则由 agent 分析 raw HTML 存档产出 · fixture 验证后合入。",
+ "rules": {
+  "1inch.com": {
+   "date": {
+    "ban": [
+     "time_tag"
+    ],
+    "selector": "span.blog-post__meta",
+    "attr": "text",
+    "regex": "([A-Z][a-z]{2} \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "1INCH",
+    "_note": "time.post-card__date 是全站统一的最新3篇文章挂件(3份 HTML 里3个 datetime 值完全相同=模板污染,与库内错误 db_pub 吻合);真实日期在 h1 后 span.blog-post__meta,格式 'Mon D, YYYY • N min read'"
+   }
+  },
+  "aave.com": {
+   "date": {
+    "selector": "script#__NEXT_DATA__",
+    "attr": "text",
+    "regex": "\"date\":\"([^\"]+)\"",
+    "_conf": "medium",
+    "_sym": "AAVE",
+    "_note": "页面渲染层完全没有人眼可见日期(作者卡只有名字+分类),日期只存在于 __NEXT_DATA__ 里按 slug 精确绑定的 pageProps.post.date/frontmatter.date 字段;3 篇取值各不相同,且换算 UTC+8 时区后与当前 db_pub 精确吻合,但因无可见 byline 做二次交叉"
+   }
+  },
+  "across.to": {
+   "date": {
+    "selector": "div.uppercase.tracking-wider span:first-child",
+    "attr": "text",
+    "regex": "[A-Za-z]{3,9}\\.?\\s+\\d{1,2},\\s+\\d{4}",
+    "_conf": "high",
+    "_sym": "ACX",
+    "_note": "无 meta/jsonld/time 标签,唯一日期是纯可见文本;div 靠 Tailwind 工具类 uppercase+tracking-wider 定位,3 篇样本页内均唯一无歧义(cheerio 验证 matchCount=1)。"
+   }
+  },
+  "aethir.com": {
+   "date": {
+    "ban": [
+     "div.blog-publish-info(header 内 'Featured|分类|日期' 挂件,3 篇样本日期完全相同'June 12, 2026',确认是全站共享的 Featured-post 挂件,不是本文日期,即便紧跟在 H1/描述之后看起来像 byline)",
+     "webflow 'Last Published:' 构建时间注释(全站相同)"
+    ],
+    "selector": "script[type=\"application/ld+json\"]:contains(\"BlogPosting\")",
+    "attr": "text",
+    "regex": "\"datePublished\"\\s*:\\s*\"([^\"]+)\"",
+    "_conf": "medium",
+    "_sym": "ATH",
+    "_note": "反直觉:真正该 ban 的不是 jsonld,是紧贴 H1 的 blog-publish-info 挂件(那才是站级模板污染源)。BlogPosting jsonld 的 datePublished 逐篇不同才是真值,但其 description 字段内嵌了未转义的原始换行符,实测会导致严格 JSON.parse 报错"
+   }
+  },
+  "akash.network": {
+   "date": {
+    "ban": [
+     "time_tag"
+    ],
+    "selector": "main time",
+    "attr": "datetime",
+    "_conf": "high",
+    "_sym": "AKT",
+    "_note": "Astro 站点; 每页 5 个 <time>: 前 2 个(移动/桌面双版本)在 </main> 闭合之前, 是本文真实日期; 后 3 个在 </main> 之后的'最新文章'区块, 3 份样本里这 3 个值完全相同(2026-06-02/05-16/05-05), 是跨页共享的推荐位模板值; 裸 time 选择器会"
+   }
+  },
+  "ankr.com": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": "p[class*=\"publishedAt-hasCircle\"]",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "ANKR",
+    "_note": "jsonld datePublished 3 篇各不相同基本可信(仅 1 篇差 1 天疑似时区取整),但源标记 polluted,保险起见 ban jsonld、改用可见 MUI 组件首个 publishedAt-hasCircle 段落(第2、3 个同 class 是阅读时长/相关文章,必须只取第一个)。"
+   }
+  },
+  "anoma.net": {
+   "date": {
+    "selector": "header div.text-sm.uppercase.text-neutral-400",
+    "attr": "text",
+    "regex": "([A-Z][a-z]{2} \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "XAN",
+    "_note": "Next.js(Pages Router,__NEXT_DATA__)站。文章头部固定结构:<header class=\"text-center\"><h2>标题</h2><div class=\"mb-12 text-sm uppercase text-neutral-400\"><span>By 作者</span> In"
+   }
+  },
+  "arc.fun": {
+   "date": {
+    "selector": "meta[property=\"article:published_time\"]",
+    "attr": "content",
+    "_conf": "medium",
+    "_sym": "ARC",
+    "_note": "Next.js SSR 站(内容以 RSC 流式 payload 存在, 但 head 里的 <meta property=\"article:published_time\"> 是真实 DOM 节点, cheerio 可直接取); 该 meta 值与页面可见 <time datetime> 文本(如 April 24, "
+   }
+  },
+  "arkscic.com": {
+   "date": {
+    "selector": "div.pr-3.border-r.border-theme-secondary-800",
+    "attr": "text",
+    "regex": "(\\d{1,2}(?:st|nd|rd|th)\\s+\\w{3}\\s+\\d{4})",
+    "_conf": "medium",
+    "_sym": "ARK",
+    "_note": "无 meta/JSON-LD/time 标签,日期只存在于文章头部作者信息行一个纯 Tailwind 工具类 div,没有语义 class;陷阱是底部推荐卡片用同结构但颜色档位是 border-theme-secondary-500 而非主文章的 -800,靠这个 shade 后缀区分主文章与推荐卡片;3/3 验证且与"
+   }
+  },
+  "astar.network": {
+   "date": {
+    "strategy": "spa_only",
+    "_conf": "high",
+    "_sym": "ASTR",
+    "_note": "Astro 站,/blog/post/?slug=xxx 路由本身是空壳页,靠 astro-island component-url=PostDetail.js 客户端 hydration 后再按 slug 拉数据渲染;静态 HTML 里无 h1、无正文、无任何日期,props 里只有 loading/notFound"
+   }
+  },
+  "avax.network": {
+   "date": {
+    "selector": "div.flex.flex-col.items-start.justify-start.gap-base p.text-xs",
+    "attr": "text",
+    "regex": "([A-Z][a-z]{2} \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "AVAX",
+    "_note": "重要坑:全页无 jsonld/meta 日期字段。'polluted'的真实成因不是 jsonld/meta,而是页面顶部有一个'推荐文章'轮播先于正文 h1 出现在 DOM 里(同款 class=transition-mode text-xs 的日期节点),如果用'抓第一个可见日期'这种朴素策略会误抓轮播卡片日期(如"
+   }
+  },
+  "awenetwork.ai": {
+   "date": {
+    "selector": ".blog-meta-info .text-style-label",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "AWE",
+    "_note": "Webflow 站点,无 jsonld/meta/time 标签。.text-style-label 这个 class 全页复用(相关文章列表也用),但 .blog-meta-info 这个父容器全页仅出现 1 次且只包裹正文日期,scoped selector 精确定位。前两篇抽出值与旧 db_pub 完全一致;第 "
+   }
+  },
+  "axelar.network": {
+   "date": {
+    "selector": ".tagline.clr--grey:first",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "AXL",
+    "_note": "无 jsonld/meta/time 标签。.tagline.clr--grey 这个 class 全页复用 11 次(作者名/Share 文案/底部推荐文章日期都用它),但第 1 个匹配始终紧跟 h1 之后、是正文日期本身(3 篇样本逐一验证过 DOM 顺序),取第一个即可,不需要正则,因为该 div 内文本本身就是"
+   }
+  },
+  "aztec.network": {
+   "date": {
+    "selector": ".blog-item-meta .label--blog:not(.label--div)",
+    "attr": "text",
+    "regex": "([A-Za-z]{3,9})\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(\\d{4})",
+    "_conf": "high",
+    "_sym": "AZTEC",
+    "_note": "3 篇提取值与现有 db_pub 完全一致(2023-09-14/2021-12-20/2019-08-30),推测 no_pub 是因为日期文本带序数后缀'th/nd/rd'导致通用日期正则/解析失败,并非页面没有日期。同类下还有一个阅读时长 div(文案'## min read',##是未渲染占位符),用正则过滤可"
+   }
+  },
+  "babylonlabs.io": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": ".flex-space-between .text-12.u-text-dark-blue",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "BABY",
+    "_note": "jsonld BlogPosting 的 datePublished 字段是字面未填充的占位符 \"Insert Publish Date\"(headline/url 也都是 \"Insert Blog Title\"/\"Insert Blog URL\", 3 篇一字不差), 必须整层 ban; 真日期在头部 .flex-s"
+   }
+  },
+  "based.one": {
+   "date": {
+    "selector": "script[type=\"application/ld+json\"]:contains(\"BlogPosting\")",
+    "attr": "text",
+    "regex": "\"datePublished\"\\s*:\\s*\"([^\"]+)\"",
+    "_conf": "high",
+    "_sym": "BASED",
+    "_note": "3 篇 jsonld BlogPosting.datePublished 与现有 db_pub、URL 日期前缀、可见 byline(h1 正下方 div,如'Jun 5, 2026')三方一致,样本内未复现'polluted'现象(与该源标 polluted 的预期不符,如实注明)。该 jsonld JSON.par"
+   }
+  },
+  "billions.network": {
+   "date": {
+    "ban": [
+     "div.similar-card-upper-row(页面下方'相关文章'卡片日期,展示其他文章的日期,如 December 19, 2024 / February 14, 2026 / July 3, 2026,3 篇样本均出现但都不是本文日期)",
+     "webflow 'Last Published:' 构建时间注释"
+    ],
+    "strategy": "none",
+    "_conf": "high",
+    "_sym": "BILL",
+    "_note": "3 篇文章自己的 header 区(blog-card-details-wrapper)只有作者名+阅读时长两行,完全没有日期字段;页面里唯一出现的日期都在下方'similar-card'相关文章挂件中,属于别的文章。确认为真 no_pub,显式放弃。"
+   }
+  },
+  "bio.xyz": {
+   "date": {
+    "selector": ".article-date-auth .blog-credits:first-child",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "BIO",
+    "_note": "Webflow 站,.article-date-auth 容器里有两个同 class='blog-credits' 的 div,第一个是日期、第二个是作者/团队名,必须取 :first-child,否则容易连作者名一起抓错。无 meta/jsonld/time 标签,通用梯队抓空;三页均固定各出现一次。"
+   }
+  },
+  "bitcoin.org": {
+   "date": {
+    "selector": "p.post-meta",
+    "attr": "text",
+    "regex": "on\\s+(\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4})\\s+by",
+    "_conf": "high",
+    "_sym": "BTC",
+    "_note": "无 jsonld/meta/time 标签,真实时间是 p.post-meta 可见文本 Posted to the ... on DD Month YYYY by Author,3 篇结构完全一致。"
+   }
+  },
+  "bitcoincashnode.org": {
+   "date": {
+    "selector": "div.text-small.text-muted",
+    "attr": "text",
+    "regex": "(\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4})",
+    "_conf": "high",
+    "_sym": "BCH",
+    "_note": "标准 Bootstrap 模板,页面开头 logo 旁边固定结构:<div>by <strong>作者</strong></div><div class=\"text-small text-muted\">日期</div>,纯文本无 datetime/time 标签/meta/jsonld,通用梯队天然抓空。文中正文另外还"
+   }
+  },
+  "blog.aelf.com": {
+   "date": {
+    "selector": "[class*='articleTitleWrap'] [class*='postDate']",
+    "attr": "text",
+    "regex": "[A-Za-z]{3,9}\\s+\\d{1,2},\\s+\\d{4}",
+    "_conf": "high",
+    "_sym": "ELF",
+    "_note": "CSS-module 类 styles_postDate__KEhfz 在页面出现 3 次:1 次真实(标题区)+2 次是'最新文章'卡片(3 篇样本卡片日期完全相同,均为 June 10, 2026)——这是污染源;必须限定 articleTitleWrap 祖先避开卡片,cheerio 验证 matchCount="
+   }
+  },
+  "blog.audius.co": {
+   "date": {
+    "ban": [
+     "jsonld",
+     "meta"
+    ],
+    "selector": "article header",
+    "attr": "text",
+    "regex": "Date:\\s*([A-Za-z]{3}\\s+\\d{1,2},\\s*\\d{4})",
+    "_conf": "low",
+    "_sym": "AUDIO",
+    "_note": "核心困惑:可见 byline('// Date: ...',selector 定位在 <article><header> 内)和 jsonld/meta 的 datePublished 其实是同一个 CMS 字段渲染出来的,不是独立信号。证据:createtogether(bitbird 合作企划)和 ncsremix"
+   }
+  },
+  "blog.bananagun.io": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": "script[type=\"application/ld+json\"]",
+    "attr": "text",
+    "regex": "\"dateModified\"\\s*:\\s*\"([^\"]+)\"",
+    "_conf": "low",
+    "_sym": "BANANA",
+    "_note": "本源是本片里最棘手的:不仅 jsonld.datePublished 三篇完全一致(2026-01-16T09:44:46.240Z,已 ban),连可见 byline 都一样假——页面上明确写着 'published on' 标签,值也是 'January 16, 2026',跟污染值同一天,说明这个源连'眼见为实'"
+   }
+  },
+  "blog.bitlayer.org": {
+   "date": {
+    "selector": ".post-meta-info .post-date",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "BTR",
+    "_note": "3篇样本中jsonld/meta(article:published_time)与该DOM byline完全一致且与db_pub吻合、彼此不同,未复现polluted描述的同源同值现象,仍选可见byline防御同源其他文章潜在模板风险。"
+   }
+  },
+  "blog.gopluslabs.io": {
+   "date": {
+    "selector": "h2.blog-post-title + p.meta",
+    "attr": "text",
+    "regex": "\\d{4}-\\d{2}-\\d{2}",
+    "_conf": "high",
+    "_sym": "GPS",
+    "_note": "老式 Hexo 主题,p.meta(fa-clock 图标旁)纯文本即 ISO 日期;页面有 2 个 p.meta,用 h2.blog-post-title 相邻兄弟选择器锁定含日期的那个(cheerio matchCount=1)。db_pub 当前非空但 problem 仍标 no_pub,疑为另一条 URL 日期"
+   }
+  },
+  "blog.monad.xyz": {
+   "date": {
+    "selector": "time",
+    "attr": "datetime",
+    "_conf": "medium",
+    "_sym": "MON",
+    "_note": "该源标记 polluted,但抽样 3 篇未观察到'同源多篇假时间完全相同'的污染特征:每篇页面只有 1 个 <time datetime=...> 标签,与 meta[property=article:published_time]、jsonld BlogPosting.datePublished、以及 Next.j"
+   }
+  },
+  "blog.pancakeswap.finance": {
+   "date": {
+    "selector": "script#__NEXT_DATA__",
+    "attr": "text",
+    "regex": "\\\"publishedAt\\\":\\\"([^\\\"]+)\\\"",
+    "_conf": "medium",
+    "_sym": "CAKE",
+    "_note": "__NEXT_DATA__ 里 publishedAt 出现7次(第1个属于本文 dehydratedState.queries[0].data,后6个是同 payload 内相关文章列表),取第一个匹配即可;仅1篇样本无法交叉验证故标 medium"
+   }
+  },
+  "blog.quickswap.exchange": {
+   "date": {
+    "selector": ".uk-text-lead",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}(?:st|nd|rd|th)? \\d{4})",
+    "_conf": "high",
+    "_sym": "QUICK",
+    "_note": "Joomla+Yootheme 站,h1 后第一个 uk-text-lead div 是可见发布日期,2篇与库内 db_pub 完全对上(第3篇 db_pub 原为空);日期带序数词(15th/24th)下游解析需支持"
+   }
+  },
+  "blog.solanamobile.com": {
+   "date": {
+    "selector": "img.blog-post-image",
+    "attr": "src",
+    "regex": "/([0-9a-f]{8})[0-9a-f]{16}_",
+    "strategy": "none",
+    "_conf": "low",
+    "_sym": "SKR",
+    "_note": "彻底搜过:jsonld 只有站级 Organization schema(无 datePublished)、无 meta date、无 time 标签、无 datetime 属性、正文里逐字搜 月份名/yyyy-mm-dd/mm-dd-yyyy 全部搜不到任何日期文本或数字日期,是真正意义上的\"页面里没有日期\"。唯一能"
+   }
+  },
+  "bnbchain.org": {
+   "date": {
+    "selector": "script[type=\"application/ld+json\"]:contains(datePublished)",
+    "attr": "text",
+    "regex": "\\\"datePublished\\\":\\\"([^\\\"]+)\\\"",
+    "_conf": "high",
+    "_sym": "BNB",
+    "_note": "页面有3个 ld+json block(Organization/Article/BreadcrumbList 顺序固定),通用抽取很可能只取第一个(Organization 无 datePublished)导致误判 no_pub;需定位含 datePublished 的 Article block,3篇与库内 db_"
+   }
+  },
+  "brl1.io": {
+   "date": {
+    "selector": "div.framer-e6z3u p.framer-text",
+    "attr": "text",
+    "regex": "(\\d{1,2} de \\w+\\.?\\s+de\\s+\\d{4})",
+    "_conf": "high",
+    "_sym": "BRL1",
+    "_note": "陷阱多层:①页面顶部 HTML 注释 <!-- Published May 8, 2026, 10:53 PM UTC --> 3 篇几乎一样精确到分钟,是 Framer 构建时间戳不是文章日期;②data-framer-ssr-released-at / data-framer-page-optimized-at 同"
+   }
+  },
+  "caldera.xyz": {
+   "date": {
+    "selector": "[data-framer-name='section-hero'] [data-framer-name='date']:first",
+    "attr": "text",
+    "regex": "[A-Za-z]{3,9}\\s+\\d{1,2},\\s+\\d{4}",
+    "_conf": "high",
+    "_sym": "ERA",
+    "_note": "Framer 建站,无 meta/jsonld/time 标签。两个陷阱:①HTML 尾部注释'<!-- Published Jul 2, 2026, 9:12 AM -->'是全站部署时间,3 篇样本完全相同;②'Other blog posts'卡片区(data-framer-name=date 全页共 8 个匹配"
+   }
+  },
+  "cardano.org": {
+   "date": {
+    "selector": "time",
+    "attr": "datetime",
+    "_conf": "high",
+    "_sym": "ADA",
+    "_note": "Docusaurus 博客,time 标签(页面唯一)/meta[article:published_time]/jsonld datePublished 三者一致且逐篇不同,与 URL slug 日期吻合;本 3 样本未复现 problem 标注的 polluted,若线上仍有污染案例需扩大样本复核。"
+   }
+  },
+  "cartesi.io": {
+   "date": {
+    "selector": ".blog-article h1 + div",
+    "attr": "text",
+    "regex": "([A-Z][a-z]{2,8} \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "CTSI",
+    "_note": "陷阱是页面底部相关文章卡片复用同一套 utility class(font-heading text-xs uppercase...)展示另一篇文章的 分类/日期/作者(3 篇里出现完全相同的 May 1, 2026 指向 ecosystem-updates-april-2026 那篇),真值紧跟在 h1 后面的 di"
+   }
+  },
+  "casper.network": {
+   "date": {
+    "strategy": "none",
+    "_conf": "high",
+    "_sym": "CSPR",
+    "_note": "Webflow 站点,<head> 只有 charset/viewport 两个 meta,无 og/article 日期 meta、无 jsonld、无 <time> 标签。3 篇样本里出现的‘日期’全是陷阱:①HTML 注释 <!-- Last Published: Mon Jun 29 2026 23:07:36"
+   }
+  },
+  "chain.link": {
+   "date": {
+    "ban": [
+     "footer 区 'Last updated on <date>' 文本(dateModified 语义;3 篇样本恰好和 byline 同值,但语义是修改时间,不应作发布时间用)"
+    ],
+    "selector": "div.h1.u-mb-1 + div.u-hflex-left-center > div.eyebrow:first-child",
+    "attr": "text",
+    "regex": "^[A-Za-z]{3,9}\\s+\\d{1,2},\\s+\\d{4}$",
+    "_conf": "high",
+    "_sym": "LINK",
+    "_note": "页面无 jsonld/meta/time 标签;3 篇样本本规则值与现有 db_pub 完全一致。页面另有一个 footer 'Last updated on' 字段(3 篇里也恰好同值),语义是修改时间,建议只信标题正下方的 eyebrow byline。"
+   }
+  },
+  "chaingpt.org": {
+   "date": {
+    "selector": ".style-hero .date-create",
+    "attr": "text",
+    "_conf": "medium",
+    "_sym": "CGPT",
+    "_note": ".date-create 类页面里出现12次(1个本文 hero + 11个底部相关文章挂件全是别的文章),必须限定在 .style-hero 容器内才是当前文章自己的日期;3篇内部一致且紧邻 h1/By 作者,但无 db_pub 可比对故标 medium"
+   }
+  },
+  "collectfoundation.xyz": {
+   "date": {
+    "selector": ".post-date-box",
+    "attr": "text",
+    "_conf": "low",
+    "_sym": "COLLECT",
+    "_note": "唯一可见日期来自Webflow .post-date-box,但2篇样本值与站级<!-- Last Published -->构建戳(Tue Jan 27 2026)完全相同,不能排除是Webflow Updated On全站重发布戳而非真实发布日,仅2篇无法交叉验证,格式为DD/MM/YYYY。"
+   }
+  },
+  "cyber.co": {
+   "date": {
+    "selector": "h1 + div p.text-grey-500",
+    "attr": "text",
+    "regex": "\\d{4}-\\d{2}-\\d{2}",
+    "_conf": "high",
+    "_sym": "CYBER",
+    "_note": "Next.js 站点,无 jsonld/meta/time 标签;日期是 h1 后紧跟 div 内的纯文本 ISO 日期(旁边有分类标签如 Education/Announcements),3 篇结构完全一致。"
+   }
+  },
+  "drift.trade": {
+   "date": {
+    "ban": [
+     "div.content-card-text-2025 .learn-date-2025('近期更新'网格挂件,展示其他 updates 的日期,如 April 16/June 3/June 4/May 5, 2026,3 篇样本完全相同)",
+     "webflow 'Last Published:' 构建时间注释"
+    ],
+    "selector": "h2.v2_h2-copy + div.text-opacity-60",
+    "attr": "text",
+    "regex": "^[A-Za-z]{3,9}\\s+\\d{1,2},\\s+\\d{4}$",
+    "_conf": "high",
+    "_sym": "DRIFT",
+    "_note": "apt-perp 与 apt-trading-competition 两篇的本文 byline(hero-title 内、紧跟各自 H2 标题的独立元素,非共享挂件)确实都是'February 8, 2023'——两篇是同一 APT-PERP 上线事件的配套公告,同日发布合理,且与现有 db_pub 一致,判断不是污染"
+   }
+  },
+  "dydx.foundation": {
+   "date": {
+    "selector": ".blog-post_author-wrapper > div.text-size-small",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "DYDX",
+    "_note": "Webflow 站点, 无 jsonld/meta/time 标签; 日期是 .blog-post_author-wrapper (页面里只出现 1 次)下与作者图并列的 <div class=\"text-size-small\">, 3 篇样本全部命中且此前均为 no_pub(库内为空), 该容器全站唯一不会被别处同名"
+   }
+  },
+  "ecb.europa.eu": {
+   "date": {
+    "selector": "meta[property=\"article:published_time\"]",
+    "attr": "content",
+    "_conf": "high",
+    "_sym": "EUR",
+    "_note": "meta[article:published_time] (YYYY-MM-DD, 无时区/语言歧义)与页面可见 <p class=\"ecb-publicationDate\"> 逐篇核对一致(含芬兰语版 2.6.2026=6月2日, 日在前的欧式写法); 页面还有 meta name=\"explainerDate\" 恒"
+   }
+  },
+  "epicchain.io": {
+   "date": {
+    "selector": ".metadateline",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "EPIC",
+    "_note": "无 jsonld/meta/time 标签(且博客内容与 EpicChain 项目本身无关,疑似泛用/买来的旅游内容模板);.metadateline 这个 class 被复用 4 次(Published、Updated、作者头衔各占一个),必须只取第一个匹配,3 篇均与当前 db_pub 精确一致。"
+   }
+  },
+  "ethgas.com": {
+   "date": {
+    "selector": ".blog-post-card-tag-text",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "GWEI",
+    "_note": "Webflow站,3篇取值互不相同且都不等于站级Last Published戳(Jun 15 2026),.blog-post-card-tag-text全页仅出现1次(作者名旁),干净无歧义。"
+   }
+  },
+  "fabric.foundation": {
+   "date": {
+    "selector": "h1 + div",
+    "attr": "text",
+    "_conf": "medium",
+    "_sym": "ROBO",
+    "_note": "Next.js 站点,无独立 jsonld/meta,但页面里嵌了 RSC hydration payload(initialSeedData),里面有该文章自己的 {slug, date, title} 结构,跟可见 DOM 日期完全一致(同源同值,不是两个矛盾信号),说明可见日期就是站方自己认定的发布日,不是抽取器"
+   }
+  },
+  "forta.org": {
+   "date": {
+    "ban": [
+     "div.blog_item_content(列表卡片日期,如'April 2, 2026',3 篇样本相同,是'近期文章'挂件不是本文日期)",
+     "webflow 'Last Published:' 构建时间注释"
+    ],
+    "selector": ".blog_header_details > div.text-size-small:first-child",
+    "attr": "text",
+    "regex": "^[A-Za-z]{3,9}\\s+\\d{1,2},\\s+\\d{4}$",
+    "_conf": "medium",
+    "_sym": "FORT",
+    "_note": "选择器本身 3/3 结构一致、可信度高;降级为 medium 是因为第 2 篇样本文件(FORT-143c9047ba5be80b.html)实际内容是'Newsletter #36'(分类 Newsletters),跟 JSON 标注的 URL(a-new-ml-model-detects-phishing-scam"
+   }
+  },
+  "forum.osmosis.zone": {
+   "date": {
+    "selector": "meta[property=\"article:published_time\"]",
+    "attr": "content",
+    "_conf": "high",
+    "_sym": "OSMO",
+    "_note": "实际博客内容托管在 Discourse 论坛 forum.osmosis.zone(不是 blog_url 写的 blog.osmosis.zone, 后续按 host 匹配规则时要注意); meta[article:published_time] 等于帖子楼主发帖时间, 与主楼 <time class='post-t"
+   }
+  },
+  "getmonero.org": {
+   "date": {
+    "selector": "p.post-date",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ [0-9]{1,2},? [0-9]{4})",
+    "_conf": "high",
+    "_sym": "XMR",
+    "_note": "Jekyll 静态博客,无 meta/jsonld/time 标签。正文头部固定结构:<h2>标题</h2><p class=\"author\">Posted by: xxx</p><p class=\"post-date\">Month DD, YYYY</p>。3 篇样本里 selector 均唯一命中(count=1)"
+   }
+  },
+  "gnosis.io": {
+   "date": {
+    "selector": "time[datetime]",
+    "attr": "datetime",
+    "_conf": "medium",
+    "_sym": "GNO",
+    "_note": "jsonld datePublished 与可见 <time datetime>(渲染文本如\"Jun 3, 2026\")一致且 3 篇互不相同,未复现 polluted 模式,若实际库内确曾出现同源多篇同值,建议扩大抽样复核而非仅凭本 3 篇下结论。"
+   }
+  },
+  "holo.host": {
+   "date": {
+    "selector": ".blog-post-date",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "HOT",
+    "_note": "语义类名清晰:.blog-post-info > .blog-post-meta > .blog-post-date,纯文本、无 datetime 属性、无 meta/jsonld/time 标签,通用梯队天然抓空。三页均只命中 1 次,且与库内既有 db_pub 完全一致(db_pub 应是历史上用别的方式回填的,不"
+   }
+  },
+  "humanity.org": {
+   "date": {
+    "attr": "text",
+    "regex": "\"date\",\"([0-9T:.Z-]+)\"",
+    "_conf": "high",
+    "_sym": "H",
+    "_note": "Framer 站点,可见区域全是 hash class(如 framer-14bfmlc),无法写语义 selector;真日期藏在页面内嵌的 Framer CMS JSON payload 里,字面量键名就是 \"date\",三篇值互不相同、且与相邻的作者名字段(在同源 PRCL 样本里验证为紧邻 \"Gus Marqu"
+   }
+  },
+  "hyperlane.xyz": {
+   "date": {
+    "selector": "h5.blog_content--date",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "HYPER",
+    "_note": "无 jsonld/meta/time 标签;陷阱是 Webflow 相关文章推荐位 h6.blog_next--date(3 篇完全相同的假日期),真值在 h5.blog_content--date,3 篇均不同且唯一。"
+   }
+  },
+  "icn.global": {
+   "date": {
+    "selector": ".title-wrapper .date-wrapp.text-color-grey",
+    "attr": "text",
+    "regex": "(\\d{1,2})/(\\d{1,2})/(\\d{4})",
+    "_conf": "high",
+    "_sym": "ICNT",
+    "_note": "Webflow 站。文章自身日期在 <div class=\"title-wrapper\"><div class=\"date-wrapp text-color-grey\">D/M/YYYY</div>...<h2>标题</h2></div>,与 H1 同块。格式是 D/M/YYYY(日在前,欧式),用第三个样本 18/1"
+   }
+  },
+  "immutable.com": {
+   "date": {
+    "selector": "time[datetime]",
+    "attr": "datetime",
+    "_conf": "medium",
+    "_sym": "IMX",
+    "_note": "jsonld(BlogPosting/Article)、meta[article:published_time]、可见 <time datetime> 三方一致且 3 篇互不相同,相关文章卡片用纯 span(无 time 标签)不会误命中,本样本未复现\"polluted\"污染模式,与 problem=polluted "
+   }
+  },
+  "injective.com": {
+   "date": {
+    "selector": "script#__NUXT_DATA__",
+    "attr": "text",
+    "regex": "\"ghostPublishedAt\":(\\d+)",
+    "_conf": "medium",
+    "_sym": "INJ",
+    "_note": "无 jsonld/meta/time 标签,页面纯 SPA 无可见 byline;真实数据藏在 __NUXT_DATA__(合法 JSON 数组,需 JSON.parse 后按正则抓到的下标二次取值,非单纯正则可得);m-inj、x402 两篇 createdAt/updatedAt/publishedAt/ghost"
+   }
+  },
+  "io.net": {
+   "date": {
+    "attr": "text",
+    "regex": "datePublished\\W*?(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z?)",
+    "_conf": "high",
+    "_sym": "IO",
+    "_note": "Next.js App Router RSC flight payload 里转义 JSON 字符串,页面没有真实 <script ld+json> DOM 节点,需对整页原始文本(非 CSS 选择器)正则抓 datePublished,3 份样本转义层级不同但正则通用",
+    "strategy": "html_regex"
+   }
+  },
+  "irys.xyz": {
+   "date": {
+    "selector": "section.max-w-blog p:first-of-type",
+    "attr": "text",
+    "regex": "\\d{4}-\\d{2}-\\d{2}",
+    "_conf": "medium",
+    "_sym": "IRYS",
+    "_note": "jsonld datePublished、页面内嵌RSC payload的post.date、可见DOM文本三方一致且与db_pub吻合;但源标记polluted且3篇中2篇(what-is-programmable-data/what-is-a-datachain)日期完全相同(两文主题高度相关像同日发布的姊妹文),"
+   }
+  },
+  "jellyjelly.com": {
+   "date": {
+    "selector": ".blog-date, .digest-date-range",
+    "attr": "text",
+    "regex": "([A-Za-z]{3,9}\\s+\\d{1,2},\\s*\\d{4})$",
+    "_conf": "high",
+    "_sym": "JELLYJELLY",
+    "_note": "SvelteKit站两种模板:常规文章用.blog-date单日期,周报用.digest-date-range范围(开始-结束,年),db_pub对应范围结束日,正则取字符串末尾Mon D, YYYY兼容两种格式;有jsonld的2/3篇已与db_pub完全吻合。"
+   }
+  },
+  "jelurida.com": {
+   "date": {
+    "ban": [
+     "time_tag"
+    ],
+    "selector": "p.news-date",
+    "attr": "text",
+    "regex": "(\\d{1,2}\\s+\\w+\\s+\\d{4})",
+    "_conf": "high",
+    "_sym": "ARDR",
+    "_note": "页面里第一个 <time datetime=...> 来自底部 related_news 关联区块(view-display-id-block_related_news_1),抓到的是别的文章日期,是污染源;真日期在 H1 标题正下方 <p class=\"card-text news-date\"> 纯文本,无 time"
+   }
+  },
+  "kava.io": {
+   "date": {
+    "selector": ".info-wrapper div:first-child",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "KAVA",
+    "_note": "Webflow 站点,无 jsonld/meta/time 标签。真实日期在 h1 下方 .info-wrapper 内的第一个 <div>(结构是 日期/圆点分隔符/阅读时长),.info-wrapper 全页仅出现 1 次,3 篇样本抽出值与旧 db_pub 完全一致。"
+   }
+  },
+  "lagrangefoundation.org": {
+   "date": {
+    "selector": "h1.blog-h1 + h4",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "LA",
+    "_note": "Webflow 站,h1.blog-h1 后紧跟的 h4 就是可见发布日期,纯文本无干扰,3篇与库内 db_pub 完全对上"
+   }
+  },
+  "linea.build": {
+   "date": {
+    "selector": "img[alt=\"Published date\"] + span",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "LINEA",
+    "_note": "无 jsonld/meta/time 标签;真值锚点是日历图标 img[alt=\"Published date\"] 紧邻的 span,3 篇均唯一且不同;页面另有 3 个跨文章重复出现的\"最新文章\"日期(May 5/13, June 15, 2026)是推荐位陷阱,已避开。"
+   }
+  },
+  "liquity.org": {
+   "date": {
+    "selector": ".bp-marker",
+    "attr": "text",
+    "regex": "(January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, \\d{4}",
+    "_conf": "high",
+    "_sym": "LQTY",
+    "_note": "无 jsonld/meta/time 标签。byline 结构是'作者 · 日期'三个独立 <div class=text-size-small>,该 class 全页复用 68 次不可直接选,但父容器 .bp-marker 全页仅 1 处(标题下方作者信息条),故 scope 到 .bp-marker 取整段文本再用"
+   }
+  },
+  "macropod.com": {
+   "date": {
+    "selector": ".resource-details.w-richtext p:first-child",
+    "attr": "text",
+    "regex": "(\\d{1,2}(?:st|nd|rd|th)\\s+[A-Za-z]+\\.?,?\\s+\\d{4})",
+    "_conf": "medium",
+    "_sym": "AUDM",
+    "_note": "无 meta/JSON-LD/time 标签;真日期只存在于富文本正文第一段的新闻通稿式日期行,格式不统一(一篇独立加粗段'8th March, 2026';一篇夹在正文里'6th<sup>th</sup> March 2026, Sydney, Australia: ...');第三篇 audm-demonstrat"
+   }
+  },
+  "megaeth.com": {
+   "date": {
+    "selector": "p:contains('Published:')",
+    "attr": "text",
+    "regex": "Published:\\s*([A-Za-z]+\\.?\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s*\\d{4})",
+    "_conf": "medium",
+    "_sym": "MEGA",
+    "_note": "3 篇样本里只有 1 篇是真博文(blog-news 路径),规则基于该 1 篇的可见文本\"Published: June 5th, 2026\"(仅此单样本,n=1);另外 2 条 URL(rabbithole-terms-of-use 是条款页、mafia-apply 是报名页)根本不是博客文章,其 db_pub 是"
+   }
+  },
+  "metall2.com": {
+   "date": {
+    "selector": "script#__framer__handoverData",
+    "attr": "text",
+    "regex": "\"date\",\"(\\d{4}-\\d{2}-\\d{2}T[\\d.:]*Z)\"",
+    "_conf": "high",
+    "_sym": "MTL",
+    "_note": "Framer 站点;data-framer-ssr-released-at / data-framer-page-optimized-at / 顶部 HTML 注释 3 篇完全相同(构建时间戳,已排除不用);正文可见月份日期实为 deadline/hard-fork 时间提及(已逐篇核对与目标不符);真正日期在 __f"
+   }
+  },
+  "metis.io": {
+   "date": {
+    "selector": ".icon-type.date + [fs-cmsfilter-field=\"article\"]",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "METIS",
+    "_note": "Webflow CMS,日期在 header-blog-info 内,紧跟 icon-type.date 图标之后的同级 div(该 div 与文案'Articles'的 div 共用 class,须靠前面的图标定位区分);页面顶部'Last Published: ...'注释是全站构建时间,不可当发布时间。"
+   }
+  },
+  "mew.xyz": {
+   "date": {
+    "selector": "div.text-14.uppercase.mb-12",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "medium",
+    "_sym": "MEW",
+    "_note": "Nuxt/Vue 站。每篇正文顶部结构固定为 类别标签 + 日期 div(class=\"text-14 s:text-16 uppercase mb-12\",无 hover class)+ H2 标题;页面底部还有一个几乎相同的结构渲染\"Next Post\"(下一篇文章)卡片,唯一区别是那个 div 多了 hover/"
+   }
+  },
+  "moonbeam.network": {
+   "date": {
+    "selector": "p.p-blog-detail__date",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "MOVR",
+    "_note": "无 meta/JSON-LD/time 标签;陷阱是底部相关文章卡片 .c-article-card__date(3 篇文章页面上都显示同一个'July 3, 2026',是全站最新文章模板污染);真日期是 H1 标题正下方语义类 .p-blog-detail__date,3/3 与 db_pub 完全一致。"
+   }
+  },
+  "movementnetwork.xyz": {
+   "date": {
+    "selector": "meta[property='article:published_time']",
+    "attr": "content",
+    "_conf": "medium",
+    "_sym": "MOVE",
+    "_note": "meta[article:published_time] 与 jsonld(BlogPosting).datePublished 一致且 3 篇互不相同,本样本未复现污染;但页面另有一个\"最新文章\"小组件把另外 3 篇文章的日期(如 2026-06-23/06-30/07-02)原样嵌入每一页,怀疑这才是旧管道误命中的"
+   }
+  },
+  "neo.org": {
+   "date": {
+    "selector": "div.article-time span.gray",
+    "attr": "text",
+    "regex": "[A-Za-z]{3,9}\\s+\\d{1,2},\\s+\\d{4}",
+    "_conf": "high",
+    "_sym": "NEO",
+    "_note": "无 meta/jsonld/time 标签(解释 no_pub 部分),div.article-time span.gray 是页面唯一可见日期且与 db_pub 完全吻合;本 3 样本未找到任何跨篇重复的污染信号,problem 里 polluted 的具体机制未复现,建议后续多取样交叉验证。"
+   }
+  },
+  "oasis.net": {
+   "date": {
+    "selector": ".article_publishing_information:not(.w-condition-invisible) .date_wrapper .nd_authors_name:nth-of-type(2)",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "ROSE",
+    "_note": "Webflow 站,页面底部 RELATED ARTICLES 区块(class nd_blogpost_item_date)是陷阱,列的是别的文章日期;真日期在 H1 下方 .date_wrapper 内第二个 .nd_authors_name(第一个是作者名'Oasis');同结构还有一个 w-condition-"
+   }
+  },
+  "ondo.finance": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "regex": "datePublished[^0-9]*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z)",
+    "_conf": "high",
+    "_sym": "TTMI",
+    "_note": "Next.js App Router(self.__next_f 流式 RSC payload)。cheerio 抓到的静态 HTML 里 <body> 几乎是空壳(仅 1 个 hidden 占位 div + 一堆 <script>),真正的可见 DOM 没有任何日期文本、没有 <time> 标签、没有日期相关 met"
+   }
+  },
+  "orbs.com": {
+   "date": {
+    "selector": ".blog-element[data-url=\".\"]",
+    "attr": "data-date",
+    "_conf": "high",
+    "_sym": "ORBS",
+    "_note": "无jsonld/meta/time标签,页面用data-date属性携带日期但同名[data-date]在相关文章列表重复出现(3篇公用同2个旧日期Nov 12/21 2023),必须用data-url='.'精确定位当前文章自身的.blog-element才拿到正确值;可见文本备选只有相对时间X months ago"
+   }
+  },
+  "originprotocol.com": {
+   "date": {
+    "selector": "h1 + div",
+    "attr": "text",
+    "regex": "^([A-Za-z]{3}\\s+\\d{1,2},\\s+\\d{4})",
+    "_conf": "high",
+    "_sym": "OGN",
+    "_note": "h1 后第一个 div(class 是 Tailwind 工具类,无语义)裸文本就是可见发布日期;注意内嵌 RSC payload 的 publishedAt/updatedAt 字段陷阱(3篇 updatedAt 几乎同一秒疑似批量迁移戳),但可见发布日期逐篇不同已验证(第2篇 Jun 1 vs 其余 Jul 2)为"
+   }
+  },
+  "orochi.network": {
+   "date": {
+    "strategy": "none",
+    "_conf": "high",
+    "_sym": "ON",
+    "_note": "h1后可见byline的日期在3篇不同文章中均等于爬取当天(July 4, 2026),判定为前端渲染的当前日期占位/bug而非真实发布日,无jsonld/meta/time/__NEXT_DATA__,显式放弃。"
+   }
+  },
+  "parcl.co": {
+   "date": {
+    "attr": "text",
+    "regex": "\"date\",\"([0-9T:.Z-]+)\"",
+    "_conf": "high",
+    "_sym": "PRCL",
+    "_note": "与 H 同为 Framer 站,同一套抽取规则(regex 扫 \"date\",\"...\" 字面量)。此样本里验证更充分:该字段紧跟在 {\"type\":18,\"value\":19},\"date\",\"2025-09-10T00:00:00.000Z\",{\"type\":6,\"value\":21},\"Gus Marquez\" "
+   }
+  },
+  "polygon.technology": {
+   "date": {
+    "selector": "p.text-body-mono-medium.all-caps.tc-g200:first",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "POL",
+    "_note": "Webflow 站点,无 jsonld/meta/time 标签。同一 class 组合(text-body-mono-medium all-caps tc-g200)在页面里出现 11 次,但第 1 个恰好紧邻正文 h1(其余是页面下方相关文章卡片日期),3 篇样本均验证'第一个匹配'即正文日期,取纯文本即可无需正则"
+   }
+  },
+  "portal.godsunchained.com": {
+   "date": {
+    "ban": [
+     "正文叙述性日期(如 newsletter 样本里的'February 17, 2026',出现在段落文本描述'某事发生于...',是事件日期不是发布日期,同一日期在文中出现两次描述两件不同的事,更说明不可靠)"
+    ],
+    "strategy": "none",
+    "_conf": "high",
+    "_sym": "GODS",
+    "_note": "3 篇里 2 篇(god-powers-refresh / battle-pass-season-12)全文搜不到任何日期痕迹,H1/H2 后直接接正文,无 byline 结构;第 3 篇(newsletter-february-2026)唯一日期是正文叙述用语,非发布时间。URL 里'newsletter-febru"
+   }
+  },
+  "pyth.network": {
+   "date": {
+    "selector": "time",
+    "attr": "datetime",
+    "_conf": "high",
+    "_sym": "PYTH",
+    "_note": "同为 Framer 建站(与 ERA 同款套壳)但这个源保留了干净的 <time>(页面唯一)与 jsonld datePublished,二者一致且逐篇不同,与 db_pub 吻合。真正陷阱是 HTML 尾部部署注释'Published Jul 2, 2026, 3:05 PM'与'Other posts'卡片纯文本"
+   }
+  },
+  "rayls.com": {
+   "date": {
+    "selector": ".blog-post-header1_content-top .blog5_date-wrapper",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "RLS",
+    "_note": "Webflow 站点, 无 jsonld/meta 日期; .blog5_date-wrapper 这个 class 在页面底部'最新文章'小组件里也复用(3 篇文件里那部分的值都相同, 是别的文章的日期不是本篇的), 必须限定在头部容器 .blog-post-header1_content-top 内取第一个, 不能"
+   }
+  },
+  "resolv.xyz": {
+   "date": {
+    "selector": "[data-framer-name=\"Date\"]",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "RESOLV",
+    "_note": "Framer 站点,通用梯队不认识私有属性 data-framer-name=\"Date\" 故此前 no_pub;3 篇取值各不相同且合理(postmortem 一篇标题带 March-22 是事故发生日、Apr 4 才是发文日,两者不冲突)。"
+   }
+  },
+  "safe.global": {
+   "date": {
+    "attr": "text",
+    "regex": "\\\\\"first_published_at\\\\\":\\\\\"([0-9T:.Z-]+)\\\\\"",
+    "_conf": "high",
+    "_sym": "SAFE",
+    "_note": "Next.js + Storyblok CMS,页面没有可见 meta/jsonld/time 标签(故标 no_pub),但正文里的 Next.js RSC <script> 流(self.__next_f.push(...))里转义嵌了 story 对象,带 created_at/published_at/upda"
+   }
+  },
+  "safepal.com": {
+   "date": {
+    "selector": ".article-time",
+    "attr": "text",
+    "regex": "([A-Za-z]{3}\\s\\d{1,2},\\d{4})",
+    "_conf": "high",
+    "_sym": "SFP",
+    "_note": "WordPress 站,日期格式是 'Mon DD,YYYY'(逗号后没有空格),常规'月份 日, 年份'式正则因为要求逗号后有空格会漏抓,这很可能是通用梯队判定 no_pub 的原因之一。真实位置在 h1 标题正下方的 <div class=\"article-time\">,无 meta/jsonld/time 标签,"
+   }
+  },
+  "sapien.io": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": ".blog-date",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "SAPIEN",
+    "_note": "jsonld datePublished/dateModified 3 篇完全相同(Jul 01, 2025)确认为站级模板假值已 ban;真值在 .blog-date 内嵌的 heading-style-h5 div,3 篇均不同;修正后与当前污染 db_pub(2 篇被 jsonld 假值经 UTC+8 换算污染成"
+   }
+  },
+  "scroll.io": {
+   "date": {
+    "strategy": "spa_only",
+    "_conf": "high",
+    "_sym": "SCR",
+    "_note": "Next.js App Router 纯 RSC shell:<head> 只有 title/og/twitter meta 和 RSC 占位符(notFound/forbidden/unauthorized),正文段落、作者、日期全部为空,连 RSC flight data 字符串里都搜不到任何日期/年份模式,图片路"
+   }
+  },
+  "sia.tech": {
+   "date": {
+    "selector": "label:contains(\"Published\")",
+    "attr": "text",
+    "regex": "(\\d{2}/\\d{2}/\\d{4})",
+    "_conf": "high",
+    "_sym": "SC",
+    "_note": "Next.js RSC 流式渲染页,无 meta/JSON-LD/time 标签(这是通用梯队全部落空的原因);真日期渲染进 DOM 的 <label> 纯文本'Published MM/DD/YYYY',其 class 是长串 Tailwind 工具类(含 bracket 记法 text-[18px])不稳定故用 :"
+   }
+  },
+  "spaceandtime.io": {
+   "date": {
+    "selector": ".blog-category-date",
+    "attr": "text",
+    "regex": "([A-Za-z]+ \\d{1,2},? \\d{4})",
+    "_conf": "high",
+    "_sym": "SXT",
+    "_note": "陷阱是 Webflow <!-- Last Published: ... --> 构建时间注释(3 篇完全相同 May 05 2026,若整页无差别正则扫日期会被它污染),真值在 .blog-category-date(分类 • 日期);两篇 tokenomics 系列文章日期相同是巧合已核实非污染。"
+   }
+  },
+  "spotlight.tezos.com": {
+   "date": {
+    "ban": [
+     "time_tag"
+    ],
+    "selector": "meta[property='article:published_time']",
+    "attr": "content",
+    "_conf": "high",
+    "_sym": "XTZ",
+    "_note": "页面有 7 个 <time> 标签(第 1 个是本文真实日期,其余 6 个是底部'相关文章'列表的旧日期),裸用 time 选择器有误取相关文章日期的风险——这很可能是 problem 标 polluted 的机制。改用 meta[article:published_time](页面唯一)更安全,本样本与 jsonld"
+   }
+  },
+  "ssv.network": {
+   "date": {
+    "selector": "[data-framer-name=\"Hero\"] [data-framer-name=\"Text\"] p",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "SSV",
+    "_note": "Framer 站,页面底部有 data-framer-name=Date 的相关文章挂件(6次/3个不同值,且标题与本文相似极易混淆,已用 slug 交叉验证排除该陷阱);真实日期在 [data-framer-name=Hero] 内唯一的 Text 节点,格式 M/D/YY 两位年份"
+   }
+  },
+  "stacks.co": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": ".text-block-70",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "STX",
+    "_note": "实锤污染: jsonld datePublished 在前 2 篇完全相同(2025-06-19T22:19:59-04:00, 疑似批量导入/抓取时间戳), 且与页面可见日期完全对不上(可见 December 10, 2024 / August 18, 2022 分别对应); dateModified 也不可信(与可"
+   }
+  },
+  "stbl.com": {
+   "date": {
+    "ban": [
+     "time_tag"
+    ],
+    "selector": ".framer-7maybv time",
+    "attr": "datetime",
+    "_conf": "high",
+    "_sym": "STBL",
+    "_note": "Framer 站点; 每篇页面里裸 <time> 标签有 5 个: 前 2 个(响应式桌面/移动双份, class=framer-7maybv)是本文真实日期且互相一致, 后 3 个(class=framer-89ey4e, 在'相关文章'卡片区)在 3 份样本里数值完全相同(2026-04-03T15:12:17.3"
+   }
+  },
+  "steemit.com": {
+   "date": {
+    "selector": "meta[name=\"article:published_time\"]",
+    "attr": "content",
+    "_conf": "high",
+    "_sym": "STEEM",
+    "_note": "该站 OG/article 相关 meta 全部用 name= 属性而非标准 OG 规范的 property=(如 <meta name=\"article:published_time\">),推测通用抽取器按 property= 找导致完全漏抓才落到 no_pub;值本身无时区后缀,按 UTC 处理;3/3 验证,其中"
+   }
+  },
+  "stellar.org": {
+   "date": {
+    "ban": [
+     "time_tag"
+    ],
+    "selector": "script#__NEXT_DATA__",
+    "attr": "text",
+    "regex": "\"_createdAt\":\"([^\"]+)\",\"_id\":\"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"",
+    "_conf": "high",
+    "_sym": "XLM",
+    "_note": "可见 <time datetime> 标注\"Publishing date\",但精确到毫秒的值在 2 篇不同文章上完全相同(2026-05-05T00:00:00.000Z)——这正是触发 polluted 判定的原因;改用 Sanity CMS(__NEXT_DATA__ 内)blogPage 文档自身的 _crea"
+   }
+  },
+  "straitsx.com": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": ".blog_post-meta > div:last-child",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "XUSD",
+    "_note": "JSON-LD BlogPosting.datePublished 被迁移污染(文章1和3的值逐字相同=2025-06-25T06:43:07.880Z,但文章3 dateModified=2023 说明真实内容是2023年);真实日期是 h1 后 .blog_post-meta 内最后一个 div 可见文本,格式 '"
+   }
+  },
+  "swarmnetwork.ai": {
+   "date": {
+    "strategy": "none",
+    "_conf": "high",
+    "_sym": "TRUTH",
+    "_note": "Framer静态站3篇全文无任何日期痕迹(无jsonld/meta/time/可见文本),页面仅有data-framer-ssr-released-at等站级构建时间戳(3篇相同,非文章日期),显式放弃。"
+   }
+  },
+  "tac.build": {
+   "date": {
+    "selector": ".page-blog__info-wrapper > div:not(.w-condition-invisible)",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "TAC",
+    "_note": "Webflow 站,BEM 风格 class 很干净:<h1 class=\"page-blog__title\">标题</h1><div class=\"page-blog__info\">...<div class=\"page-blog__info-wrapper\"><div>发布日期</div><div class=\"w"
+   }
+  },
+  "thegraph.com": {
+   "date": {
+    "selector": "dt:contains('Published') ~ dd",
+    "attr": "text",
+    "regex": "[A-Za-z]{3,9}\\s+\\d{1,2},\\s+\\d{4}",
+    "_conf": "high",
+    "_sym": "GRT",
+    "_note": "可见日期的 dd 用的是 Emotion hash 类(css-ksqiz9,构建时会变),按规则避开,改用其前面的 dt 文本'Published'+通用兄弟选择器(dt~dd,中间夹了个 <style> 标签所以不能用 + 相邻兄弟)定位,cheerio 验证 matchCount=1。同一日期其实也在 __NEX"
+   }
+  },
+  "threshold.network": {
+   "date": {
+    "selector": "p.post_date",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "T",
+    "_note": "正文里嵌了大量干扰日期(嵌入推特的日期、活动截止时间、月报所述月份本身等),不能简单'页面全文搜日期'。真实发布日期固定在 <div class=\"post_tags u-color-faded\"><p class=\"post_info\">分类</p><div>·</div><p class=\"post_date\">日"
+   }
+  },
+  "treehouse.finance": {
+   "date": {
+    "attr": "text",
+    "regex": "publishedAt\\\\?\":\\\\?\"([0-9T:-]+)",
+    "_conf": "high",
+    "_sym": "TREE",
+    "_note": "Next.js RSC 流;页面里有 4 个 publishedAt,第 1 个(组件 $L20,detail-post 主区)是本文真实日期,后 3 个(组件 $L27)是底部相关文章卡片日期——取全文首个 publishedAt 即可;已跨文章交叉验证:teth-turns-one 自己的日期与 tree-buyb"
+   }
+  },
+  "trustwallet.com": {
+   "date": {
+    "selector": "meta[property=\"article:published_time\"]",
+    "attr": "content",
+    "_conf": "high",
+    "_sym": "TWT",
+    "_note": "怪现象:该源标为 no_pub,但实测 meta[property=article:published_time] 和 jsonld(BlogPosting,嵌在 @graph 数组里,非顶层字段,推测这是通用抽取器漏抓的原因)都完整且逐篇不同,与旧 db_pub 按时区折算后基本吻合。备选:jsonld 里的 dat"
+   }
+  },
+  "turtle.xyz": {
+   "date": {
+    "selector": "footer",
+    "attr": "text",
+    "regex": "Published on\\s+([A-Za-z]+\\s+\\d{1,2},\\s*\\d{4})",
+    "_conf": "high",
+    "_sym": "TURTLE",
+    "_note": "Next.js 站,footer 内最后一个 <p> 是 'Published on <!-- -->日期'。同一个值在渲染 DOM 和 <script> 里的 RSC flight data 字符串中各出现一次,但 cheerio 只解析真实 DOM 节点,不受 flight data 干扰。comparing-de"
+   }
+  },
+  "twilio.com": {
+   "date": {
+    "selector": "div.cmp-blog__published-date",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ [0-9]{1,2},? [0-9]{4})",
+    "_conf": "high",
+    "_sym": "TWLO",
+    "_note": "AEM(Adobe Experience Manager)站点。<head> 没有 article:published_time 等日期 meta(og:type=website 而非 article),这是 no_pub 的成因——通用 meta 层天然抽不到。jsonld(每页 1 份,Article.datePu"
+   }
+  },
+  "usual.money": {
+   "date": {
+    "selector": "div[data-framer-name='Changelog Item'] p.framer-text",
+    "attr": "text",
+    "regex": ">((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, \\d{4})<",
+    "_conf": "medium",
+    "_sym": "USUAL",
+    "_note": "Framer 站点;真实日期是 Changelog Item 块内最后一个 p.framer-text 的可见文本;同名 data-framer-name=\"January 24, 2025\" 是设计时占位属性值且在文档里出现在真日期之前,若不做 selector 精确限定、只裸用正则扫全文会误中这个占位符(已踩坑并修"
+   }
+  },
+  "vana.org": {
+   "date": {
+    "strategy": "none",
+    "_conf": "low",
+    "_sym": "VANA",
+    "_note": "polluted 判断成立但真因特殊:H1 正下方 hero 区 .article-hero-info .article-date-wrap(WRITTEN BY/作者名之后那个)3 篇样本全部是同一个 'May 15, 2025',与 db_pub 一致——这不是选择器选错位置(hero 区确实是该文章专属区块),而"
+   }
+  },
+  "vanarchain.com": {
+   "date": {
+    "strategy": "spa_only",
+    "_conf": "high",
+    "_sym": "VANRY",
+    "_note": "静态 HTML 是未resolve 的 RSC suspense 占位壳(<template id=\"B:0\">…<div id=\"S:0\">,$RC 回填脚本待触发),3 篇全文搜索(月份文本/ISO日期/4位年份)均为零命中,正文与日期需等待流式渲染注入,cheerio 静态抓取天生拿不到,应显式放弃。"
+   }
+  },
+  "vaulta.com": {
+   "date": {
+    "selector": "time.text-p.text-spaceBlack",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "A",
+    "_note": "页面里确实有 <time> 标签,但没有 datetime 属性(纯文本),这应是通用梯队(找 time[datetime])抓空的原因。页面底部'最新文章'推荐卡片里还有另一批 <time class=\"\">Oct 15</time> 式的空 class、无年份的 time 标签(3 页共享同一组值,是干扰项,不能直"
+   }
+  },
+  "venice.ai": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": "time",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "medium",
+    "_sym": "VVV",
+    "_note": "困惑点:这 3 篇样本里可见 <time> 文本、jsonld 里 Article.datePublished、库内现值三者完全一致且逐篇不同,没能在样本内复现源头标注的\"polluted\"(重复假值)症状。但发现了一个很可能是病根的结构:该站 jsonld 是 @graph 数组,里面混了 Organization/"
+   }
+  },
+  "veve.me": {
+   "date": {
+    "ban": [
+     "time_tag"
+    ],
+    "selector": "span.single.spnc-date time.entry-date",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "OMI",
+    "_note": "WordPress(Newscrunch主题)页面含10+个无scope的<time class=entry-date>(侧栏最新文章挂件,3篇高度重复如June 28/June 22等)这正是polluted的真实成因;正确日期在唯一的span.single.spnc-date内,已与meta[article:pub"
+   }
+  },
+  "wormhole.com": {
+   "date": {
+    "ban": [
+     "jsonld",
+     "meta"
+    ],
+    "selector": "h1 + span",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "W",
+    "_note": "三份样本 <head> 里完全没有 meta/jsonld 日期字段(og:type 甚至是 'website' 不是 'article'),这 3 篇本身只观测到 no_pub,没有观测到 polluted 的证据——polluted 可能出在本源其它未采样到的文章/模板上,ban jsonld/meta 是按给定 "
+   }
+  },
+  "xrpl.org": {
+   "date": {
+    "ban": [
+     "time_tag"
+    ],
+    "selector": "div.blog-post-info",
+    "attr": "text",
+    "regex": "\\d{4}-\\d{2}-\\d{2}",
+    "_conf": "high",
+    "_sym": "XRP",
+    "_note": "实锤污染:<time dateTime=2025-04-25>1 year ago</time> 是 Docusaurus 'Last updated'(站点迁移/构建日期),3 篇样本全部相同,与 db_pub 完全对应——即污染源本身。真实日期在 div.blog-post-info 文本'Publication "
+   }
+  },
+  "zama.org": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": ".c-blog-post-date",
+    "attr": "text",
+    "_conf": "high",
+    "_sym": "ZAMA",
+    "_note": "实锤 polluted:jsonld 的 datePublished 三篇统一都是 \"Jul 01, 2025\"(站级模板值/上线日期),必须 ban。真实日期在可见 byline .c-blog-post-date(全页仅 1 处),3 篇抽出值与旧 db_pub 完全一致。"
+   }
+  },
+  "zebec.io": {
+   "date": {
+    "strategy": "none",
+    "_conf": "high",
+    "_sym": "ZBCN",
+    "_note": "Webflow Blog Post 1模板header区(breadcrumb+h1+image)完全不含日期字段,页面仅有的日期是站级Last Published构建戳(3篇相同)和related卡片网格里其它文章的日期(blog8_meta-wrapper,3篇也完全相同因为是同一组推荐卡片),当前文章自身日期不可"
+   }
+  },
+  "zestprotocol.com": {
+   "date": {
+    "selector": ".blog-template-header-info-item p",
+    "attr": "text",
+    "regex": "([A-Z][a-z]+ \\d{1,2}, \\d{4})",
+    "_conf": "high",
+    "_sym": "ZEST",
+    "_note": "Webflow 站点, 无 jsonld/meta/time 标签; 页顶 HTML 注释 <!-- Last Published: ... --> 是全站统一的站点重发布时间戳(3 篇完全相同, 非文章级), 不能当日期用; 真实日期是 .blog-template-header-info 下第 2 个 .blog-"
+   }
+  },
+  "zora.co": {
+   "date": {
+    "ban": [
+     "jsonld"
+    ],
+    "selector": ".blog-details .publish-date",
+    "attr": "text",
+    "regex": "(\\d{1,2}) ([A-Z][a-z]{2})",
+    "_conf": "medium",
+    "_sym": "ZORA",
+    "_note": "已实锤 jsonld 污染:zora-is-live 和 the-ticker-is-zora 两篇完全不同的文章,jsonld BlogPosting.datePublished 精确到毫秒完全相同(2025-11-04T16:45:01.477Z),必须 ban;dateModified 也可疑(两篇仅差 70 秒"
+   }
+  }
+ }
+}

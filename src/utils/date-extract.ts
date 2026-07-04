@@ -14,27 +14,35 @@ import { extractDateFromUrl } from './article-filter.js';
 
 type CheerioAPI = CheerioCrawlingContext['$'];
 
-// ── per-source 时间规则(2026-07-04 老板拍:站点定制根治)──
+// ── per-source 抽取规则统一库(2026-07-04 老板拍:地基工程 · 站点定制根治 date/title/body)──
 const require = createRequire(import.meta.url);
 export interface DateRule {
     ban?: string[];               // 禁用层:jsonld / meta / time_tag / nextdata
     selector?: string;            // 定点 css
     attr?: string;                // datetime | content | text
-    regex?: string;               // 从 text 提日期
-    strategy?: 'url_date' | 'none' | 'spa_only';
+    regex?: string;               // 从 text 提日期;strategy=html_regex 时对整页源码跑
+    strategy?: 'url_date' | 'none' | 'spa_only' | 'html_regex';
 }
-const dateRulesCfg = require('./date-rules.json') as { rules: Record<string, DateRule> };
-export function dateRuleFor(url: string): DateRule | null {
+export interface TitleRule { ban?: string[]; selector?: string } // ban: ['og'] 跳过站级 og:title
+export interface BodyRule { selector?: string }                  // 正文容器 · 替换通用 'article p, main p'
+export interface FieldRules { date?: DateRule; title?: TitleRule; body?: BodyRule }
+const extractRulesCfg = require('./extract-rules.json') as { rules: Record<string, FieldRules> };
+function stripWww(h: string): string { return h.startsWith('www.') ? h.slice(4) : h; }
+export function rulesFor(url: string): FieldRules | null {
     try {
-        const h = new URL(url).hostname.toLowerCase();
-        for (const [host, rule] of Object.entries(dateRulesCfg.rules)) {
-            if (h === host || h.endsWith(`.${host}`)) return rule;
+        const h = stripWww(new URL(url).hostname.toLowerCase());
+        for (const [host, rule] of Object.entries(extractRulesCfg.rules)) {
+            const rh = stripWww(host.toLowerCase());
+            if (h === rh || h.endsWith(`.${rh}`)) return rule;
         }
         return null;
     } catch {
         return null;
     }
 }
+export function dateRuleFor(url: string): DateRule | null { return rulesFor(url)?.date ?? null; }
+export function titleRuleFor(url: string): TitleRule | null { return rulesFor(url)?.title ?? null; }
+export function bodyRuleFor(url: string): BodyRule | null { return rulesFor(url)?.body ?? null; }
 
 const ARTICLE_TYPES = new Set(['blogposting', 'article', 'newsarticle']);
 
@@ -222,15 +230,22 @@ export function extractPublishedAt($: CheerioAPI, url: string, ruleOverride?: Da
     const rule = ruleOverride !== undefined ? ruleOverride : dateRuleFor(url);
     if (rule?.strategy === 'none' || rule?.strategy === 'spa_only') return ''; // 显式放弃 · 不瞎抽(spa_only 等 P3 Playwright)
     if (rule?.strategy === 'url_date') return extractDateFromUrl(url);
+    if (rule?.strategy === 'html_regex' && rule.regex) { // Next.js flight payload 类:日期只在整页源码里(TTMI 实锤)
+        const m = new RegExp(rule.regex, 'i').exec($.html() ?? '');
+        return m ? (m[1] ?? m[0]) : '';
+    }
     if (rule?.selector) {
-        const el = $(rule.selector).first();
-        let v = rule.attr && rule.attr !== 'text' ? (el.attr(rule.attr)?.trim() ?? '') : el.text().trim();
-        if (v && rule.regex) {
-            const m = new RegExp(rule.regex, 'i').exec(v);
-            v = m ? (m[1] ?? m[0]) : '';
+        // 遍历命中元素取首个提取成功的(QUICK 实锤:同 class 多元素 · first 是导航词 · 日期在第 3 个)
+        const els = $(rule.selector).toArray().slice(0, 10);
+        for (const e of els) {
+            let v = rule.attr && rule.attr !== 'text' ? ($(e).attr(rule.attr)?.trim() ?? '') : $(e).text().trim();
+            if (v && rule.regex) {
+                const m = new RegExp(rule.regex, 'i').exec(v);
+                v = m ? (m[1] ?? m[0]) : '';
+            }
+            if (v) return v;
         }
-        if (v) return v;
-        // selector 落空(改版等)→ 走下方通用梯队(仍受 ban 约束)
+        // selector 全落空(改版等)→ 走下方通用梯队(仍受 ban 约束)
     }
     const ban = new Set(rule?.ban ?? []);
     if (!ban.has('meta')) {

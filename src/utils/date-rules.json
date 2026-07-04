@@ -1,4 +1,0 @@
-{
-  "_comment": "2026-07-04 老板拍:per-source 发布时间抽取规则(没有统一标准就站点定制 · 12 agent 分析 raw HTML 存档产出)。host 整域匹配(含子域)。ban=禁用被模板值污染的通用梯队层(jsonld/meta/time_tag/nextdata);selector+attr(datetime|content|text)+regex=定点抽取;strategy:url_date=只信 URL 路径日期 · none=页面确实无发布时间(显式放弃不瞎抽)· spa_only=时间需 JS 渲染(等 P3 Playwright · 先不抽)",
-  "rules": {}
-}
