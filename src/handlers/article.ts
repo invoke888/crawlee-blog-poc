@@ -1,7 +1,7 @@
 import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
 import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
-import { isValidHttpUrl, isWhitelistedArticleUrl } from '../utils/article-filter.js';
+import { isValidHttpUrl, isWhitelistedArticleUrl, extractDateFromUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
 import { extractH1, extractJsonLdMeta, extractNextDataDate, extractVisibleDate } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
@@ -233,6 +233,8 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('[itemprop="datePublished"]').first().text().trim() ||
         // 🆕 2026-07-03 自测战役 B3:正文可见日期兜底(37 源实锤 byline 日期只在正文)· 梯队最末
         extractVisibleDate($) ||
+        // 🆕 2026-07-04 质量战役:URL 路径日期兜底(XMR/XCH 实锤日期只在 /YYYY/MM/DD/ 路径里)
+        extractDateFromUrl(loaded) ||
         '';
     const author =
         $('meta[property="article:author"]').attr('content')?.trim() ||

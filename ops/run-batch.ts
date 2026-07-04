@@ -11,6 +11,7 @@ import {
 } from '../shared/ledger.js';
 import { cfgNum } from '../shared/config.js';
 import { getProxyUrl, hashProxy } from '../shared/proxy-config.js';
+import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlockedSubdomainUrl, hostOfUrl, filterArticlesWhitelistFirst } from '../src/utils/article-filter.js';
 import { runDetector } from './detector.js';
 import { runPusher } from './pusher.js';
 
@@ -49,8 +50,21 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
             });
         } catch { /* 单文件坏不拖垮收割 */ }
     }
-    const added = upsertArticles(fresh, runId);
-    return { added, sourcesWithNew: new Set(fresh.map((a) => a.token_id)).size };
+    // 🆕 2026-07-04 质量战役:收割层同款过滤(与 pusher/聚合三层同一语义 · 修 DIA use-cases 类垃圾进账本根因)
+    // 层级:noise/文件型/landing(白名单优先)→ 黑子域(与源 blog_url host 不同才拦)→ 按源白名单优先组过滤
+    const blogHostByToken = new Map<number, string>();
+    for (const r of db().prepare('SELECT token_id, blog_url FROM sources').all() as { token_id: number; blog_url: string }[]) {
+        blogHostByToken.set(r.token_id, hostOfUrl(r.blog_url ?? ''));
+    }
+    const kept = fresh.filter((a) =>
+        !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url)
+        && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)));
+    const byToken = new Map<number, ArticleInput[]>();
+    for (const a of kept) { const g = byToken.get(a.token_id) ?? []; g.push(a); byToken.set(a.token_id, g); }
+    const passed = [...byToken.values()].flatMap((g) => filterArticlesWhitelistFirst(g));
+    if (passed.length < fresh.length) console.log(`🧹 收割过滤:${fresh.length} → ${passed.length}(拦 ${fresh.length - passed.length} 条非博文/噪音 · 不进账本)`);
+    const added = upsertArticles(passed, runId);
+    return { added, sourcesWithNew: new Set(passed.map((a) => a.token_id)).size };
 }
 
 function archiveCleanup(): void {

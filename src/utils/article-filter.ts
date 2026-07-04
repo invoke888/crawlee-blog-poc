@@ -23,6 +23,7 @@ const cfg = require('./filter-config.json') as {
     dc_banned_hosts: string[];
     dead_hosts: string[];
     direct_hosts: string[];
+    blocked_subdomain_prefixes?: string[];
 };
 
 function hostMatches(url: string, domains: Iterable<string>): boolean {
@@ -110,6 +111,30 @@ export function isLandingUrl(url: string): boolean {
     if (!segs) return false;
     if (segs.some((s) => WHITELIST_SEGMENTS.has(s))) return false;
     return segs.some((s) => LANDING_SEGMENTS.has(s));
+}
+
+// 🆕 2026-07-04 质量战役:docs./careers. 等子域不可能是博客(Falcon docs.* 混入实锤)
+// 仅当 URL host ≠ 该源 blog_url host 才拦 —— SNT(status.app)/ORDI/GENIUS(docs.*)登记博客本体不误伤
+const BLOCKED_SUB_PREFIXES = cfg.blocked_subdomain_prefixes ?? [];
+export function hostOfUrl(url: string): string {
+    try { return new URL(url).hostname.toLowerCase(); } catch { return ''; }
+}
+export function isBlockedSubdomainUrl(url: string, sourceBlogHost?: string): boolean {
+    const h = hostOfUrl(url);
+    if (!h) return false;
+    if (sourceBlogHost && h === sourceBlogHost.toLowerCase()) return false;
+    return BLOCKED_SUB_PREFIXES.some((p) => h.startsWith(`${p}.`));
+}
+
+// 🆕 2026-07-04 质量战役:URL 路径日期(XMR/XCH 类 /YYYY/MM/DD/ 与 /YYYY-MM-DD-slug · 时间抽取最后兜底)
+const URL_DATE_RE = /\/(20[0-3]\d)[/-](0[1-9]|1[0-2])[/-](0[1-9]|[12]\d|3[01])(?:[/-]|$)/;
+export function extractDateFromUrl(url: string): string {
+    try {
+        const m = URL_DATE_RE.exec(new URL(url).pathname);
+        return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
+    } catch {
+        return '';
+    }
 }
 
 // 主域黑名单(gitbook/github · hhwl 误判博客源)
