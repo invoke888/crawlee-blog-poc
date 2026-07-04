@@ -9,8 +9,32 @@
 // (TS2345 · Tokenizer 私有属性 cbs 声明不同源)。改用 CheerioCrawlingContext['$'] 保证跟 article.ts
 // 传进来的 $ 是同一次解析出来的类型 · 不会跨边界撞车。
 import type { CheerioCrawlingContext } from 'crawlee';
+import { createRequire } from 'node:module';
+import { extractDateFromUrl } from './article-filter.js';
 
 type CheerioAPI = CheerioCrawlingContext['$'];
+
+// ── per-source 时间规则(2026-07-04 老板拍:站点定制根治)──
+const require = createRequire(import.meta.url);
+export interface DateRule {
+    ban?: string[];               // 禁用层:jsonld / meta / time_tag / nextdata
+    selector?: string;            // 定点 css
+    attr?: string;                // datetime | content | text
+    regex?: string;               // 从 text 提日期
+    strategy?: 'url_date' | 'none' | 'spa_only';
+}
+const dateRulesCfg = require('./date-rules.json') as { rules: Record<string, DateRule> };
+export function dateRuleFor(url: string): DateRule | null {
+    try {
+        const h = new URL(url).hostname.toLowerCase();
+        for (const [host, rule] of Object.entries(dateRulesCfg.rules)) {
+            if (h === host || h.endsWith(`.${host}`)) return rule;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
 
 const ARTICLE_TYPES = new Set(['blogposting', 'article', 'newsarticle']);
 
@@ -190,4 +214,54 @@ export function extractVisibleDate($: CheerioAPI): string {
     const uniqueDays = new Set(found.map((f) => f.day));
     if (uniqueDays.size === 1 && found[0].idx < 600) return found[0].iso;
     return '';
+}
+
+// ── 发布时间抽取主入口(2026-07-04 老板拍:通用梯队 + per-source 规则)──
+// 从 article.ts 内联梯队搬入 · 保持原层序:meta → time 标签 → jsonld → __NEXT_DATA__ → itemprop 元素 → 可见日期 → URL 日期
+export function extractPublishedAt($: CheerioAPI, url: string, ruleOverride?: DateRule | null): string {
+    const rule = ruleOverride !== undefined ? ruleOverride : dateRuleFor(url);
+    if (rule?.strategy === 'none' || rule?.strategy === 'spa_only') return ''; // 显式放弃 · 不瞎抽(spa_only 等 P3 Playwright)
+    if (rule?.strategy === 'url_date') return extractDateFromUrl(url);
+    if (rule?.selector) {
+        const el = $(rule.selector).first();
+        let v = rule.attr && rule.attr !== 'text' ? (el.attr(rule.attr)?.trim() ?? '') : el.text().trim();
+        if (v && rule.regex) {
+            const m = new RegExp(rule.regex, 'i').exec(v);
+            v = m ? (m[1] ?? m[0]) : '';
+        }
+        if (v) return v;
+        // selector 落空(改版等)→ 走下方通用梯队(仍受 ban 约束)
+    }
+    const ban = new Set(rule?.ban ?? []);
+    if (!ban.has('meta')) {
+        const v = $('meta[property="article:published_time"]').attr('content')?.trim()
+            || $('meta[property="article:modified_time"]').attr('content')?.trim()
+            || $('meta[itemprop="datePublished"]').attr('content')?.trim()
+            || $('meta[itemprop="dateModified"]').attr('content')?.trim();
+        if (v) return v;
+    }
+    if (!ban.has('time_tag')) {
+        const v = $('time[datetime]').first().attr('datetime')?.trim()
+            || $('time[datepublished]').first().attr('datepublished')?.trim()
+            || $('time[pubdate]').first().attr('datetime')?.trim();
+        if (v) return v;
+    }
+    if (!ban.has('meta')) {
+        const v = $('meta[name="date"]').attr('content')?.trim()
+            || $('meta[name="publish_date"]').attr('content')?.trim()
+            || $('meta[name="pubdate"]').attr('content')?.trim();
+        if (v) return v;
+    }
+    if (!ban.has('jsonld')) {
+        const v = extractJsonLdMeta($).datePublished;
+        if (v) return v;
+    }
+    if (!ban.has('nextdata')) {
+        const v = extractNextDataDate($);
+        if (v) return v;
+    }
+    const ip = $('[itemprop="datePublished"]').first();
+    const ipv = ip.attr('datetime')?.trim() || ip.attr('content')?.trim() || ip.text().trim();
+    if (ipv) return ipv;
+    return extractVisibleDate($) || extractDateFromUrl(url) || '';
 }

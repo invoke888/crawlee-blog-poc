@@ -1,9 +1,9 @@
 import { type CheerioCrawlingContext, KeyValueStore } from 'crawlee';
 import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
-import { isValidHttpUrl, isWhitelistedArticleUrl, extractDateFromUrl } from '../utils/article-filter.js';
+import { isValidHttpUrl, isWhitelistedArticleUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
-import { extractH1, extractJsonLdMeta, extractNextDataDate, extractVisibleDate } from '../utils/date-extract.js';
+import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt } from '../utils/date-extract.js';
 import { normalizePublishedAt } from '../utils/normalize-date.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
 import { statCount, statSet, statRequest, recordError } from '../../shared/run-stats.js';
@@ -213,29 +213,9 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
         $('meta[property="og:image"]').attr('content') ||
         $('meta[name="twitter:image"]').attr('content') ||
         '';
-    // 多 meta + tag fallback · 老板实测漏:frax 用 article:modified_time(无 published)
-    const publishedAt =
-        $('meta[property="article:published_time"]').attr('content')?.trim() ||
-        $('meta[property="article:modified_time"]').attr('content')?.trim() ||
-        $('meta[itemprop="datePublished"]').attr('content')?.trim() ||
-        $('meta[itemprop="dateModified"]').attr('content')?.trim() ||
-        $('time[datetime]').first().attr('datetime')?.trim() ||
-        $('time[datepublished]').first().attr('datepublished')?.trim() ||
-        $('time[pubdate]').first().attr('datetime')?.trim() ||
-        $('meta[name="date"]').attr('content')?.trim() ||
-        $('meta[name="publish_date"]').attr('content')?.trim() ||
-        $('meta[name="pubdate"]').attr('content')?.trim() ||
-        jsonLdMeta.datePublished ||
-        extractNextDataDate($) ||
-        // 🆕 2026-07-03 P1#7 itemprop 微数据元素级(体检:65 条有 schema 标记但 pub 空 · 非 meta 形态)
-        $('[itemprop="datePublished"]').first().attr('datetime')?.trim() ||
-        $('[itemprop="datePublished"]').first().attr('content')?.trim() ||
-        $('[itemprop="datePublished"]').first().text().trim() ||
-        // 🆕 2026-07-03 自测战役 B3:正文可见日期兜底(37 源实锤 byline 日期只在正文)· 梯队最末
-        extractVisibleDate($) ||
-        // 🆕 2026-07-04 质量战役:URL 路径日期兜底(XMR/XCH 实锤日期只在 /YYYY/MM/DD/ 路径里)
-        extractDateFromUrl(loaded) ||
-        '';
+    // 🆕 2026-07-04 老板拍:梯队搬入 date-extract.extractPublishedAt(通用梯队 + per-source date-rules.json 定制)
+    // 层序不变:meta → time 标签 → jsonld → __NEXT_DATA__ → itemprop 元素 → 可见日期 → URL 日期
+    const publishedAt = extractPublishedAt($, loaded);
     const author =
         $('meta[property="article:author"]').attr('content')?.trim() ||
         $('meta[name="author"]').attr('content')?.trim() ||
