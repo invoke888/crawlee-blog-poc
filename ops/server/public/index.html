@@ -76,7 +76,7 @@
       <button class="btn" id="art-search">搜索</button>
       <span class="mini" id="art-count"></span>
     </div>
-    <table><thead><tr><th>标题</th><th>博客</th><th>管线</th><th>发布</th><th>采集</th><th>push</th><th></th></tr></thead><tbody id="art-body"></tbody></table>
+    <table><thead><tr><th>博客</th><th>标题</th><th>正文</th><th>发布时间</th><th>采集时间</th><th>管线</th><th>push</th></tr></thead><tbody id="art-body"></tbody></table>
     <div class="pager"><button class="btn" id="art-prev">‹ 上页</button><span id="art-page">1</span><button class="btn" id="art-next">下页 ›</button></div>
   </div>
 
@@ -101,6 +101,11 @@
     <div id="set-audit" style="display:none"></div>
   </div>
 </main>
+
+<div id="src-float" hidden>
+  <div class="float-head" id="float-head"><b id="float-title"></b><span class="float-x" id="float-close" title="关闭">✕</span></div>
+  <div class="float-body" id="float-body"></div>
+</div>
 
 <div class="toast" id="toast"></div>
 <script src="/app.js"></script>

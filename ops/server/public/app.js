@@ -7,8 +7,13 @@ const api = async (path, opts) => {
   return r.json();
 };
 const toast = (msg) => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); };
-const fmtT = (iso) => iso ? iso.slice(5, 16).replace('T', ' ') : '—';
-const fmtD = (iso) => iso ? iso.slice(0, 10) : '—';
+/* 时间显示铁律:一律北京时间 UTC+8 · 到秒不截断(2026-07-04 老板拍) */
+const pad2 = (n) => String(n).padStart(2, '0');
+const bj = (iso) => { const t = Date.parse(iso); if (Number.isNaN(t)) return null; const d = new Date(t + 8 * 3600000); return { y: d.getUTCFullYear(), mo: pad2(d.getUTCMonth() + 1), dd: pad2(d.getUTCDate()), h: pad2(d.getUTCHours()), mi: pad2(d.getUTCMinutes()), s: pad2(d.getUTCSeconds()) }; };
+const fmtBJ = (iso) => { if (!iso) return '—'; const p = bj(iso); return p ? `${p.y}-${p.mo}-${p.dd} ${p.h}:${p.mi}:${p.s}` : iso; };
+const fmtPub = (iso) => { if (!iso) return '—'; return iso.includes('T') ? fmtBJ(iso) : iso.slice(0, 10); }; // 站方只给日期的不硬造时间
+const fmtT = (iso) => { if (!iso) return '—'; const p = bj(iso); return p ? `${p.mo}-${p.dd} ${p.h}:${p.mi}:${p.s}` : iso; };
+const fmtD = (iso) => { if (!iso) return '—'; if (!iso.includes('T')) return iso.slice(0, 10); const p = bj(iso); return p ? `${p.y}-${p.mo}-${p.dd}` : iso.slice(0, 10); };
 const dur = (s) => s == null ? '—' : s > 90 ? `${Math.floor(s / 60)}m${Math.round(s % 60)}s` : `${Math.round(s)}s`;
 const stChip = (st) => ({ ok: '<span class="chip g">ok</span>', running: '<span class="chip y">跑批中</span>', failed: '<span class="chip r">failed</span>', timeout: '<span class="chip y">timeout</span>', crashed: '<span class="chip r">crashed</span>', skipped_overlap: '<span class="chip">skip</span>' }[st] || `<span class="chip">${esc(st)}</span>`);
 
@@ -132,29 +137,39 @@ window.recrawl = async (tokenId, sym) => {
   if (!confirm(`单独重采 ${sym}?`)) return;
   try { const r = await api(`/api/sources/${tokenId}/recrawl`, { method: 'POST', body: '{}' }); toast(r.message); } catch (e) { toast(e.status === 409 ? '当前有批次在跑,请稍后' : e.message); }
 };
+/* 源详情浮窗(2026-07-04 老板拍):可拖拽/可调大小/置顶 · 点哪弹哪不用滚动 · 告警"查看源"同入口 */
 window.openSource = async (tokenId) => {
-  document.querySelectorAll('aside a[data-p]').forEach((x) => x.classList.toggle('on', x.dataset.p === 'p-sources'));
-  document.querySelectorAll('.page').forEach((x) => x.classList.toggle('on', x.id === 'p-sources'));
-  if (!srcCache.length) await loadSources();
   const d = await api(`/api/sources/${tokenId}`);
   const runsAsc = d.runs30.slice().reverse();
   const max = Math.max(1, ...runsAsc.map((r) => r.items_added));
-  const existing = document.getElementById('src-drawer'); if (existing) existing.remove();
-  const tr = document.createElement('tr'); tr.className = 'drawer'; tr.id = 'src-drawer';
-  tr.innerHTML = `<td colspan="9"><div style="display:flex;gap:36px;flex-wrap:wrap">
-    <div><div class="mini">近 30 轮新增(${esc(d.source?.base_symbol || '')})</div>
-      <div class="bars">${runsAsc.map((r) => `<i title="${esc(fmtT(r.started_at))} +${r.items_added}" style="height:${Math.max(2, (r.items_added / max) * 100)}%"></i>`).join('')}</div></div>
-    <div style="flex:1;min-width:300px"><div class="mini">最近博文</div>
-      ${d.articles.map((a) => `<div class="det-sans" style="font-size:12px;margin:3px 0"><span class="mini" style="margin-right:8px">${fmtD(a.published_at) !== '—' ? fmtD(a.published_at) : fmtD(a.crawled_at)}</span><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc((a.title || a.url).slice(0, 60))}</a></div>`).join('') || '<div class="mini">无</div>'}</div>
-    <div style="min-width:260px"><div class="mini">最近错误</div>
-      ${d.errors.slice(0, 8).map((e) => `<div style="font-size:11.5px;margin:3px 0"><span class="chip ${e.kind.startsWith('http_4') || e.kind === 'cf_challenge' ? 'r' : 'y'}">${esc(e.kind)}</span> <span class="mini">${esc((e.message || '').slice(0, 44))}</span></div>`).join('') || '<div class="mini">无</div>'}
-      <div class="mini" style="margin-top:8px">告警史:${d.alerts.length ? d.alerts.slice(0, 3).map((a) => esc(a.type)).join(' · ') : '无'}</div></div>
-  </div></td>`;
-  const anchor = [...document.querySelectorAll('#src-body tr')].find((r) => r.innerHTML.includes(`openSource(${tokenId})`));
-  (anchor || $('src-body')).after ? anchor?.after(tr) : $('src-body').appendChild(tr);
-  if (!anchor) $('src-body').prepend(tr);
-  tr.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  $('float-title').innerHTML = `${esc(d.source?.base_symbol || '')} <a class="mini" href="${esc(d.source?.blog_url || '#')}" target="_blank" rel="noopener" style="font-weight:400;margin-left:6px">${esc((d.source?.blog_url || '').replace(/^https?:\/\//, '').slice(0, 44))}</a>`;
+  $('float-body').innerHTML = `
+    <div class="mini">近 30 轮新增</div>
+    <div class="bars">${runsAsc.map((r) => `<i title="${esc(fmtT(r.started_at))} +${r.items_added}" style="height:${Math.max(2, (r.items_added / max) * 100)}%"></i>`).join('') || '<span class="mini">无批次</span>'}</div>
+    <div class="mini" style="margin:12px 0 4px">最近博文(时间到秒 · 正文前 60 字)</div>
+    ${d.articles.map((a) => `<div class="det-sans" style="font-size:12px;margin:7px 0;line-height:1.55">
+      <span class="mini" style="margin-right:8px">${fmtPub(a.published_at) !== '—' ? fmtPub(a.published_at) : `采集 ${fmtBJ(a.crawled_at)}`}</span>
+      <a href="${esc(a.url)}" target="_blank" rel="noopener">${esc((a.title || a.url).slice(0, 72))}</a>
+      ${(a.body_excerpt || a.description) ? `<div class="mini" style="margin-top:1px">${esc(String(a.body_excerpt || a.description).replace(/\s+/g, ' ').slice(0, 60))}…</div>` : ''}</div>`).join('') || '<div class="mini">无</div>'}
+    <div class="mini" style="margin:12px 0 4px">最近错误</div>
+    ${d.errors.slice(0, 8).map((e) => `<div style="font-size:11.5px;margin:3px 0"><span class="chip ${e.kind.startsWith('http_4') || e.kind === 'cf_challenge' ? 'r' : 'y'}">${esc(e.kind)}</span> <span class="mini">${esc((e.message || '').slice(0, 60))}</span></div>`).join('') || '<div class="mini">无</div>'}
+    <div class="mini" style="margin-top:10px">告警史:${d.alerts.length ? d.alerts.slice(0, 3).map((a) => esc(a.type)).join(' · ') : '无'}</div>`;
+  $('src-float').hidden = false;
 };
+(() => { /* 浮窗拖拽(标题栏)· 调大小走原生 resize */
+  const f = $('src-float'), h = $('float-head');
+  let sx = 0, sy = 0, ox = 0, oy = 0, drag = false;
+  h.addEventListener('mousedown', (e) => {
+    if (e.target.id === 'float-close') return;
+    drag = true; sx = e.clientX; sy = e.clientY;
+    const r = f.getBoundingClientRect(); ox = r.left; oy = r.top;
+    f.style.right = 'auto'; f.style.left = `${ox}px`; f.style.top = `${oy}px`;
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', (e) => { if (drag) { f.style.left = `${ox + e.clientX - sx}px`; f.style.top = `${Math.max(0, oy + e.clientY - sy)}px`; } });
+  window.addEventListener('mouseup', () => { drag = false; });
+  $('float-close').addEventListener('click', () => { f.hidden = true; });
+})();
 
 /* ── 博文 ── */
 let artPage = 1;
@@ -172,20 +187,27 @@ async function loadArticles() {
   $('art-page').textContent = `${d.page} / ${Math.max(1, Math.ceil(d.total / d.per))}`;
   const pushChip = (a) => a.push_status === 'pushed' ? '<span class="chip g">已推</span>'
     : a.push_status === 'failed' ? `<span class="chip r" title="${esc(a.push_error || '')}">失败</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">重推</button>`
-    : a.push_status === 'skipped_backlog' ? '<span class="chip">存量</span>' : '<span class="chip y">未推</span>';
+    : a.push_status === 'skipped_backlog' ? '<span class="chip">存量不推</span>'
+    : `<span class="chip y">未推</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">推送</button>`;
+  /* 列序(2026-07-04 老板拍):博客(点击跳博客站)/ 标题 / 正文 / 发布时间 / 采集时间 · 全时间到秒 */
   $('art-body').innerHTML = d.rows.map((a) => `<tr>
+    <td>${a.blog_url ? `<a href="${esc(a.blog_url)}" target="_blank" rel="noopener"><b>${esc(a.base_symbol)}</b></a>` : `<b>${esc(a.base_symbol)}</b>`}</td>
     <td class="det-sans"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc((a.display_title || a.url).slice(0, 62))}</a>
       ${a.shared_count > 1 ? `<span class="badge">共享×${a.shared_count}</span>` : ''}${a.desc_generic ? '<span class="badge" title="站级通用文案">站级文案</span>' : ''}
       ${!a.title ? '<span class="badge">缺title</span>' : ''}${!a.published_at ? '<span class="badge">缺pub</span>' : ''}</td>
-    <td><b>${esc(a.base_symbol)}</b></td><td><span class="chip">${esc(a.crawler)}</span></td>
-    <td>${fmtD(a.published_at)}</td><td>${fmtT(a.crawled_at)}</td><td>${pushChip(a)}</td>
-    <td class="mini det-sans" title="${esc((a.display_desc || '').slice(0, 300))}">${esc((a.display_desc || '').slice(0, 36))}</td></tr>`).join('');
+    <td class="mini det-sans" title="${esc(String(a.body_excerpt || a.display_desc || '').slice(0, 300))}">${esc(String(a.body_excerpt || a.display_desc || '').replace(/\s+/g, ' ').slice(0, 60))}</td>
+    <td>${fmtPub(a.published_at)}</td><td>${fmtBJ(a.crawled_at)}</td>
+    <td><span class="chip">${esc(a.crawler)}</span></td><td>${pushChip(a)}</td></tr>`).join('');
 }
 $('art-search').addEventListener('click', () => { artPage = 1; loadArticles(); });
 $('art-prev').addEventListener('click', () => { if (artPage > 1) { artPage -= 1; loadArticles(); } });
 $('art-next').addEventListener('click', () => { artPage += 1; loadArticles(); });
 window.retryPush = async (url) => {
-  try { const r = await api('/api/push/retry', { method: 'POST', body: JSON.stringify({ urls: [url] }) }); toast(`重推:ok ${r.ok} · fail ${r.failed}`); loadArticles(); } catch (e) { toast(e.message); }
+  try {
+    const r = await api('/api/push/retry', { method: 'POST', body: JSON.stringify({ urls: [url] }) });
+    toast(r.skipped > 0 && !r.ok ? 'push 未接通(演练跳过 · 设置页配 URL/SECRET 后生效)' : `推送:ok ${r.ok} · fail ${r.failed}`);
+    loadArticles();
+  } catch (e) { toast(e.message); }
 };
 
 /* ── 错误日志 ── */

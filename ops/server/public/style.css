@@ -20,7 +20,7 @@ aside .foot .toggle:hover { color: var(--ink); }
 .dot.y { background: var(--warn); box-shadow: 0 0 6px rgba(217,180,91,.6); }
 .dot.r { background: var(--bad); box-shadow: 0 0 6px rgba(217,124,124,.7); }
 .dot.gray { background: #5A564A; }
-main { margin-left: 172px; flex: 1; padding: 22px 28px 80px; max-width: 1200px; }
+main { margin-left: 172px; flex: 1; padding: 22px 28px 80px; } /* 2026-07-04 老板拍:铺满 100% · 去 max-width */
 .page { display: none; } .page.on { display: block; }
 .pulse { display: flex; gap: 26px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 15px 20px; margin-bottom: 12px; flex-wrap: wrap; }
 .pulse .st { font-size: 17px; }
@@ -67,8 +67,6 @@ h2.sec { font-size: 15px; margin: 18px 0 9px; }
 .filters { display: flex; gap: 9px; margin-bottom: 11px; flex-wrap: wrap; align-items: center; }
 .filters input, .filters select { border: 1px solid var(--line); border-radius: 6px; padding: 5px 9px; font-size: 12px; background: var(--panel); color: var(--ink); font-family: var(--mono); }
 .det-sans { font-family: -apple-system, "PingFang SC", sans-serif; }
-.drawer { background: #1F1D16; }
-.drawer td { padding: 14px 18px; }
 .bars { display: flex; align-items: flex-end; gap: 3px; height: 44px; margin: 6px 0 4px; }
 .bars i { width: 9px; background: var(--link); opacity: .75; border-radius: 2px 2px 0 0; display: block; min-height: 1px; }
 .mini { font-size: 11.5px; color: var(--mute); }
@@ -83,6 +81,14 @@ h2.sec { font-size: 15px; margin: 18px 0 9px; }
 .setrow input { border: 1px solid var(--line); border-radius: 5px; padding: 4px 8px; background: var(--bg); color: var(--ink); font-family: var(--mono); font-size: 12px; width: 130px; }
 .setrow input.wide { width: 380px; }
 .pager { display: flex; gap: 10px; align-items: center; margin-top: 10px; font-size: 12px; color: var(--mute); }
+/* ── 源详情浮窗(2026-07-04 老板拍:可拖拽/可调大小/置顶 · 替代行内 drawer)── */
+#src-float { position: fixed; top: 64px; right: 36px; width: 620px; height: 460px; min-width: 380px; min-height: 240px; max-width: 92vw; max-height: 88vh; background: var(--panel); border: 1px solid var(--mute); border-radius: 8px; z-index: 20; display: flex; flex-direction: column; box-shadow: 0 14px 44px rgba(0,0,0,.55); resize: both; overflow: hidden; }
+#src-float[hidden] { display: none; }
+.float-head { cursor: move; padding: 9px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; user-select: none; background: #262418; }
+.float-head b { font-size: 14px; }
+.float-x { margin-left: auto; cursor: pointer; color: var(--mute); padding: 0 4px; font-size: 15px; }
+.float-x:hover { color: var(--ink); }
+.float-body { padding: 12px 16px; overflow: auto; flex: 1; }
 /* ── 登录门厅(方案 C · 2026-07-04 老板拍)── */
 #gate { position: fixed; inset: 0 0 0 172px; display: none; align-items: center; justify-content: center; background: var(--bg); z-index: 8; }
 body.boot #gate, body.locked #gate, body.unlocking #gate { display: flex; }

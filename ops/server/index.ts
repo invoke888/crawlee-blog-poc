@@ -46,7 +46,7 @@ function audit(key: string, oldMasked: string, newMasked: string, oldHash: strin
 }
 
 // ── display 切换(计划书 §4 UPSERT 铁律:API 层现算 · 复用 display-fields)──
-interface ArtRow { url: string; token_id: number; base_symbol: string; title: string; h1: string; description: string; jsonld_description: string; body_excerpt: string; published_at: string; crawler: string; crawled_at: string; push_status: string; pushed_at: string | null; push_error: string | null; shared_count?: number }
+interface ArtRow { url: string; token_id: number; base_symbol: string; title: string; h1: string; description: string; jsonld_description: string; body_excerpt: string; published_at: string; crawler: string; crawled_at: string; push_status: string; pushed_at: string | null; push_error: string | null; shared_count?: number; blog_url?: string }
 function applyDisplay(rows: ArtRow[]): (ArtRow & { display_title: string; display_desc: string; desc_generic: boolean })[] {
     const tokens = [...new Set(rows.map((r) => r.token_id))];
     const groups = new Map<number, ArtRow[]>();
@@ -158,7 +158,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
             const tokenId = Number(srcMatch[1]);
             const source = d.prepare('SELECT * FROM sources WHERE token_id = ?').get(tokenId);
             const runs30 = d.prepare(`SELECT sr.*, r.started_at FROM source_runs sr JOIN runs r ON r.run_id = sr.run_id WHERE sr.token_id = ? ORDER BY r.started_at DESC LIMIT 30`).all(tokenId);
-            const arts = d.prepare('SELECT url, title, published_at, crawled_at, crawler, push_status FROM articles WHERE token_id = ? ORDER BY COALESCE(NULLIF(published_at,\'\'), crawled_at) DESC LIMIT 10').all(tokenId);
+            const arts = d.prepare('SELECT url, title, description, body_excerpt, published_at, crawled_at, crawler, push_status FROM articles WHERE token_id = ? ORDER BY COALESCE(NULLIF(published_at,\'\'), crawled_at) DESC LIMIT 10').all(tokenId);
             const alertHist = d.prepare('SELECT * FROM alerts WHERE token_id = ? ORDER BY alert_id DESC LIMIT 20').all(tokenId);
             const errs = d.prepare('SELECT * FROM crawl_errors WHERE token_id = ? ORDER BY err_id DESC LIMIT 20').all(tokenId);
             json(res, 200, { source, runs30, articles: arts, alerts: alertHist, errors: errs });
@@ -187,9 +187,10 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
             const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
             const total = (d.prepare(`SELECT COUNT(*) c FROM articles ${where}`).get(...params) as { c: number }).c;
             const rows = d.prepare(`
-                SELECT url, token_id, base_symbol, title, h1, description, jsonld_description, '' AS body_excerpt,
+                SELECT url, token_id, base_symbol, title, h1, description, jsonld_description, body_excerpt,
                        published_at, crawler, crawled_at, push_status, pushed_at, push_error,
-                       COUNT(*) OVER (PARTITION BY url) AS shared_count
+                       COUNT(*) OVER (PARTITION BY url) AS shared_count,
+                       (SELECT s.blog_url FROM sources s WHERE s.token_id = articles.token_id) AS blog_url
                 FROM articles ${where}
                 ORDER BY COALESCE(NULLIF(published_at,''), crawled_at) DESC LIMIT ? OFFSET ?
             `).all(...params, per, (page - 1) * per) as ArtRow[];
