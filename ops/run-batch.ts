@@ -32,14 +32,16 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
     try { files = readdirSync(DATASET_DIR).filter((f) => f.endsWith('.json')); } catch { return { added: 0, sourcesWithNew: 0 }; }
     const known = knownArticleKeys();
     const fresh: ArticleInput[] = [];
+    // 🆕 2026-07-04 收敛轮实锤:known 行整体 skip 导致抽取器升级后旧行空字段永不自愈(ondo body 回填失败根因)
+    // known 行也走同款过滤后 upsert(COALESCE 只补空字段 · 不覆盖非空)· 不计入本批新增
+    const refresh: ArticleInput[] = [];
     for (const f of files) {
         try {
             const d = JSON.parse(readFileSync(resolve(DATASET_DIR, f), 'utf-8')) as Record<string, unknown>;
             const url = (d.url as string) ?? '';
             const tokenId = d.token_id as number;
             if (!url || tokenId == null) continue;
-            if (known.has(`${tokenId}|${url}`)) continue;
-            fresh.push({
+            const row: ArticleInput = {
                 url, token_id: tokenId, base_symbol: (d.base_symbol as string) ?? '',
                 title: (d.title as string) ?? '', h1: (d.h1 as string) ?? '',
                 description: (d.description as string) ?? '',
@@ -47,7 +49,9 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
                 body_excerpt: (d.body_excerpt as string) ?? '',
                 published_at: (d.published_at as string) || (d.publishedTime as string) || '',
                 crawler: (d.crawler as string) ?? '', crawled_at: (d.crawledAt as string) ?? '',
-            });
+            };
+            if (known.has(`${tokenId}|${url}`)) refresh.push(row);
+            else fresh.push(row);
         } catch { /* 单文件坏不拖垮收割 */ }
     }
     // 🆕 2026-07-04 质量战役:收割层同款过滤(与 pusher/聚合三层同一语义 · 修 DIA use-cases 类垃圾进账本根因)
@@ -74,6 +78,14 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
     });
     if (passed.length < fresh.length) console.log(`🧹 收割过滤:${fresh.length} → ${passed.length}(拦 ${fresh.length - passed.length} 条非博文/噪音 · 不进账本)`);
     const added = upsertArticles(passed, runId);
+    // known 行回填:同款过滤后 upsert(COALESCE 只补空)· runId 传 null 不动 first_run_id 语义 · 不计 added
+    const refreshKept = refresh.filter((a) =>
+        !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url)
+        && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)));
+    if (refreshKept.length) {
+        upsertArticles(refreshKept, null);
+        console.log(`♻️ 旧行空字段回填:${refreshKept.length} 条参与 COALESCE 补空`);
+    }
     return { added, sourcesWithNew: new Set(passed.map((a) => a.token_id)).size };
 }
 
