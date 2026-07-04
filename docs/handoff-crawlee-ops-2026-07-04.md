@@ -9,7 +9,7 @@
 
 ## TL;DR
 
-**系统已从"单采集器"进化为「采集器(src/)+ 运维台(ops/)+ 共享数据层(shared/)」两组件一项目。运维台一期 2026-07-04 上线:内置调度(每小时自动跑批 · systemd timer 已废)+ 账本(11 张表)+ 13 条环比告警 + push 模块(待接通)+ 六页深色 dashboard(https://119.28.68.105:8788)。数据基线:634 源 · 有数据 501 · articles 6109 篇。57 组单测全绿。验收余项:24h 连续调度观察(2026-07-04 15:27 起算)。**
+**系统已从"单采集器"进化为「采集器(src/)+ 运维台(ops/)+ 共享数据层(shared/)」两组件一项目。运维台一期 2026-07-04 上线:内置调度(每小时自动跑批 · systemd timer 已废)+ 账本(11 张表)+ 13 条环比告警 + push 模块(待接通)+ 六页深色 dashboard(https://blog-picker.hhwlnet.com · 正式域名+LE 证书 2026-07-04 切换)。数据基线:634 源 · 有数据 501 · articles 6109 篇。57 组单测全绿。验收余项:24h 连续调度观察(2026-07-04 15:27 起算)。**
 
 本会话三大战役:①自测战役(每源1条+10 agent 审查 → 54 P0 修复 → 5 轮验证,噪音归零,RSS 化 84 源)②判死复核战役(14 agent · 59 dead+24 SPA 全复核 → 救回 11 源,490→501)③运维台(brainstorm → 3 套 mockup → 5 agent 审计计划书 → 全量实施上线)。
 
@@ -23,7 +23,7 @@
 | GitHub | `git@github.com:invoke888/crawlee-blog-poc.git`(本地 SSH remote · **服务器 remote 是 https 不能 push,只 pull**)|
 | 服务器 | hk-prod `119.28.68.105` · ubuntu · `~/crawlee-blog-poc/` · SSH 走 SOCKS5 `127.0.0.1:10808` |
 | HEAD | `0229ce3`(handoff 补记)· 三端一致 |
-| **运维台** | `https://119.28.68.105:8788`(nginx 自签反代 8787 · 浏览器警告点继续)· basic auth 凭据在服务器 `.env.local`(DASH_USER=boss / DASH_PASS)|
+| **运维台** | `https://blog-picker.hhwlnet.com`(2026-07-04 切正式域名:nginx 443 反代 8787 · Let's Encrypt 证书 · certbot.timer 自动续期 · 80 自动跳 https · 旧 8788 入口已下线)· basic auth 凭据在服务器 `.env.local`(DASH_USER=boss / DASH_PASS)· auth 在 node 层 · nginx 纯反代不加 auth(老板拍)|
 | 进程 | `sudo systemctl status ops-dashboard`(**仅保活** · Restart=always · 调度 100% 在进程内)· 日志 `journalctl -u ops-dashboard` |
 | 调度 | 内置 · 每 60min 自动跑批(interval 在面板设置页可改 · 下 tick 生效)· 首批 2026-07-04 15:27 起 |
 | 数据 | 634 源 · 采集池 ~508(黑名单4/挂起61/判死42/token排除5)· 有数据 501 · articles 6109 · 单轮全量 ~4.6min |
@@ -104,7 +104,7 @@ storage/logs/<run_id>.log(批次日志 · 30天)
 | **push 接通** | 老板给 PUSH_API_URL/SECRET → 面板设置页填入 + push_enabled=1 → 自动存量回填+开推 · **注意 push 铁律 memory** | 老板给 secret |
 | **P3 Playwright** | cf-JS 型挂起源(mirror7/PENGU/jito/QNT 等 61 挂起中的 cf 型)+ ASTR/ZENT/LAZIO(JS 链接层)· 独立进程/批次类型 browser(架构已预留 batch_type)· 完了给速度数据 | 老板启动 |
 | 住宅轮换池 | WAF-IP 型恢复(TIA/LTC/MINA/SONIC/COW)· proxy_config 可直接面板加 | 老板给池 |
-| 二期 | probe 巡检批次 · FTS 全文检索 · seen-store 裁剪(>5MB 告警盯着)· C3 告警推送通道 · queued 排队 · 正式 HTTPS 证书(等域名) | 一期数据跑稳后 |
+| 二期 | probe 巡检批次 · FTS 全文检索 · seen-store 裁剪(>5MB 告警盯着)· C3 告警推送通道 · queued 排队(~~正式 HTTPS 证书~~ ✅ 2026-07-04 已完成) | 一期数据跑稳后 |
 | 小尾巴 | UMA sitemap 流黑洞单诊 · OSMO=Discourse 单例平台(LIST 抓到 /t/ 真帖已可用)· mockup A/C 文件可删可留 | 顺手 |
 
 ## §7 运维速查(日常操作全在 dashboard · SOP 详见 ops/README.md)
