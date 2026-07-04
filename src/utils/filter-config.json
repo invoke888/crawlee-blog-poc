@@ -270,7 +270,13 @@
     "12894": "c 去重:RE 双 id 数据 100% 重复 · 保留 12893",
     "2489": "d 挂起:OPENAI blog_url=prestocks.com 交易站非博客",
     "2675": "d 挂起:PTB blog_url=medium.com/@Portal_team 账号内容全是无关 rafa-ai 交易日记",
-    "12542": "d 挂起:AHT_3 blog_url 关联无关韩语 Medium 账号"
+    "12542": "d 挂起:AHT_3 blog_url 关联无关韩语 Medium 账号",
+    "126": "ETHW 团队解散(老板拍C挂起 2026-07-05)",
+    "135": "STG 代币retire·LayerZero收购(老板拍C)",
+    "593": "BLEND 迁X无博客(老板拍C)",
+    "1599": "SIREN 项目崩盘(老板拍C)",
+    "11314": "ICX 2026年底关闭迁SODAX(老板拍C)",
+    "11343": "SAGA 出售加密业务转型AI(老板拍C)"
   },
   "file_extensions": [
     "jpg",
@@ -333,7 +339,6 @@
     "litecoin.com",
     "mainnet.pumpbtc.xyz",
     "media.pudgypenguins.com",
-    "medium.com",
     "melaniameme.com",
     "minaprotocol.com",
     "mira.network",
@@ -342,7 +347,6 @@
     "morpho.org",
     "news.aspecta.ai",
     "okzoo.app",
-    "paragraph.com",
     "polymesh.network",
     "powerprotocol.xyz",
     "prom.io",
