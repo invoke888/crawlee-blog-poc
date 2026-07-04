@@ -265,6 +265,12 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
             publishedAtFinal = visible;
         }
     }
+    // 🆕 2026-07-04 老板实锤 CYBER:正文"停用截止日 2026-08-15"被当发布时间(真实 02-17)
+    // 未来时间防御:发布时间不可能在抓取时刻 48h 之后(时区差+当天预发容差)→ 置空进 pub_missing(宁缺勿错)
+    if (publishedAtFinal && Date.parse(publishedAtFinal) > Date.now() + 48 * 3600 * 1000) {
+        log.info(`⊘ [DETAIL] published_at 在未来("${publishedAtFinal}" · 疑似截止/活动日期误锚)→ 置空 | ${loaded}`);
+        publishedAtFinal = '';
+    }
 
     // P3.5 Bug A · 1-to-N · 每个 source 一条 dataset(KLAC vs TTMI 都有数据)
     const crawledAt = new Date().toISOString();

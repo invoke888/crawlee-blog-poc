@@ -152,9 +152,9 @@ function renderSources() {
   });
   $('src-count').textContent = `${rows.length}/${srcCache.length}`;
   $('src-body').innerHTML = rows.slice(0, 400).map((s) => `
-    <tr class="clickable" onclick="openSource(${s.token_id})"><td>▸</td>
+    <tr><td><button class="btn" onclick="openSource(${s.token_id})" title="浮窗查看最近博文/错误">打开最近</button></td>
     <td class="mini">${s.token_id}</td><td><b>${esc(s.base_symbol)}</b></td>
-    <td><a href="${esc(s.blog_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(s.blog_url.replace(/^https?:\/\//, '').slice(0, 44))}</a></td>
+    <td><a href="${esc(s.blog_url)}" target="_blank" rel="noopener">${esc(s.blog_url.replace(/^https?:\/\//, '').slice(0, 44))}</a></td>
     <td>${s.crawler ? `<span class="chip">${esc(s.crawler)}</span>` : '—'}</td>
     <td style="white-space:nowrap">${fdots(s)}</td>
     <td>${fmtPub(s.latest_pub_at)}</td>
@@ -162,7 +162,7 @@ function renderSources() {
     <td>${s.added_7d ?? 0}</td>
     <td${s.last_failed && s.last_requests && s.last_failed >= s.last_requests ? ' style="color:var(--bad)"' : ''}>${s.last_failed ?? 0}/${s.last_requests ?? 0}</td>
     <td>${s.red_alerts ? '<span class="dot r"></span>' : ''}${s.yellow_alerts ? '<span class="dot y"></span>' : ''}</td>
-    <td><button class="btn" onclick="event.stopPropagation();recrawl(${s.token_id},'${esc(s.base_symbol)}')">重采</button></td></tr>`).join('');
+    <td><button class="btn" onclick="recrawl(${s.token_id},'${esc(s.base_symbol)}')">重采</button></td></tr>`).join('');
 }
 ['src-q', 'src-crawler', 'src-alert', 'src-fields'].forEach((id) => $(id).addEventListener('input', renderSources));
 document.querySelectorAll('#p-sources th.sortable').forEach((t) => t.addEventListener('click', () => {
