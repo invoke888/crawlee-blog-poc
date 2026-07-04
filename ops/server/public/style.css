@@ -83,3 +83,31 @@ h2.sec { font-size: 15px; margin: 18px 0 9px; }
 .setrow input { border: 1px solid var(--line); border-radius: 5px; padding: 4px 8px; background: var(--bg); color: var(--ink); font-family: var(--mono); font-size: 12px; width: 130px; }
 .setrow input.wide { width: 380px; }
 .pager { display: flex; gap: 10px; align-items: center; margin-top: 10px; font-size: 12px; color: var(--mute); }
+/* ── 登录门厅(方案 C · 2026-07-04 老板拍)── */
+#gate { position: fixed; inset: 0 0 0 172px; display: none; align-items: center; justify-content: center; background: var(--bg); z-index: 8; }
+body.boot #gate, body.locked #gate, body.unlocking #gate { display: flex; }
+body.boot .gate-card { visibility: hidden; } /* 探测登录态期间只有暗底 · 防闪 */
+.gate-card { width: 300px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 22px 24px 20px; margin-top: -6vh; }
+.gate-card h1 { font-size: 15px; margin-bottom: 4px; }
+.gate-card .sub { font-size: 11px; color: var(--mute); margin-bottom: 16px; }
+.gate-card label { display: block; font-size: 11px; color: var(--mute); margin-bottom: 12px; letter-spacing: .06em; }
+.gate-card input { display: block; width: 100%; margin-top: 5px; border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; background: var(--bg); color: var(--ink); font: 13px var(--mono); outline: none; }
+.gate-card input:focus { border-color: rgba(127,191,142,.55); box-shadow: 0 0 0 2px rgba(127,191,142,.12); }
+.gate-card button { width: 100%; margin-top: 4px; border: 1px solid rgba(127,191,142,.4); background: var(--ok-dim); color: var(--ok); border-radius: 6px; padding: 7px; font: 13px var(--mono); cursor: pointer; }
+.gate-card button:hover { border-color: var(--ok); }
+.gate-card button:disabled { opacity: .5; cursor: wait; }
+.gate-err { margin-top: 10px; font-size: 12px; color: var(--bad); background: var(--bad-dim); border: 1px solid rgba(217,124,124,.35); border-radius: 6px; padding: 6px 10px; }
+.gate-card.no { animation: gate-shake .3s; }
+@keyframes gate-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+body.locked aside a, body.boot aside a { color: #5A564A; pointer-events: none; border-left-color: transparent; background: none; }
+body.locked aside .foot .toggle, body.boot aside .foot .toggle { pointer-events: none; }
+body.unlocking aside a { transition: color .45s, border-color .45s, background .45s; }
+body.unlocking aside a:nth-of-type(2) { transition-delay: .06s; }
+body.unlocking aside a:nth-of-type(3) { transition-delay: .12s; }
+body.unlocking aside a:nth-of-type(4) { transition-delay: .18s; }
+body.unlocking aside a:nth-of-type(5) { transition-delay: .24s; }
+body.unlocking aside a:nth-of-type(6) { transition-delay: .3s; }
+body.unlocking #gate { animation: gate-out .45s .35s forwards; }
+@keyframes gate-out { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { body.unlocking #gate, .gate-card.no { animation: none; } body.unlocking aside a { transition: none; } }
+@media (max-width: 640px) { #gate { inset: 0; } }

@@ -6,7 +6,7 @@
 <title>采集运维台</title>
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
+<body class="boot">
 
 <aside>
   <div class="brand">采集运维台</div>
@@ -17,12 +17,23 @@
   <a data-p="p-errors">错误日志</a>
   <a data-p="p-settings">设置</a>
   <div class="foot">
-    <div class="toggle" id="sched-toggle" title="点击 暂停/恢复 调度"><span class="dot g" id="sched-dot"></span> <span id="sched-label">…</span></div>
+    <div class="toggle" id="sched-toggle" title="点击 暂停/恢复 调度"><span class="dot gray" id="sched-dot"></span> <span id="sched-label">…</span></div>
     <div>下次 <span id="sched-next">…</span></div>
     <div id="sched-heartbeat" style="margin-top:4px; opacity:.7"></div>
     <div style="margin-top:6px; opacity:.6">hk-prod · <span id="sched-interval"></span></div>
   </div>
 </aside>
+
+<div id="gate">
+  <form class="gate-card" id="gate-form">
+    <h1>身份校验</h1>
+    <p class="sub">登录后左侧点亮</p>
+    <label>账号<input id="gate-u" autocomplete="username"></label>
+    <label>密码<input id="gate-p" type="password" autocomplete="current-password"></label>
+    <button type="submit" id="gate-btn">进入</button>
+    <p class="gate-err" id="gate-err" hidden></p>
+  </form>
+</div>
 
 <main>
   <div class="page on" id="p-overview">

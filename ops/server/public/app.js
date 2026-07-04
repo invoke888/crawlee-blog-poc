@@ -22,8 +22,10 @@ document.querySelectorAll('aside a[data-p]').forEach((t) => t.addEventListener('
 }));
 
 /* ── 栏底调度状态(六页常驻 · 30s 轮询)── */
+let authed = false; // 登录门厅(方案 C):未登录不发数据请求
 let schedPaused = false;
 async function refreshSched() {
+  if (!authed) return;
   try {
     const s = await api('/api/schedule/state');
     schedPaused = !!s.paused;
@@ -273,6 +275,41 @@ const loaders = {
   'p-overview': loadOverview, 'p-alerts': loadAlerts, 'p-sources': loadSources,
   'p-articles': loadArticles, 'p-errors': loadErrors, 'p-settings': loadSettings,
 };
-refreshSched();
-loadOverview();
-setInterval(() => { if ($('p-overview').classList.contains('on')) loadOverview(); }, 60000);
+setInterval(() => { if (authed && $('p-overview').classList.contains('on')) loadOverview(); }, 60000);
+
+/* ── 登录门厅(方案 C 门厅 · 2026-07-04 老板拍):cookie 会话 · 登录后左侧点亮 ── */
+function enter() {
+  authed = true;
+  document.body.classList.remove('boot', 'locked', 'unlocking');
+  refreshSched();
+  loadOverview();
+}
+async function boot() {
+  try { await api('/api/me'); enter(); }
+  catch {
+    document.body.classList.remove('boot');
+    document.body.classList.add('locked');
+    $('sched-label').textContent = '未登录';
+    $('sched-dot').className = 'dot gray';
+    $('gate-u').focus();
+  }
+}
+$('gate-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const card = e.currentTarget, btn = $('gate-btn');
+  card.classList.remove('no'); $('gate-err').hidden = true; btn.disabled = true;
+  try {
+    await api('/api/login', { method: 'POST', body: JSON.stringify({ user: $('gate-u').value, pass: $('gate-p').value }) });
+    btn.textContent = '✓ 进入面板…';
+    document.body.classList.remove('locked');
+    document.body.classList.add('unlocking'); // 导航依次点亮 + 门厅淡出
+    setTimeout(enter, 850);
+  } catch (err) {
+    btn.disabled = false;
+    $('gate-err').textContent = err.message || '账号或密码不对';
+    $('gate-err').hidden = false;
+    void card.offsetWidth;
+    card.classList.add('no');
+  }
+});
+boot();

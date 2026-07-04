@@ -17,29 +17,15 @@ import { computeDisplayFields } from '../../src/utils/display-fields.js';
 import { startScheduler } from '../scheduler.js';
 import { runBatch, isRunActive } from '../run-batch.js';
 import { runPusher } from '../pusher.js';
+import { createAuthGate } from './auth.js';
 
 const PORT = Number(process.env.DASH_PORT ?? 8787);
 const USER = process.env.DASH_USER ?? '';
 const PASS = process.env.DASH_PASS ?? '';
 const PUBLIC_DIR = resolve(import.meta.dirname, 'public');
 
-// ── basic auth + 失败限速 ──
-const failByIp = new Map<string, { n: number; until: number }>();
-function checkAuth(req: IncomingMessage, ip: string): boolean {
-    if (!USER || !PASS) return false; // 未配凭据 = 拒绝一切(防裸奔)
-    const f = failByIp.get(ip);
-    if (f && f.until > Date.now()) return false;
-    const h = req.headers.authorization ?? '';
-    if (h.startsWith('Basic ')) {
-        const [u, p] = Buffer.from(h.slice(6), 'base64').toString().split(':');
-        if (u === USER && p === PASS) { failByIp.delete(ip); return true; }
-    }
-    const cur = failByIp.get(ip) ?? { n: 0, until: 0 };
-    cur.n += 1;
-    if (cur.n >= 5) cur.until = Date.now() + 60_000; // 5 次失败锁 1 分钟
-    failByIp.set(ip, cur);
-    return false;
-}
+// ── 鉴权(2026-07-04 老板拍方案 C):cookie 会话 + Basic 兼容 · 逻辑在 ops/server/auth.ts(可单测)──
+const auth = createAuthGate(USER, PASS);
 
 function json(res: ServerResponse, code: number, data: unknown): void {
     const body = JSON.stringify(data);
@@ -85,9 +71,25 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     const url = new URL(req.url ?? '/', 'http://x');
     const path = url.pathname;
 
-    if (!checkAuth(req, ip)) {
-        res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="ops"' });
-        res.end('auth required');
+    // ── 免鉴权端点:登录 / 登录态探测 / 登录页壳静态资源(不含任何数据)──
+    if (path === '/api/login' && req.method === 'POST') {
+        const body = await readBody(req);
+        const r = auth.login(String(body.user ?? ''), String(body.pass ?? ''), ip);
+        if (r === 'ok') {
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': auth.cookieHeader(auth.issueToken()) });
+            res.end(JSON.stringify({ ok: true }));
+        } else if (r === 'locked') json(res, 429, { error: 'locked', message: '错误次数太多 · 1 分钟后再试' });
+        else json(res, 401, { error: 'bad_credentials', message: '账号或密码不对' });
+        return;
+    }
+    if (path === '/api/me' && req.method === 'GET') {
+        if (auth.checkRequest(req, ip)) json(res, 200, { ok: true, user: USER });
+        else json(res, 401, { error: 'auth' });
+        return;
+    }
+    const openStatic = req.method === 'GET' && (path === '/' || path === '/index.html' || path === '/style.css' || path === '/app.js');
+    if (!openStatic && !auth.checkRequest(req, ip)) {
+        json(res, 401, { error: 'auth', message: '未登录' }); // 不带 WWW-Authenticate:浏览器不弹原生窗 · UI 门厅接管
         return;
     }
 
