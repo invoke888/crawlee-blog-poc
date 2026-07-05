@@ -284,3 +284,12 @@ test('normalizePublishedAt · 葡/西语月份(BRL1 R3 实锤)', () => {
 test('isBlacklistedHost · socios.com 整组拉黑(2026-07-05 老板拍:非真博客)', () => {
     assert.equal(isBlacklistedHost('https://www.socios.com/blog/some-post'), true);
 });
+
+test('isNoiseUrl · 全量清查假博文末段(TWLO/WBTC/AKT 2026-07-05)', () => {
+    assert.equal(isNoiseUrl('https://www.twilio.com/en-us/blog/partners'), true);
+    assert.equal(isNoiseUrl('https://www.twilio.com/en-us/blog/events'), true);
+    assert.equal(isNoiseUrl('https://www.bitgo.com/resources/blog/product-release-notes/'), true);
+    assert.equal(isNoiseUrl('https://akash.network/blog/archived/'), true);
+    // 真文不误伤(白名单段中段)
+    assert.equal(isNoiseUrl('https://www.twilio.com/en-us/blog/real-article-slug'), false);
+});

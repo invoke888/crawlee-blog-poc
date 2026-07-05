@@ -31,6 +31,12 @@
         "_conf": "high",
         "_sym": "ACX",
         "_note": "无 meta/jsonld/time 标签,唯一日期是纯可见文本;div 靠 Tailwind 工具类 uppercase+tracking-wider 定位,3 篇样本页内均唯一无歧义(cheerio 验证 matchCount=1)。"
+      },
+      "body": {
+        "selector": "article",
+        "_conf": "high",
+        "_sym": "ACX",
+        "_note": "站为 Vite/React SPA,但 blog 详情页对任意 UA 均返回服务端预渲染完整 HTML(plain curl 即可见正文,无需执行 JS)。正文根容器为页内唯一 <article class=\"flex flex-col gap-4\">(产品/桥接类页面无 <article> 标签,只有 blog 详情页模板才有),find('p') 直取全部正文段落(14~30 段不等,含 TL;DR 要点列表)。4 篇独立 URL 现 curl 验证 matchCount=1,首末段落均为真实正文,无 CTA/订阅框混入。⚠️ 诚实备注:当前 DOM 下通用回退 'article p, main p' 理论上也能抽到相同内容(<article> 与两层 <main> 恰好 1:1 重合,无额外噪音 p);历史 16 条 body 问题更可能源于抓取时刻页面结构不同(改版前)或该次请求未命中 SSR。本规则按现网真实模板校验通过,用于锁定未来抓取的确定性。 · 2026-07-05 全量修复片5 · 2026-07-05 全量清查"
       }
     },
     "aethir.com": {
@@ -45,6 +51,10 @@
         "_conf": "medium",
         "_sym": "ATH",
         "_note": "反直觉:真正该 ban 的不是 jsonld,是紧贴 H1 的 blog-publish-info 挂件(那才是站级模板污染源)。BlogPosting jsonld 的 datePublished 逐篇不同才是真值,但其 description 字段内嵌了未转义的原始换行符,实测会导致严格 JSON.parse 报错"
+      },
+      "body": {
+        "selector": "div.blog-content.w-richtext",
+        "_note": "2026-07-05 全量清查"
       }
     },
     "akash.network": {
@@ -238,10 +248,10 @@
       "date": {
         "selector": "p.post-meta",
         "attr": "text",
-        "regex": "on\\s+(\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4})\\s+by",
-        "_conf": "high",
+        "regex": "on\\s+(\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4})",
         "_sym": "BTC",
-        "_note": "无 jsonld/meta/time 标签,真实时间是 p.post-meta 可见文本 Posted to the ... on DD Month YYYY by Author,3 篇结构完全一致。"
+        "_conf": "high",
+        "_note": "2026-07-05 全量修复片6/10(修现有规则的正则过窄)。原正则要求 'on DD Month YYYY by' 强制带 'by 作者' 后缀,但 denounce-segwit2x 这篇文本是 'Posted to the Bitcoin.org Site Blog on 05 October 2017'——无作者署名,原正则不匹配导致 date 落空。新正则去掉 '\\s+by' 强制尾缀,只锚定 'on ' 后紧跟的日期本身,对已验证过的 3 篇'有 by 作者'的文章同样兼容(捕获组内容不变,纯粹放宽尾部约束,不影响已命中场景)。真实 cheerio 复刻 extractPublishedAt 逻辑实测:'05 October 2017' 精确提取。 · 2026-07-05 全量清查"
       }
     },
     "bitcoincashnode.org": {
@@ -312,6 +322,12 @@
         "_conf": "low",
         "_sym": "AUDIO",
         "_note": "核心困惑:可见 byline('// Date: ...',selector 定位在 <article><header> 内)和 jsonld/meta 的 datePublished 其实是同一个 CMS 字段渲染出来的,不是独立信号。证据:createtogether(bitbird 合作企划)和 ncsremix"
+      },
+      "body": {
+        "selector": ".prose-audius",
+        "_conf": "high",
+        "_sym": "AUDIO",
+        "_note": "Next.js 站,<article> 内除正文外还含 header(作者/日期 byline,用 span 非 p,不污染)+ 顶部大图,真实正文包在子级 .prose-audius 容器(全页唯一)。find('p') 抓取正文段落/列表项,零宽连字符(U+200D)空段落被通用 length>=20 过滤器天然滤掉。4 篇独立 URL(2 篇存档 + 2 篇现 curl)验证 matchCount=1,内容为竞赛细节/奖品列表等真实正文。⚠️ 诚实备注:当前 DOM 下 .prose-audius 与 article 的 p 集合恰好相等(header 内无 p 标签),通用回退理论上也可用;选 .prose-audius 是为未来 header/图注改版新增 p 标签时仍保持精确,历史 9 条 body 问题更可能源于抓取时刻结构差异。 · 2026-07-05 全量修复片5 · 2026-07-05 全量清查"
       }
     },
     "blog.bananagun.io": {
@@ -388,6 +404,12 @@
         "_conf": "medium",
         "_sym": "CAKE",
         "_note": "__NEXT_DATA__ 里 publishedAt 出现7次(第1个属于本文 dehydratedState.queries[0].data,后6个是同 payload 内相关文章列表),取第一个匹配即可;仅1篇样本无法交叉验证故标 medium"
+      },
+      "body": {
+        "selector": "div.dLiSry",
+        "_conf": "medium",
+        "_sym": "CAKE",
+        "_note": "Next.js+styled-components 站无 <article>/<main>,通用回退直取0段落=此前 body 空值。正文17段 <p class='sc-1e14ff52-0 dlMiSn'> 的共同祖先容器是 div.dLiSry(页面唯一匹配),find('p') 精确拿到全部17段/4032字纯正文,不含同容器内同级的标题/日期/分类标签(这些不是 p 标签,find('p') 天然排除)。仅1篇样本无法交叉验证,且 class 名是 styled-components 构建期哈希(非语义类名),站点重新构建可能导致哈希漂移失效,与现有 date 规则同款 medium 理由。 · 2026-07-05 全量清查"
       }
     },
     "blog.quickswap.exchange": {
@@ -405,6 +427,10 @@
           "meta"
         ],
         "_note": "站级口号 desc 复读实锤(SQL 全库扫)· ban 后自动落 jsonld/真正文"
+      },
+      "body": {
+        "selector": ".uk-panel.uk-margin:not(.uk-text-lead)",
+        "_note": "2026-07-05 全量清查"
       }
     },
     "blog.solanamobile.com": {
@@ -509,9 +535,10 @@
         "_note": "陷阱是页面底部相关文章卡片复用同一套 utility class(font-heading text-xs uppercase...)展示另一篇文章的 分类/日期/作者(3 篇里出现完全相同的 May 1, 2026 指向 ecosystem-updates-april-2026 那篇),真值紧跟在 h1 后面的 di"
       },
       "body": {
-        "selector": ".blog-article p",
+        "selector": ".blog-article p, .blog-article li, .blog-article pre, .blog-article h2",
         "_sym": "CTSI",
-        "_conf": "high"
+        "_conf": "high",
+        "_note": "旧规则 '.blog-article p' 只抓 <p> 标签,技术类文章(postmortem)大量正文在 <li>/<pre>/<h2> 里被漏掉。组合 selector 命中的 89 个元素均无嵌套 <p>(逐一验证),触发引擎'selector 自身即段落集合'兜底分支直接取用各元素自身文本,不是抓 .find('p') 的空集合。 · 2026-07-05 全量清查"
       }
     },
     "casper.network": {
@@ -562,6 +589,10 @@
         "regex": "(\\d{1,2}/\\d{1,2}/\\d{4})",
         "_sym": "COLLECT",
         "_conf": "low"
+      },
+      "body": {
+        "selector": ".w-richtext",
+        "_note": "2026-07-05 全量清查"
       }
     },
     "cyber.co": {
@@ -667,6 +698,12 @@
         "attr": "text",
         "_sym": "ROBO",
         "_conf": "high"
+      },
+      "body": {
+        "selector": "div[class*=\"text-[#767675]\"] > *",
+        "_sym": "ROBO",
+        "_conf": "high",
+        "_note": "Next.js 站,正文段落是 div/p/ul/a 混排(非纯 <p>),但均共享同一 Tailwind 灰色正文类 text-[#767675](开头引言块 + 各 h2 小节内容块共 4 个容器命中,唯一不串导航/footer)。选 `容器 > *` 取其直接子节点(逐行 div、p、ul、孤立 a/strong)而非容器本身:这些子节点自身均无嵌套 <p>,engine 的 find('p') 全局落空后回退直取每个子节点 text() 拼接,故能同时吃到 div 型开头段与 section 内 p/ul/a 型正文,顺序与页面一致。3 篇实测(1 篇存档 + 2 篇 curl 补测)首句均为文章开头段,无 JSON/导航污染。 · 2026-07-05 全量清查"
       }
     },
     "fogo.io": {
@@ -728,6 +765,12 @@
         "_conf": "high",
         "_sym": "OSMO",
         "_note": "实际博客内容托管在 Discourse 论坛 forum.osmosis.zone(不是 blog_url 写的 blog.osmosis.zone, 后续按 host 匹配规则时要注意); meta[article:published_time] 等于帖子楼主发帖时间, 与主楼 <time class='post-t"
+      },
+      "body": {
+        "selector": "div#post_1 div.post[itemprop=\"text\"]",
+        "_conf": "high",
+        "_sym": "OSMO",
+        "_note": "Discourse crawler-view 页面无 <article>/<main>,通用回退直取0段落=此前 body 空值。真实正文是楼主帖(id=post_1)内的 div.post[itemprop='text'];必须限定在 #post_1 范围内 —— 帖子有回复时 div.post[itemprop=text] 会命中全部楼层(实测10层),不加 ID 限定会把回复楼层也拼进正文。3 篇实测(2 篇存档+1 篇 curl 复测,含0回复/9回复两种楼层数)均精确命中1个节点、拿到干净正文(16/42/13段)。 · 2026-07-05 全量清查"
       }
     },
     "getmonero.org": {
@@ -738,6 +781,18 @@
         "_conf": "high",
         "_sym": "XMR",
         "_note": "Jekyll 静态博客,无 meta/jsonld/time 标签。正文头部固定结构:<h2>标题</h2><p class=\"author\">Posted by: xxx</p><p class=\"post-date\">Month DD, YYYY</p>。3 篇样本里 selector 均唯一命中(count=1)"
+      },
+      "title": {
+        "selector": ".left.two-thirds h2",
+        "_sym": "XMR",
+        "_conf": "high",
+        "_note": "Jekyll 静态博客:og:title 带站级前缀污染(\"Blog: Monero X released\"),h1 是正文小节标题(\"Overview\"/\"Contributors for this Release\"等)非文章标题,真标题在主内容列首个 h2。用 .left.two-thirds(主内容列唯一 class)限定避开侧栏 Recent Posts/Popular Tags 同名 h2/h3。3 篇样本(2 archived + 1 live)验证 selector 唯一命中真标题。 · 2026-07-05 全量清查"
+      },
+      "body": {
+        "selector": ".left.two-thirds",
+        "_sym": "XMR",
+        "_conf": "high",
+        "_note": "全站无 <article>/<main> 标签,引擎通用回退(article p, main p)0 命中导致 body_excerpt 全空。.left.two-thirds 是 Jekyll 模板主内容列容器(bootstrap 两栏布局),含 9~11 个 <p>(author/date 短行 <20 字符会被引擎长度过滤自动排除,不需额外处理)。3 篇样本验证均产出真实正文(以 'This is the vX.X.X release...' 开头)。 · 2026-07-05 全量清查"
       }
     },
     "gnosis.io": {
@@ -770,6 +825,12 @@
         "_conf": "high",
         "_sym": "HOT",
         "_note": "语义类名清晰:.blog-post-info > .blog-post-meta > .blog-post-date,纯文本、无 datetime 属性、无 meta/jsonld/time 标签,通用梯队天然抓空。三页均只命中 1 次,且与库内既有 db_pub 完全一致(db_pub 应是历史上用别的方式回填的,不"
+      },
+      "body": {
+        "selector": "div.blog-post-body",
+        "_conf": "high",
+        "_sym": "HOT",
+        "_note": "Webflow 站(与已有 date 规则 .blog-post-date 同源模板),全站无 article/main,通用梯队天然抓空。正文容器 class 语义清晰且全页唯一:.blog-post-body。2 篇归档实测(first-upgrades-for-holo-edge-node-and-holos + into-the-wind-tunnel-forging-resilient-distribute,同站同模板,非 issue 原 sample_url):首尾句均与可见正文完全一致(2228 字/8 段、2834 字/9 段),不含分享按钮/标签/推荐位污染。已有 date 规则不动,保留。 · 2026-07-05 全量清查"
       }
     },
     "humanity.org": {
@@ -794,6 +855,12 @@
         "_conf": "high",
         "_sym": "HYPER",
         "_note": "无 jsonld/meta/time 标签;陷阱是 Webflow 相关文章推荐位 h6.blog_next--date(3 篇完全相同的假日期),真值在 h5.blog_content--date,3 篇均不同且唯一。"
+      },
+      "body": {
+        "selector": ".blog_richtxt",
+        "_sym": "HYPER",
+        "_conf": "high",
+        "_note": "Webflow CMS 富文本正文容器,唯一命中。需排除同页 .blog_sum(与首段重复的摘要卡)和 .blog_next(相关文章推荐位,含假日期陷阱同源结构,与现行 date 规则备注的 h6.blog_next--date 是同一推荐位区块)。2 篇样本(存量 archived)验证:.blog_richtxt 内 13/23 个 <p> 通过长度过滤,产出真实正文。 · 2026-07-05 全量清查"
       }
     },
     "icn.global": {
@@ -839,6 +906,13 @@
         "_sym": "IO",
         "_note": "Next.js App Router RSC flight payload 里转义 JSON 字符串,页面没有真实 <script ld+json> DOM 节点,需对整页原始文本(非 CSS 选择器)正则抓 datePublished,3 份样本转义层级不同但正则通用",
         "strategy": "html_regex"
+      },
+      "body": {
+        "strategy": "html_regex",
+        "regex": "ghost ghost-blog[\\s\\S]{0,150}?\\\\\"p\\\\\",\\\\\"0\\\\\",\\{[\\s\\S]{0,300}?\\\\\"children\\\\\":\\[\\\\\"((?:[^\"\\\\]|\\\\.){30,}?)\\\\\"",
+        "_conf": "high",
+        "_sym": "IO",
+        "_note": "同 date 字段:全站零真实 DOM(BAILOUT_TO_CLIENT_SIDE_RENDERING · 整页无一个字面 <p>/<div>/<article>),正文是 Ghost CMS 渲染出的 React 树,序列化成 RSC flight payload 转义字符串,每段独立塞在各自 [\"$\",\"p\",\"N\",{...,\"children\":[\"text\"]}] 节点里,彼此被大量 className/标签结构字符隔开,engine 单次 regex 单捕获组无法跨段拼接(会连带吃入 JSON 结构垃圾)。故锚定 ghost-blog 正文容器 + 第一个 <p>(key=\"0\")取开头段,容器 class 全站唯一命中、child key='0'/'children' 是 React 序列化固定结构、不依赖具体 Tailwind 类名(耐版本改动)。2 篇存档实测:提取值分别为 186/315 字纯净正文开头段,与页面一致;受限于 engine 单捕获组机制,仅能拿到开头段而非全文(body_excerpt 下游按 3000 字截断,开头段仍是有效非空真实正文,较此前完全空值是实质改善)。 · 2026-07-05 全量清查"
       }
     },
     "irys.xyz": {
@@ -849,6 +923,12 @@
         "_conf": "medium",
         "_sym": "IRYS",
         "_note": "jsonld datePublished、页面内嵌RSC payload的post.date、可见DOM文本三方一致且与db_pub吻合;但源标记polluted且3篇中2篇(what-is-programmable-data/what-is-a-datachain)日期完全相同(两文主题高度相关像同日发布的姊妹文),"
+      },
+      "body": {
+        "selector": ".prose",
+        "_conf": "high",
+        "_sym": "IRYS",
+        "_note": "Next.js + Tailwind Typography 站,正文容器 class 含唯一 token 'prose'(全页仅1处命中,与大量 prose-headings:*/prose-p:* 等 Tailwind 变体类共存于同一元素)。旧版(当前 body 无规则,回退 'main p')已能捞到95%+正文,但会多拖一行页面级 footer 文案'© IRYS 2026. All rights reserved'(cheerio 实测 tail 确认,属非空错误值)。新选择器 .prose 限定范围后 find('p') 精确排除该 footer 行。3 篇 cheerio 实测(2 篇存档交叉验证结构一致 + 1 篇 issue 原 URL curl 直接复测)首尾边界干净。 · 2026-07-05 全量清查"
       }
     },
     "jellyjelly.com": {
@@ -1080,6 +1160,10 @@
         "regex": "[A-Za-z]{3,9}\\s+\\d{1,2},\\s+\\d{4}",
         "_sym": "NEO",
         "_conf": "high"
+      },
+      "body": {
+        "selector": "article.article > section",
+        "_note": "2026-07-05 全量清查"
       }
     },
     "nomina.io": {
@@ -1158,6 +1242,12 @@
           "meta"
         ],
         "_note": "站级口号 desc 复读实锤(SQL 全库扫)· ban 后自动落 jsonld/真正文"
+      },
+      "title": {
+        "selector": "main.single-blog h1.single-blog-header-title",
+        "_conf": "high",
+        "_sym": "ORBS",
+        "_note": "h1 列污染实锤:引擎 extractH1 取 $('h1').first(),页面顶部订阅框(header>form.subscribe-form)先于正文出现一个无 class 的 <h1>SUBSCRIBE FOR UPDATES</h1>,导致 h1 列被订阅框文案污染。页面另有 3 个 h1.single-blog-header-title:1 个是本文真标题(在 main.single-blog 内),另 2 个是页面底部相关文章推荐位(footer-blog-list 内,跨文章复读同一批标题,如'Arbidex integrates dLIMIT & dTWAP'/'Triple APY for New ORBS Stakers')。用 main.single-blog 限定作用域后精确命中真标题,页面唯一匹配。2 篇实测直接用本 issue 原始 sample_url 现网 curl(orbs-dao-the-next-step / SushiSwap-Integrates-dSLTP):选择器结果与 title 标签逐字一致。重要限制:这两篇 og:title 本身正确(与真标题一致),现有 title 字段经 og:title 兜底大概率已经正确;issue 报的'h1'是独立存储列,由 extractH1 硬编码 $('h1').first() 产生,不读取 per-source title 规则,本 selector 规则只加固 title 字段的抽取优先级(防御 og:title 缺失场景),无法改变 h1 列本身的值。h1 列若要根治需要代码层改动(让 h1 列抽取改用 titleRuleFor 结果或本 selector),超出 extract-rules.json 配置范围。 · 2026-07-05 全量清查"
       }
     },
     "originprotocol.com": {
@@ -1238,6 +1328,15 @@
         "_note": "站级口号 desc 复读实锤(SQL 全库扫)· ban 后自动落 jsonld/真正文"
       }
     },
+    "pocket.network": {
+      "date": {
+        "strategy": "html_regex",
+        "regex": "datePublished\\W*?(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:[+-]\\d{2}:\\d{2}|Z)?)",
+        "_conf": "high",
+        "_sym": "POKT",
+        "_note": "WordPress + Yoast SEO 站,extract_rules 原为 null。2 篇 flagged 样本(support-public-rpc / foundation-partnerships)是 @type=\"WebPage\" 的常青产品页(非 @type=\"Article\"),而 engine 通用 jsonld 抽取只认 Article/BlogPosting/NewsArticle 类型节点,遇 WebPage 节点直接跳过 → 无 meta/time 标签兜底 → 全空。改用 html_regex 对整页原始文本正则抓 datePublished(不看 @type,WordPress 的 Yoast 输出是未转义原生 JSON,不存在 Next.js 那种双重转义),两篇均全页仅 1 处命中,值与页面 json-ld 一致;同时在另 2 篇正常 Article 型博文样本上验证同一正则仍取到与站点原生梯队相同的 datePublished 值,不破坏现有行为。 · 2026-07-05 全量清查"
+      }
+    },
     "polygon.technology": {
       "date": {
         "selector": "p.text-body-mono-medium.all-caps.tc-g200:first",
@@ -1313,6 +1412,12 @@
         "_sym": "SAFE",
         "_note": "Next.js + Storyblok CMS,页面没有可见 meta/jsonld/time 标签(故标 no_pub),但正文里的 Next.js RSC <script> 流(self.__next_f.push(...))里转义嵌了 story 对象,带 created_at/published_at/upda",
         "strategy": "html_regex"
+      },
+      "body": {
+        "selector": "div.max-w-none",
+        "_conf": "high",
+        "_sym": "SAFE",
+        "_note": "Next.js+Storyblok 站无 <article>/<main>,通用回退直取0段落=此前 body 空值。真实正文容器是 div.max-w-none(Tailwind prose 重置类),3 篇实测(2 篇存档+1 篇 curl 复测)均在页面唯一匹配、find('p') 精确拿到正文全部段落(20/22/130段)。容器尾部固定混入3段 byline(作者名'Safe{Labs}'+日期+'Copy link'分享按钮),相对全文占比<1%,可忽略不单独处理。 · 2026-07-05 全量清查"
       }
     },
     "safepal.com": {
@@ -1350,6 +1455,10 @@
         "_conf": "high",
         "_sym": "SAPIEN",
         "_note": "jsonld datePublished/dateModified 3 篇完全相同(Jul 01, 2025)确认为站级模板假值已 ban;真值在 .blog-date 内嵌的 heading-style-h5 div,3 篇均不同;修正后与当前污染 db_pub(2 篇被 jsonld 假值经 UTC+8 换算污染成"
+      },
+      "title": {
+        "selector": "h1.text-wrap-balance",
+        "_note": "2026-07-05 全量清查"
       }
     },
     "scroll.io": {
@@ -1466,6 +1575,14 @@
         "_sym": "STX",
         "_conf": "high",
         "_note": "extract_rules 原来只配了 date,body 完全缺失导致 5 篇全空。主路径 .rich-text-blog 是正文容器(全站 5/5 篇稳定恰好 1 个,不与站内 .w-dyn-bind-empty 空占位块冲突)。例外 1 篇(alex-governance-proposal):正文疑似经 JS/CMS 动态渲染进 .rich-text-blog,静态 HTML 抓取时容器为空,但该篇 meta description 异常写入了完整 8000+ 字全文(常规文章 desc 仅 100-200 字);故加 html_regex 兜底,正则要求 content 属性值 ≥400 字符才触发(常规短 desc 不会误触发,已在 4 篇正常文章上验证 regex 不匹配、照常走 selector 路径)。引擎逻辑:strategy=html_regex 与 selector 可共存,regexBody 命中优先于 selector 结果,故仅在满足长度门槛的异常页面生效。已知瑕疵:html_regex 走全页源码正则,原始 HTML 若含 &nbsp; 等实体不会被解码(JSON.parse 兜底只转义 JSON 转义符、不转 HTML 实体),提取结果会残留个别 &nbsp; 字样,属轻微观感问题不影响可读性/可搜索性。 · 2026-07-05 核对战役"
+      },
+      "title": {
+        "ban": [
+          "og"
+        ],
+        "_conf": "high",
+        "_sym": "STX",
+        "_note": "站级 <meta property=\"og:title\"> 恒为 'Stacks - <真实标题>' 前缀污染(3 篇独立样本验证:'Stacks - Stacks & Wormhole Team to Take sBTC & STX Multichain' / 'Stacks - 🍿$ZEST TGE...' / 'Stacks - ALEX Governance Proposal...',首例甚至造成 'Stacks' 重复出现)。og:description/og:image 均为空,页面本身没有可用的专属标题容器,故用 ban:['og'] 让引擎回退到 h1 —— 全站每篇仅 1 个 <h1 class=\"heading-13\">,内容与 og:title 去掉前缀后逐字一致,3 篇验证全部吻合。 · 2026-07-05 全量修复片5 · 2026-07-05 全量清查"
       }
     },
     "stbl.com": {
@@ -1513,6 +1630,12 @@
         "_conf": "high",
         "_sym": "XLM",
         "_note": "可见 <time datetime> 标注\"Publishing date\",但精确到毫秒的值在 2 篇不同文章上完全相同(2026-05-05T00:00:00.000Z)——这正是触发 polluted 判定的原因;改用 Sanity CMS(__NEXT_DATA__ 内)blogPage 文档自身的 _crea"
+      },
+      "body": {
+        "selector": "div.sc-e90eaf70-7",
+        "_conf": "high",
+        "_sym": "XLM",
+        "_note": "Next.js(styled-components)+Sanity CMS 渲染,全站无 article/main 语义标签,通用梯队天然抓空(body 此前完全缺失)。正文由多个 portable-text 区块拼接,每区块外层稳定 class 是 div.sc-e90eaf70-7(styled-components 编译期哈希,同构建内跨文章稳定,不含实例序号,不受 section 自身 id 逐篇随机哈希干扰)。2 篇实测(现网 curl bringing-stellar-to-the-regions-that-matter + 归档 distribution-is-the-last-constraint):各命中 8 个区块,拼接后首句与页面可见正文完全一致,含文末合规免责声明(文章自身内容,非站级横幅污染)。已有 date 规则(__NEXT_DATA__ _createdAt)不动,保留。 · 2026-07-05 全量清查"
       }
     },
     "storj.io": {
@@ -1550,6 +1673,12 @@
         "_conf": "high",
         "_sym": "TRUTH",
         "_note": "Framer静态站3篇全文无任何日期痕迹(无jsonld/meta/time/可见文本),页面仅有data-framer-ssr-released-at等站级构建时间戳(3篇相同,非文章日期),显式放弃。"
+      },
+      "body": {
+        "selector": ".framer-moxbbe",
+        "_conf": "high",
+        "_sym": "TRUTH",
+        "_note": "Framer CMS 站,全站无 article/main,通用梯队天然抓空。正文容器 class 在不同文章间稳定复用(2 篇归档验证 class 相同)。文章A(the-multi-agent-collaboration-framework)正文渲染成 60 个 p,引擎 find('p') 直接命中,过滤后 56 段/9386 字,首句'At the core of Swarm Network...'与可见正文一致;文章B(rollupnews-aristotle)正文整体是单个 div 无 p 子节点,find('p') 空后引擎回退直取容器整段,同样拿到干净 2380 字正文,不含导航(WHITEPAPER/PUBLICATIONS/JOIN COMMUNITY 等三连复读)或订阅框(Follow Swarm)污染。已有 date 规则(strategy none)不动,保留。 · 2026-07-05 全量清查"
       }
     },
     "tac.build": {
@@ -1560,6 +1689,12 @@
         "_conf": "high",
         "_sym": "TAC",
         "_note": "Webflow 站,BEM 风格 class 很干净:<h1 class=\"page-blog__title\">标题</h1><div class=\"page-blog__info\">...<div class=\"page-blog__info-wrapper\"><div>发布日期</div><div class=\"w"
+      },
+      "body": {
+        "selector": ".page-blog__richtext",
+        "_sym": "TAC",
+        "_conf": "high",
+        "_note": "Webflow BEM 站,正文富文本容器 .page-blog__richtext 每页唯一(2 篇存档实测 p 数 25/34),首尾均为真正文(末段偶有 CTA 属正文自带,零宽字符空段 <20 字符被引擎自动过滤);相关文章卡片用独立 .page-blog__related-card* class 不会混入。 · 2026-07-05 全量清查"
       }
     },
     "thegraph.com": {
@@ -1574,6 +1709,14 @@
         "selector": "main p:not(:has(style))",
         "_sym": "GRT",
         "_conf": "high"
+      },
+      "title": {
+        "ban": [
+          "og"
+        ],
+        "_conf": "high",
+        "_sym": "GRT",
+        "_note": "og:title 与页面真实标题(h1/<title>)不一致 —— og:title 是营销向改写文案,如 agent0 一篇 og:title='The Graph Is Indexing the Agent Economy with Agent0 Subgraphs',而真实 h1/<title> 是'Agent0 Subgraphs Are Live: Query the Open Agent Economy Across 5 Chains';rebuilding-global-finance 一篇同样分歧(og:title='Rebuilding Global Finance: The Future of Financial Settlement' vs 真实 h1='What DTCC's Blockchain Experiment Suggests About the Future of Settlement')。2 篇样本均实锤同类分歧,现行逻辑无 ban 时优先取 og:title 导致标题错误。ban og 后引擎落 h1,与 <title> 标签(=h1+' | Blog | The Graph' 后缀)交叉验证一致。 · 2026-07-05 全量清查"
       }
     },
     "threshold.network": {
@@ -1599,6 +1742,12 @@
         "strategy": "html_regex",
         "_sym": "TREE",
         "_conf": "medium"
+      },
+      "title": {
+        "selector": "main h1",
+        "_sym": "TREE",
+        "_conf": "high",
+        "_note": "站顶 sticky 导航栏含一个通站复读的 h1(\"Treehouse Blog\",在 main 标签之外的 nav section 里),真标题是 main 内第一个 h1(其后还有若干正文小节标题同为 h1,如 'Conclusion'/'What's Next',用引擎 .first() 取到的是最前面的真标题)。用 main h1 限定作用域避开导航栏同名 h1。 · 2026-07-05 全量清查"
       }
     },
     "trustwallet.com": {
@@ -1606,6 +1755,13 @@
         "strategy": "spa_only",
         "_sym": "TWT",
         "_conf": "high"
+      },
+      "body": {
+        "strategy": "html_regex",
+        "regex": "\"articleBody\":\"((?:[^\"\\\\]|\\\\.){80,}?)\"",
+        "_conf": "high",
+        "_sym": "TWT",
+        "_note": "Next.js 站(与已有 spa_only date 规则同源站,涉嫌 CSR/水合时序不稳定)。页面 main 内混有站级导航卡片文案,通用兜底 $('main p') 在不同渲染时机下稳定性存疑;而 JSON-LD BlogPosting 的 articleBody 字段始终以 markdown 全文形式静态内嵌在 HTML 源码里(与 datePublished 同一对象),不依赖 main 内 DOM 渲染完整度,更稳健。2 篇实测(issue 原 sample_url why-trust-wallet-is-the-best-crypto-wallet-in-2025 现网 curl,11358 字 + 归档 from-exchange-to-self-custody-transfer-crypto,6417 字):JSON.parse 反转义后首尾句均与文章可见正文一致。已知瑕疵:提取结果保留 markdown 语法符号(###/-/[text](url)),非纯文本,与 ondo.finance 现有同类规则(_sym ONDO系)瑕疵一致,项目内可接受。页面上 articleBody 出现 2 次(第2次是双重转义的 RSC flight payload 副本),regex 非全局匹配天然取第1个单层转义版本,已在两篇样本验证不会误配到双转义版本。 · 2026-07-05 全量清查"
       }
     },
     "turtle.xyz": {
@@ -1865,6 +2021,14 @@
         "_sym": "DCR",
         "_conf": "high",
         "_note": "2026-07-05 核对战役"
+      },
+      "date": {
+        "selector": ".article-date",
+        "attr": "text",
+        "regex": "([A-Za-z]+ \\d{1,2}, \\d{4})",
+        "_sym": "DCR",
+        "_conf": "high",
+        "_note": "2026-07-05 全量修复片6/10(补 date,body 规则已有不动)。无 jsonld/meta/time 标签,真实日期只在 <p class=\"article-date\">May 25, 2021</p> 可见文本。⚠️踩坑记录:最初考虑 strategy=url_date,但实测项目真实 URL_DATE_RE(/\\/(20[0-3]\\d)[/-](0[1-9]|1[0-2])[/-](0[1-9]|[12]\\d|3[01])(?:[/-]|$)/,article-filter.ts)要求日期后紧跟 '/' 或 '-' 或结尾——decred 早期新闻 URL 是下划线分隔(如 2021-05-25_dex_decrediton),日期后紧跟 '_',该 regex 匹配失败返回空串,url_date 策略对本站两个样本 URL 均不可用(仅对 2022 起改用全连字符命名的新 URL 有效,如 2022-01-24-decred-releases-1.7)。改用 .article-date 选择器+正则,用项目真实 cheerio 复刻 extractPublishedAt 精确逻辑实测 2/2 样本(2021-05-25_dex_decrediton → 'May 25, 2021';2023-04-18_decred_releases_dcrdex_0.6 → 'April 18, 2023'),与 URL 日期完全吻合。 · 2026-07-05 全量清查"
       }
     },
     "dinari.com": {
@@ -1873,6 +2037,14 @@
         "_conf": "high",
         "_sym": "SONY",
         "_note": "extract_rules 原为 null(无任何规则),该站无 <article>/<main> 标签,通用回退全空。真实正文容器为 .w-richtext(Webflow 富文本域,5 篇实测全页唯一 1 处),find('p') 直接抓到全部正文 <p> 段落(7~17 段不等)。存档为空,5 篇全部现 curl 官网验证,提取首段与 issues page_value 逐一对应(其中 gme-amc-dshares/new-dshares-energy 两篇字面完全一致,其余 3 篇为同段落语义对应,确认真实文章正文而非噪音)。容器尾部偶带官方社交账号 bullet 列表(Website/Docs/Telegram/Discord/Twitter/Github),属文章自带的常规落款,非独立页脚/订阅框,未额外裁切。 · 2026-07-05 核对战役"
+      },
+      "date": {
+        "selector": "div.blog-author-date-hero p.blog-post-meta-p",
+        "attr": "text",
+        "regex": "^([A-Za-z]{3,9}\\.?\\s+\\d{1,2},\\s+\\d{4})$",
+        "_conf": "high",
+        "_sym": "SONY",
+        "_note": "该站(Webflow)无 meta/time/jsonld 任何日期信号(og:type 都无 article schema),真实日期只在可见 byline 文本。byline 容器 div.blog-author-date-hero 内有 2 个同 class='blog-post-meta-p' 的 <p>(作者名在前、日期在后),不能靠 class 单独区分。利用引擎逻辑:selector 命中多元素时按顺序逐个跑 regex,取第一个非空结果——作者名(如 'Rachel Ling'/'Dinari')不匹配日期正则被跳过,第 2 个元素(日期)命中返回,天然消歧义无需额外 ban。2 篇现 curl 独立 URL 验证:token2049-week-recap→'Sep 27, 2024'、s-p-dow-jones...→'Oct 8, 2025',均与页面可见日期逐字对应。 · 2026-07-05 全量清查"
       }
     },
     "flexa.co": {
@@ -1952,6 +2124,14 @@
         "_sym": "SWELL",
         "_conf": "high",
         "_note": "Webflow 站,正文容器 class='text-rich-text w-richtext'(Webflow CMS Rich Text 组件标准类名),每页唯一命中;5 篇均为长文 Deep Dive/公告帖,容器内 find('p') 即纯正文(含帖内自带的 CTA 链接属正文一部分,非站级推荐位/footer/订阅框,容器边界干净) · 2026-07-05 核对战役"
+      },
+      "date": {
+        "selector": ".blog-card-details-container > .is-txt-small.is-txt-black-50",
+        "attr": "text",
+        "regex": "((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?\\s+\\d{1,2},?\\s+\\d{4})",
+        "_conf": "high",
+        "_sym": "SWELL",
+        "_note": "Webflow 站,详情页/推荐位卡片共用同一 details-container 结构(阅读时长“分钟数”与作者名也复用相同 is-txt-small.is-txt-black-50 类),父级同 class 元素在全页出现 4 次(本文详情 1 次 + 页面底部推荐帖 3 次)。用 > 直接子代组合器把阅读时长(嵌一层 .time-to-read-container,非直接子代)和作者行排除掉,只留每张卡片自身的日期文本;engine 按 DOM 顺序取第一个命中即为本文日期。3 篇实测(2 篇存档 + 1 篇 curl 补测 flagged URL)首个命中值与页面可见日期逐字一致,规则同时保留正则校验兜底防止改版后误取非日期文本。 · 2026-07-05 全量清查"
       }
     },
     "coin98.com": {
@@ -1994,6 +2174,87 @@
         "_sym": "HIVE",
         "_conf": "high",
         "_note": "页面可见'X years/months ago'是相对时间,但同一 byline 容器内 span 的 title 属性藏着绝对时间(如 title=\"12/26/2023 1:32 AM\"),与 meta[property=article:published_time] 交叉核对完全一致(2023-12-26T01:32:33 ↔ 12/26/2023 1:32 AM;2023-10-24T03:10:30 ↔ 10/24/2023 3:10 AM,2 篇样本双源互证)。容器 .PostFull__time_author_category 全页唯一(count=1);内部还有第二个 span[title]='Reputation'(声誉值 tooltip 不是日期),regex 天然不匹配自动跳过,无需额外 ban;同 div 下的 '(edited)' 编辑时间戳 span 不在本 selector 命中范围内,不会误采成发布时间。注:MM/DD/YYYY 无显式时区标记,Date.parse 按本地时区解析,与通用梯队里的 meta 兜底路径同源同风险(非本规则独有引入的新问题),架构级修复(强制 UTC)需改 date-extract.ts 非本次规则文件范畴 · 2026-07-05 R3"
+      }
+    },
+    "community.radworks.org": {
+      "body": {
+        "selector": "#post_1 .post p, #post_1 .post li",
+        "_note": "2026-07-05 全量清查"
+      }
+    },
+    "ogs.gg": {
+      "body": {
+        "selector": ".the_content",
+        "_note": "2026-07-05 全量清查"
+      }
+    },
+    "chiliz.com": {
+      "body": {
+        "selector": ".blog-content",
+        "_sym": "CHZ",
+        "_conf": "high",
+        "_note": "WordPress+Elementor 站,正文在 elementor-widget-theme-post-content 部件自带的自定义 class .blog-content,每页唯一(2 篇实测 p 数 17/10),不含底部推荐位 .chiliz-post-cards 或目录部件 .elementor-toc__body。正文末尾含站方自带 Fan Token 法律免责声明(每篇重复但属该篇自身内容非跨文章共享块,不做剥离)。 · 2026-07-05 全量清查"
+      }
+    },
+    "grass.io": {
+      "body": {
+        "selector": "div.blog-post-body",
+        "_note": "2026-07-05 全量清查"
+      }
+    },
+    "blog.bandprotocol.com": {
+      "body": {
+        "selector": "section.gh-content",
+        "_note": "2026-07-05 全量清查"
+      }
+    },
+    "minimax.io": {
+      "body": {
+        "selector": ".prose div[style^=\"line-height\"], main > div.w-full",
+        "_conf": "high",
+        "_note": "该站(MiniMax AI)/blog/ 与 /news/ 两套模板并存,body 需覆盖两种结构:(1) /blog/ 用 Tailwind .prose 容器,正文段落是 <div style=\"line-height:1.7...\"> 而非 <p>(引擎 find('p') 空会走容器直取)。陷阱:部分文章 .prose 内混入图片说明 <p style=\"...italic...\">(如 minimax-m27 有 3 条配图说明文字均 >=20 字符),若直接用 .prose 整体选择器,引擎 find('p') 会命中这 3 条说明文字整体顶替真正文(只剩 121 字符的图注拼接,真实正文完全丢失)——用 div[style^=\"line-height\"] 精确圈定正文块,排除说明 <p> 和纯图片块。(2) /news/ 用 main > div.w-full(main 直接子元素里 w-full 类的内容块,排除首个不带 w-full 类的 1000px 宽按钮/头图区块)。逗号并列两种选择器,互不冲突(两套模板结构互斥:/blog/ 无 main 标签,/news/ 无 .prose 类)。 · 2026-07-05 全量清查"
+      }
+    },
+    "filecoin.io": {
+      "title": {
+        "ban": [
+          "og"
+        ],
+        "_conf": "high",
+        "_sym": "FIL",
+        "_note": "站级 <meta property=\"og:title\"> 恒为 '<真实标题> | Filecoin' 后缀污染(Next.js/Vercel 站,3 篇同站真实文章验证:'...ProPGF Batch 2...| Filecoin'、'...Surpasses 1 Exbibyte | Filecoin' 等),ban:['og'] 后引擎落 h1 —— 全站每篇仅 1 个 h1.font-heading,内容与 og:title 去掉后缀后逐字一致。⚠️ 本次抽样命中的样本 URL(cloudpaws-filecoin-onchain-cloud)经核实是源站已下线死链:sitemap.xml 仍收录但直接访问返回真实 404(x-matched-path 命中 /[locale]/blog/[slug] 路由但无该 slug 数据),archive 存档(token 525 的另一份)同为 Next.js __next_error__ 渲染页、title 恰为纯站名 'Filecoin'(印证历史抓到的就是这条错误页,而非真实文章标题)。规则改用同 host 另外 3 篇现存活文章验证并全部通过,用于救未来抓到的其它 filecoin.io 文章;死链本身已列入 delete_urls。 · 2026-07-05 全量修复片5 · 2026-07-05 全量清查"
+      }
+    },
+    "dash.org": {
+      "body": {
+        "selector": ".richtext > p, .richtext .p-rich_text_section:not(:has(p)), .richtext > ol, .richtext .longform-unstyled:not(:has(p))",
+        "_sym": "DASH",
+        "_conf": "high",
+        "_note": "2026-07-05 全量修复片6/10。.richtext 是站级正文根容器(Webflow/WP混合CMS,og:url/canonical 均指向文章自身,确认为正文区)。实锤:各文章内部格式不统一——多数新文用真实 <p> 标签,少数老文是从 Slack/Twitter 粘贴留下的 .p-rich_text_section 或 .longform-unstyled 包裹的纯文本 div(内部零星混入 1 个真 <p>)。引擎逻辑(article.ts:205-208)优先用 $(selector).find('p'),若非空就只取那几个 p ——直接选 .richtext 会在混排老文上被那 1 个零星真 <p> 命中,导致只捕到 4-8% 内容(如 zebec-platform 只剩 191/4353 字)。改用组合选择器绕开陷阱:真 <p> 直接子元素(覆盖新文)+ 不含嵌套 p 的 .p-rich_text_section/.longform-unstyled 段落块(覆盖老文正文,排除混入真 p 的那个块)+ 独立 <ol> 步骤列表。用项目真实 cheerio(1.0.0-rc.12/css-select 5.2.2)+ 复刻 article.ts 原版抽取逻辑实测 6 篇样本(2 篇 archived + 4 篇 live fetch,含 2 篇老文模板 + 4 篇新文模板):覆盖率 90-101%,正文连贯完整(含子标题/步骤列表),无导航/CTA/订阅框混入。 · 2026-07-05 全量清查"
+      }
+    },
+    "euler.finance": {
+      "title": {
+        "selector": ".MuiTypography-h1",
+        "_sym": "EUL",
+        "_conf": "high",
+        "_note": "2026-07-05 全量修复片6/10。页面有 2 个 <h1>:第一个是站头 logo(MUI Box 组件,文本重复 'Euler FinanceEuler Finance',无语义),第二个才是真文章标题(MUI Typography variant=h1,class=MuiTypography-h1)。通用兜底 extractH1()/无规则时的 h1 回退固定取第一个 <h1>,命中的是 logo 垃圾文本——这正是 fields.h1 问题的根因(title 字段本身因 og:title 优先级更高侥幸未受影响,但 h1 派生字段/未来无 og:title 场景会踩坑)。MuiTypography-h1 是 MUI 框架自身的稳定语义 class(非构建期随机 hash),3/3 真实文章(euler-q1-2026/eulerswap/what-is-the-euler-vault-kit)实测精确匹配 og:title,零偏差。 · 2026-07-05 全量清查"
+      }
+    },
+    "blog.polyswarm.io": {
+      "body": {
+        "selector": "div.post-body",
+        "_conf": "high",
+        "_sym": "PSW",
+        "_note": "HubSpot COS 站,页面无 <article>/<main> 标签,通用兜底 'article p, main p' 命中0段落 → body_excerpt 现存应为空值(非非空错值,故不入 delete_urls)。真实正文富文本容器 div.post-body(即 #hs_cos_wrapper_post_body,全页唯一),cheerio 生产引擎实测 6 篇 issue URL(2 篇存档 + 4 篇 curl 补测,覆盖全部给定样本)find('p') 全部精确命中、首尾边界干净,不含侧栏 blog-sidebar/推荐位。容器尾部混有 IOC 哈希列表 + 'Subscribe to our reports' 是作者逐篇手写的正文原生内容(非站级模板注入),未额外过滤。 · 2026-07-05 全量清查"
+      }
+    },
+    "blog.huma.finance": {
+      "body": {
+        "selector": "div.blog-post__body",
+        "_conf": "high",
+        "_sym": "HUMA",
+        "_note": "HubSpot 站,正文是从 Google Docs 粘贴的富文本,段落全部是 div/span/br 混排、无一个 <p> 标签。通用兜底 'article p, main p' 只命中1个 <p>(class='blog-header__email',文本 'info@huma.finance' 共18字符),被引擎 <20 字符阈值过滤掉 → body_excerpt 现存应为空值。真实正文容器 div.blog-post__body(article.blog-post 内,全页唯一);新选择器 find('p') 结果为0会触发引擎'容器直取'兜底,直接取整个富文本块文本。2 篇存档(=全部给定样本)cheerio 生产引擎实测干净,4728/5076 字,不含侧栏 blog-comments-container/blog-post__related-posts/blog-post__pagination(均为兄弟节点非子节点)。 · 2026-07-05 全量清查"
       }
     }
   }

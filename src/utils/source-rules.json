@@ -159,10 +159,9 @@
       ]
     },
     "BRL1": {
-      "confidence": "mid",
-      "include_prefixes": [
-        "/projects/"
-      ]
+      "confidence": "high",
+      "include_regex": "^/projects/[^/]+",
+      "_note": "2026-07-05 全量清查:真文 /projects/<slug> · /projects 与 /en/projects 列表根混入(mid→high强制)"
     },
     "BTC": {
       "confidence": "high",
@@ -407,12 +406,14 @@
     "ORBS": {
       "confidence": "low",
       "exclude_prefixes": [
-        "/liquidity-hub/",
-        "/faq/",
-        "/dtwap/",
+        "/ai/",
         "/dlimit/",
+        "/dtwap/",
+        "/faq/",
+        "/liquidity-hub/",
         "/policy/"
-      ]
+      ],
+      "_note": "2026-07-05 全量清查:/ai/skills 产品页混入(真文单段/<slug>)"
     },
     "PAXG": {
       "confidence": "high",
@@ -1438,6 +1439,13 @@
         "/blog-news/"
       ],
       "_note": "2026-07-05 清查:LIST 把导航/推广链接误收 5 条 · 限定真文前缀"
+    },
+    "RIF": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/content-hub/"
+      ],
+      "_note": "2026-07-05 全量清查:真文在 /content-hub/ · /rif-token 顶导混入"
     }
   }
 }
