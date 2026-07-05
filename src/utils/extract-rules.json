@@ -581,6 +581,12 @@
           "meta"
         ],
         "_note": "站级口号 desc 复读实锤(SQL 全库扫)· ban 后自动落 jsonld/真正文"
+      },
+      "body": {
+        "selector": "div.type-body-sm",
+        "_sym": "IP",
+        "_conf": "high",
+        "_note": "2026-07-05 全库清查:正文段落是 div 非 p(引擎 find(p) 空走直取 fallback)· 存档 bs4 实测 23 段 · 旧值=订阅框文案"
       }
     },
     "drift.trade": {

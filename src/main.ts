@@ -7,7 +7,7 @@ import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushS
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost, URL_OVERRIDES } from './config.js';
-import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion, extractDateFromUrl } from './utils/article-filter.js';
+import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion, extractDateFromUrl, normalizedHostOfUrl } from './utils/article-filter.js';
 import { checkSourceRuleMulti, getSitemapOnly } from './utils/source-rules.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
 // 🆕 2026-07-04 运维台对接(计划书 §3 契约):埋点/账本/配置中心/代理 DB 读 — 全部可选,零参数裸跑行为不变
@@ -414,13 +414,43 @@ if (sitemapOnlyByUrl.size > 0) {
     }
 }
 
+// 🆕 2026-07-05 定向重抓(老板拍 a):REFETCH_URLS=<文件路径 · 每行一个 URL>
+// 加盐绕过 DETAIL 持久 dedupe 强制重抓 · token 关联按 host 匹配 sources.blog_url(自有域源适用)
+// 用途:LIST 不再露出的旧文空字段回填(ASR/KAVA 型)· 删行重收 · 漏采补录(ADA 型)
+// 契约:裸跑写 dataset · 下轮运维台批次补漏/回填收编 · 不写账本
+const refetchReqs: typeof listReqs = [];
+const REFETCH_FILE = process.env.REFETCH_URLS ?? '';
+if (REFETCH_FILE) {
+    const { readFileSync } = await import('node:fs');
+    const raw = readFileSync(REFETCH_FILE, 'utf-8').split('\n').map((s) => s.trim()).filter((u) => u && isValidHttpUrl(u));
+    const hostToTokens = new Map<string, TokenAssoc[]>();
+    for (const [burl, assoc] of blogUrlToTokens) {
+        const h = normalizedHostOfUrl(burl);
+        const arr = hostToTokens.get(h) ?? [];
+        for (const t of assoc) if (!arr.some((x) => x.token_id === t.token_id)) arr.push(t);
+        hostToTokens.set(h, arr);
+    }
+    let unmatched = 0;
+    for (const url of raw) {
+        const assoc = hostToTokens.get(normalizedHostOfUrl(url)) ?? [];
+        if (assoc.length === 0) { unmatched += 1; continue; }
+        refetchReqs.push({
+            url,
+            uniqueKey: `${url}#refetch-${RUN_SALT}`,
+            label: 'DETAIL',
+            userData: { sources_for_url: assoc, from_sitemap: false },
+        } as (typeof listReqs)[number]);
+    }
+    console.log(`🎯 定向重抓:${refetchReqs.length} URL 入队(host 无 token 关联跳过 ${unmatched})`);
+}
+
 // 🆕 2026-07-03 限频域分流(老板拍 · 独立代理池):
 // medium.com/*.medium.com + 403 四强 → slowQueue(低速 + 池 B/C)· 其余 → generalQueue(主力全速)
 // 主力队列不再被限频站的 retry/session-rotation 拖垮(实测 RPM 76 → 预期 300+)
 const generalReqs: typeof listReqs = [];
 const slowReqs: typeof listReqs = [];
 let dcBannedDropped = 0;
-for (const req of [...listReqs, ...sitemapReqs, ...sitemapOnlyReqs]) {
+for (const req of [...listReqs, ...sitemapReqs, ...sitemapOnlyReqs, ...refetchReqs]) {
     if (isDcBannedHost(req.url)) { dcBannedDropped += 1; continue; } // 兜底:跨源链接指向 DC-ban 域也 drop
     (getThrottleGroup(req.url) ? slowReqs : generalReqs).push(req as (typeof listReqs)[number]);
 }
