@@ -272,15 +272,21 @@ for tk, e in by_token.items():
     arts.sort(key=lambda a: (1 if a['title'] else 0, a['pub']), reverse=True)
     real = [a for a in arts if not is_non_article(a.get('url', '')) and not is_noise(a.get('url', ''))]
     dropped_file += len(arts) - len(real)
-    white = [a for a in real if is_white(a.get('url', ''))]
-    if white:
-        e['articles'] = white
-        e['count'] = len(white)
+    # 🆕 2026-07-05 host 级白名单口径(与 TS filterArticlesWhitelistFirst 同语义):
+    # 同 host 内有白名单文才独占该 host · 跨渠道(官网+medium/子域博客)不互杀(OXT/NIL/EDEN/DCR 实锤)
+    def _nhost(u):
+        try:
+            h = (urlparse(u or '').hostname or '').lower()
+            return h[4:] if h.startswith('www.') else h
+        except Exception:
+            return ''
+    white_hosts = {_nhost(a.get('url')) for a in real if is_white(a.get('url', ''))}
+    kept = [a for a in real if is_white(a.get('url', '')) or _nhost(a.get('url')) not in white_hosts]
+    if len(kept) < len(real):
         white_hit_sources += 1
-        dropped_non_white += len(real) - len(white)
-    else:
-        e['articles'] = real
-        e['count'] = len(real)
+        dropped_non_white += len(real) - len(kept)
+    e['articles'] = kept
+    e['count'] = len(kept)
     # 🆕 e 项:过滤定稿后应用 title/desc 智能切换(临时字段 _h1/_jd/_src 在此 pop)
     e['articles'] = apply_display_fields(e['articles'])
     e['crawlers'] = sorted(e['crawlers'])

@@ -247,12 +247,21 @@ export function getThrottleGroup(url: string): ThrottleGroup {
     }
 }
 
+// host 归一(strip www)· 白名单 host 级口径共用
+export function normalizedHostOfUrl(url: string | undefined): string {
+    const h = hostOfUrl(url ?? '');
+    return h.startsWith('www.') ? h.slice(4) : h;
+}
+
 // 数据级白名单过滤(老板 2026-07-01 拍 · push.ts / 聚合共用同一语义):
 // 1. 先丢文件型 URL + 🆕 noise URL(followers/tag/分页 · 修 medium custom-domain 源白名单不触发时系统页全放行)
-// 2. 该 token 有白名单 article → 只留白名单的 · 其余全丢
-// 3. 无白名单 → 留全部非文件非 noise
+// 2. 🆕 2026-07-05 核对战役改 host 级口径:同 host 内有白名单文 → 该 host 只留白名单(DIA use-cases 同 host 拦截语义不变);
+//    跨 host 渠道不互杀 —— token 级口径会让官网白名单灭杀 medium/子域博客合法渠道(OXT blog.orchid.com 275 条 · NIL/EDEN medium · DCR blog.decred.org 实锤)
+// 3. 该 host 无白名单 → 留全部非文件非 noise
 export function filterArticlesWhitelistFirst<T extends { url?: string }>(items: T[]): T[] {
     const real = items.filter((it) => !it.url || (!isNonArticleFile(it.url) && !isNoiseUrl(it.url)));
-    const white = real.filter((it) => it.url && isWhitelistedArticleUrl(it.url));
-    return white.length > 0 ? white : real;
+    const whiteHosts = new Set(
+        real.filter((it) => it.url && isWhitelistedArticleUrl(it.url)).map((it) => normalizedHostOfUrl(it.url)),
+    );
+    return real.filter((it) => !it.url || isWhitelistedArticleUrl(it.url) || !whiteHosts.has(normalizedHostOfUrl(it.url)));
 }

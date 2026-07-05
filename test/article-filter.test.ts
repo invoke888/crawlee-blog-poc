@@ -235,3 +235,25 @@ test('normalizePublishedAt · 无年份日期 V8 默认 2001 → 当前年兜底
     // 真 2001 年日期不受影响
     assert.equal(normalizePublishedAt('2001-11-12'), '2001-11-12T00:00:00.000Z');
 });
+
+test('filterArticlesWhitelistFirst · host 级口径(OXT/NIL 双渠道实锤 · 2026-07-05)', () => {
+    // 官网 news(白)+ medium 渠道(无白段)合法共存 → medium 不被跨 host 灭杀
+    const dual = [
+        { url: 'https://nillion.com/news/nil-token-migration-guide/' },
+        { url: 'https://medium.com/@Nillion_Network/some-partnership-post-abc123' },
+        { url: 'https://blog.orchid.com/orchid-partners-with-bloq/' },
+    ];
+    assert.deepEqual(filterArticlesWhitelistFirst(dual), dual);
+    // DIA 同 host 语义不回归:同 host 有白名单 → 该 host 非白仍然丢
+    const sameHost = [
+        { url: 'https://www.diadata.org/blog/real-post' },
+        { url: 'https://www.diadata.org/use-cases/zktls-oracle' },
+    ];
+    assert.deepEqual(filterArticlesWhitelistFirst(sameHost), [{ url: 'https://www.diadata.org/blog/real-post' }]);
+    // www 归一:www.x.com 与 x.com 视为同 host
+    const wwwMix = [
+        { url: 'https://www.x.com/blog/real' },
+        { url: 'https://x.com/random-landing' },
+    ];
+    assert.deepEqual(filterArticlesWhitelistFirst(wwwMix), [{ url: 'https://www.x.com/blog/real' }]);
+});

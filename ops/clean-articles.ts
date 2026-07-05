@@ -4,7 +4,7 @@
 // 顺序铁律:必须在收割过滤(run-batch)上线后执行,否则补漏扫描会把删掉的从 dataset 重新收进来
 import { writeFileSync } from 'node:fs';
 import { db } from '../shared/db.js';
-import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlockedSubdomainUrl, hostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
+import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlockedSubdomainUrl, hostOfUrl, normalizedHostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
 
 const confirm = process.argv.includes('--confirm');
 const d = db();
@@ -17,10 +17,11 @@ for (const r of d.prepare('SELECT token_id, blog_url FROM sources').all() as { t
 interface Row { url: string; token_id: number; base_symbol: string; title: string }
 const rows = d.prepare('SELECT url, token_id, base_symbol, title FROM articles').all() as Row[];
 
-// 与 filterArticlesWhitelistFirst 同语义:该源有白名单文 → 非白名单全丢
-const whiteByToken = new Map<number, boolean>();
+// 与 filterArticlesWhitelistFirst 同语义 · 🆕 2026-07-05 host 级口径:
+// 同 host 内有白名单文才独占该 host · 跨渠道(官网白名单 vs medium/子域博客)不互杀(OXT/NIL/EDEN/DCR 实锤)
+const whiteByTokenHost = new Set<string>();
 for (const r of rows) {
-    if (isWhitelistedArticleUrl(r.url)) whiteByToken.set(r.token_id, true);
+    if (isWhitelistedArticleUrl(r.url)) whiteByTokenHost.add(`${r.token_id}:${normalizedHostOfUrl(r.url)}`);
 }
 
 const reasons = new Map<string, number>();
@@ -31,7 +32,7 @@ for (const r of rows) {
     else if (isNoiseUrl(r.url)) reason = 'noise';
     else if (isLandingUrl(r.url)) reason = 'landing';
     else if (isBlockedSubdomainUrl(r.url, blogHostByToken.get(r.token_id))) reason = 'blocked_subdomain';
-    else if (whiteByToken.get(r.token_id) && !isWhitelistedArticleUrl(r.url)) reason = 'non_whitelist';
+    else if (whiteByTokenHost.has(`${r.token_id}:${normalizedHostOfUrl(r.url)}`) && !isWhitelistedArticleUrl(r.url)) reason = 'non_whitelist';
     if (reason) {
         doomed.push({ ...r, reason });
         reasons.set(reason, (reasons.get(reason) ?? 0) + 1);
