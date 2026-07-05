@@ -12,6 +12,7 @@ import {
 import { cfgNum } from '../shared/config.js';
 import { getProxyUrl, hashProxy } from '../shared/proxy-config.js';
 import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlacklistedHost, isBlockedSubdomainUrl, hostOfUrl, normalizedHostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
+import { rulesFor } from '../src/utils/date-extract.js';
 import { runDetector } from './detector.js';
 import { runPusher } from './pusher.js';
 
