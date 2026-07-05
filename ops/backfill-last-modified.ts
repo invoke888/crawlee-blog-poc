@@ -14,9 +14,9 @@ const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (
 const CONCURRENCY = 4;
 
 const d = db();
-interface Row { url: string; base_symbol: string }
+interface Row { url: string; base_symbol: string; first_crawled: string }
 const rows = d.prepare(`
-    SELECT url, MIN(base_symbol) AS base_symbol FROM articles
+    SELECT url, MIN(base_symbol) AS base_symbol, MIN(crawled_at) AS first_crawled FROM articles
     WHERE published_at IS NULL OR published_at = '' GROUP BY url
 `).all() as Row[];
 
@@ -50,7 +50,9 @@ async function worker(queue: Row[]): Promise<void> {
         const r = queue.shift();
         if (!r) return;
         const lm = await probe(r.url);
-        const iso = normalizeHeaderLastModified(lm, Date.now());
+        let iso = normalizeHeaderLastModified(lm, Date.now());
+        // 🆕 2026-07-05 老板抓 CSPR 实锤:候选值晚于该行首采时间+5min = 页面重生成/CDN 戳 · 非发布时间 → 弃
+        if (iso && r.first_crawled && Date.parse(iso) > Date.parse(r.first_crawled) + 5 * 60 * 1000) iso = '';
         results.push({ url: r.url, base_symbol: r.base_symbol, lm, iso });
         done += 1;
         if (done % 50 === 0) console.log(`… ${done}/${targets.length}`);

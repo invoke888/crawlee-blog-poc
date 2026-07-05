@@ -93,6 +93,8 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
         for (const a of rows) {
             if (a.published_at || !a.header_last_modified) continue;
             if (rulesFor(a.url)?.date?.ban?.includes('last_modified')) continue;
+            // 🆕 2026-07-05 老板抓 CSPR 实锤:发布时间不可能晚于采集时间(晚于=页面重生成/CDN 戳 · 非发布时间)
+            if (a.crawled_at && Date.parse(a.header_last_modified) > Date.parse(a.crawled_at) + 5 * 60 * 1000) continue;
             a.published_at = a.header_last_modified;
             n += 1;
         }
