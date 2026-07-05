@@ -28,11 +28,13 @@ export const CONFIG_DEFAULTS: Record<string, { value: string; type: 'number' | '
     error_streak_runs_red: { value: '4', type: 'number', category: 'alerts', label: '连续出错升红色轮数' },
     list_shrink_min: { value: '5', type: 'number', category: 'alerts', label: 'list_shrink 原候选下限' },
     pipeline_drop_pct: { value: '70', type: 'number', category: 'alerts', label: '管线跌幅告警 %' },
-    // push
+    // push(officialblog API · HMAC 签名 · 2026-07-06 对接)
     push_enabled: { value: '0', type: 'bool', category: 'push', label: 'push 开关' },
-    push_api_url: { value: '', type: 'secret', category: 'push', label: 'PUSH_API_URL' },
-    push_api_secret: { value: '', type: 'secret', category: 'push', label: 'PUSH_API_SECRET' },
+    push_api_url: { value: '', type: 'secret', category: 'push', label: 'PUSH_API base host(如 http://124.222.33.143:9900)' },
+    push_api_key: { value: '', type: 'secret', category: 'push', label: 'PUSH_API X-API-Key' },
+    push_api_secret: { value: '', type: 'secret', category: 'push', label: 'PUSH_API clientSecret(HMAC 签名)' },
     push_retry_max: { value: '3', type: 'number', category: 'push', label: 'push 自动重试上限' },
+    push_batch_size: { value: '200', type: 'number', category: 'push', label: 'push 每批条数(≤200)' },
 };
 
 function readDb(key: string): string | null {
