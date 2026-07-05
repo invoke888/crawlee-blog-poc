@@ -125,12 +125,24 @@ def is_noise(url):
         last = re.sub(r'\.(html?|php|aspx?)$', '', segs[-1]) if segs else ''
         if last and (PAGINATION_LAST.match(last) or last in NOISE_LAST or last.startswith('sitemap')):
             return True
+        # 🆕 2026-07-05 核对战役:白名单词末段=栏目索引页(socios /es/blog/ · chain.link/newsroom 实锤)
+        if last and last in WHITELIST:
+            return True
         if last and last in LANDING and not any(s in WHITELIST for s in segs):
+            return True
+        # 法律页复合词末段(2026-07-04 MEGA 实锤 · 2026-07-05 补同步:此前只在 TS 侧)
+        if last and re.search(r'-(terms(-of-(use|service))?|privacy(-policy)?|disclaimer)$', last):
+            return True
+        # 🆕 2026-07-05 新复合词带白名单保护(RIF terms-conditions / macropod -faq / NAORIS white-paper 实锤)
+        if last and not any(s in WHITELIST for s in segs) and re.search(r'(?:^|-)(terms-(?:and-)?conditions|faq|white-?paper)$', last):
             return True
         q = parse_qs(u.query)
         if 'collection_home_page' in (q.get('source', [''])[0] or ''):
             return True
         if 'orderBy' in q:
+            return True
+        # 营销活动 UTM(2026-07-04 SPURS 实锤 · 2026-07-05 补同步:此前只在 TS 侧)
+        if re.search(r'retail|promo', (q.get('utm_campaign', [''])[0] or ''), re.I):
             return True
         return False
     except Exception:

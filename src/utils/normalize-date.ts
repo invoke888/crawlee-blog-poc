@@ -37,7 +37,19 @@ export function normalizePublishedAt(raw: string | null | undefined): string {
         const cleaned = s.replace(/(\d)(?:st|nd|rd|th)\b/gi, '$1').replace(/(\w)\.(\s)/g, '$1$2');
         const t2 = Date.parse(cleaned);
         if (Number.isNaN(t2)) return '';
-        return new Date(t2).toISOString();
+        return fixYearlessDefault(t2, s);
     }
-    return new Date(t).toISOString();
+    return fixYearlessDefault(t, s);
+}
+
+// 🆕 2026-07-05 核对战役实锤(KAVA "Wed Nov, 12" 型无年份日期):V8 Date.parse 缺年份默认落 2001
+// 原串不含 "2001" 却解析出 2001 年 = 无年份格式 → 用当前年兜底;兜出未来 >48h 则回退一年(站点显示的是最近一次该日期)
+function fixYearlessDefault(t: number, raw: string): string {
+    const d = new Date(t);
+    if (d.getUTCFullYear() === 2001 && !raw.includes('2001')) {
+        const now = Date.now();
+        d.setUTCFullYear(new Date(now).getUTCFullYear());
+        if (d.getTime() - now > 48 * 3600 * 1000) d.setUTCFullYear(d.getUTCFullYear() - 1);
+    }
+    return d.toISOString();
 }

@@ -72,9 +72,16 @@ export function isNoiseUrl(url: string): boolean {
         if (segs.some((s) => NOISE_SEGMENTS.has(s))) return true;
         const last = (segs[segs.length - 1] ?? '').replace(PAGE_EXT_RE, '');
         if (last && (PAGINATION_LAST_RE.test(last) || NOISE_LAST_SEGMENTS.has(last) || last.startsWith('sitemap'))) return true;
+        // 🆕 2026-07-05 核对战役实锤(socios /es/blog/ · chain.link/newsroom · hive @xx/posts):
+        // 白名单词作末段 = 栏目索引页不是文章(真文形态是 /blog/<slug> 词在中段)· 存量核验零误伤
+        if (last && WHITELIST_SEGMENTS.has(last)) return true;
         if (last && LANDING_SEGMENTS.has(last) && !segs.some((s) => WHITELIST_SEGMENTS.has(s))) return true;
         // 🆕 2026-07-04 复检:法律页复合词末段(MEGA /rabbithole-terms-of-use 实锤 · 整段词穷举不动这类)
         if (last && /-(terms(-of-(use|service))?|privacy(-policy)?|disclaimer)$/.test(last)) return true;
+        // 🆕 2026-07-05 核对战役(RIF /terms-conditions/ · macropod /travel-rule-faq · NAORIS /mica-compliance-white-paper):
+        // 新增复合词带白名单段保护(/blog/what-is-x-faq 类解读真文不误杀)
+        if (last && !segs.some((s) => WHITELIST_SEGMENTS.has(s))
+            && /(?:^|-)(terms-(?:and-)?conditions|faq|white-?paper)$/.test(last)) return true;
         // medium 系统页/列表页 query 特征(合集主页来源标记 · 列表排序参数)
         if ((u.searchParams.get('source') ?? '').includes('collection_home_page')) return true;
         if (u.searchParams.has('orderBy')) return true;

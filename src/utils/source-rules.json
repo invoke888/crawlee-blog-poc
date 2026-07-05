@@ -1,1423 +1,1427 @@
 {
- "_comment": "per-source 文章 URL 规则(2026-07-03 · 17 agent 审计 205 嫌疑源 · 全 17 片到齐)· 只有 confidence=high 强制过滤",
- "_modes": "include_prefixes: path 段级前缀(带尾斜杠) · include_regex: 日期型等正则 · exclude_prefixes: 语言变体/子栏目排除 · mode=sitemap-only: 真假URL同形站 · 直接用站方 post-sitemap.xml 白名单入队(不走 LIST/常规 sitemap)",
- "rules": {
-  "ACM": {
-   "confidence": "mid",
-   "exclude_prefixes": [
-    "/blog/",
-    "/cdn-cgi/",
-    "/governance/",
-    "/why-chiliz-chain/",
-    "/vision2030/",
-    "/careers/",
-    "/events/",
-    "/glossary/",
-    "/privacy-policy/",
-    "/cookies-policy/",
-    "/terms-and-conditions/",
-    "/security/",
-    "/sustainability/",
-    "/the-chiliz-group/",
-    "/key-features/",
-    "/fan-token-network/",
-    "/become-a-validator/",
-    "/staking-risks-disclosure/",
-    "/documentation/",
-    "/recruitment-privacy-policy/",
-    "/wp-json/",
-    "/feed/",
-    "/comments/"
-   ],
-   "mode": "sitemap-only",
-   "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
-  },
-  "ADA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ],
-   "exclude_prefixes": [
-    "/de/",
-    "/es/",
-    "/ja/",
-    "/vi/"
-   ]
-  },
-  "ALGO": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/tag/",
-    "/blog/page/"
-   ]
-  },
-  "ANKR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/page/"
-   ]
-  },
-  "ARDR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ],
-   "exclude_prefixes": [
-    "/es/",
-    "/ko/",
-    "/zh-hans/"
-   ]
-  },
-  "ARKM": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/research/"
-   ]
-  },
-  "ASTR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/post/"
-   ],
-   "exclude_prefixes": [
-    "/ja/",
-    "/ko/"
-   ]
-  },
-  "AUDM": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/resources/"
-   ]
-  },
-  "AVA": {
-   "confidence": "mid",
-   "exclude_prefixes": [
-    "/news/",
-    "/about/",
-    "/community/",
-    "/governance/",
-    "/privacy-policy/",
-    "/terms-of-use/",
-    "/resources/",
-    "/ecosystem-partners/",
-    "/ava-token/",
-    "/ava-smart-program/",
-    "/ava-rewards-terms-and-conditions/",
-    "/ava-utility-token-disclaimer/",
-    "/nft-sale-and-purchase-agreement/",
-    "/wp-json/",
-    "/xmlrpc.php/"
-   ]
-  },
-  "AXL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "AZTEC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/zh/",
-    "/ja/",
-    "/ko/"
-   ]
-  },
-  "BABY": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "BILL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/ko/"
-   ]
-  },
-  "BIO": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog-posts/"
-   ]
-  },
-  "BRL1": {
-   "confidence": "mid",
-   "include_prefixes": [
-    "/projects/"
-   ]
-  },
-  "BTC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/en/posts/"
-   ],
-   "exclude_prefixes": [
-    "/uk/",
-    "/hi/",
-    "/it/",
-    "/sl/",
-    "/da/",
-    "/ca/",
-    "/de/",
-    "/es/",
-    "/fr/",
-    "/id/",
-    "/ru/",
-    "/ja/",
-    "/ko/",
-    "/zh_cn/",
-    "/zh_tw/"
-   ]
-  },
-  "CFG": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "CGPT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/",
-    "/guides/"
-   ],
-   "exclude_prefixes": [
-    "/ko/"
-   ]
-  },
-  "CORE": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "CSPR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ]
-  },
-  "CTC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/tag/",
-    "/blog/page/",
-    "/blog/rss/",
-    "/blog/webmentions/",
-    "/blog/assets/",
-    "/blog/public/"
-   ]
-  },
-  "DASH": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/",
-    "/news/"
-   ],
-   "exclude_prefixes": [
-    "/blog/page/"
-   ]
-  },
-  "DEEP": {
-   "confidence": "high",
-   "exclude_prefixes": [
-    "/about/",
-    "/author/",
-    "/tag/",
-    "/contribute-an-article/",
-    "/rss/",
-    "/webmentions/",
-    "/assets/",
-    "/public/",
-    "/file/"
-   ]
-  },
-  "DOGE": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/fr/",
-    "/de/",
-    "/he/",
-    "/zh-cn/",
-    "/pt/",
-    "/no/",
-    "/th/",
-    "/zh-tw/",
-    "/id/",
-    "/es/"
-   ]
-  },
-  "DRIFT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/updates/"
-   ]
-  },
-  "DYDX": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "EUR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/press/blog/date/"
-   ]
-  },
-  "EURI": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ],
-   "exclude_prefixes": [
-    "/news/page/"
-   ]
-  },
-  "LQTY": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "LYN": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/posts/"
-   ],
-   "exclude_prefixes": [
-    "/ja/",
-    "/zh/",
-    "/ko/",
-    "/de/",
-    "/fr/",
-    "/it/",
-    "/es/",
-    "/pt/"
-   ]
-  },
-  "MANA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/announcements/"
-   ]
-  },
-  "MED": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/2023/",
-    "/2025/",
-    "/2026/"
-   ]
-  },
-  "METIS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "MEW": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ]
-  },
-  "MNT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/ja/",
-    "/ru/",
-    "/zh/"
-   ]
-  },
-  "MOCA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "MOVE": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/article/"
-   ]
-  },
-  "MOVR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ]
-  },
-  "NEAR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "OGN": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "ON": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/category/"
-   ]
-  },
-  "OP": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/case-studies/"
-   ]
-  },
-  "ORBS": {
-   "confidence": "low",
-   "exclude_prefixes": [
-    "/liquidity-hub/",
-    "/faq/",
-    "/dtwap/",
-    "/dlimit/",
-    "/policy/"
-   ]
-  },
-  "PAXG": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "PEAQ": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "PHAROS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "PLUME": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "POL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "PORTO": {
-   "confidence": "low",
-   "exclude_prefixes": [
-    "/blog/",
-    "/fr/"
-   ],
-   "mode": "sitemap-only",
-   "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
-  },
-  "POWR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/media/"
-   ],
-   "exclude_prefixes": [
-    "/category/",
-    "/20/"
-   ]
-  },
-  "PRCL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "PROS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/resources/",
-    "/ecosystem/"
-   ]
-  },
-  "PYTH": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/mediaroom/",
-    "/publishers/",
-    "/events/"
-   ]
-  },
-  "QTUM": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/test2/"
-   ]
-  },
-  "RAD": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/t/"
-   ],
-   "exclude_prefixes": [
-    "/u/",
-    "/c/"
-   ]
-  },
-  "REQ": {
-   "confidence": "mid",
-   "exclude_prefixes": [
-    "/blog/",
-    "/privacy-policy/",
-    "/legal-notice/",
-    "/accept-crypto/",
-    "/contact/",
-    "/whitepaper/",
-    "/send-crypto/",
-    "/about-us/",
-    "/cookie-policy/",
-    "/api-terms-and-conditions/",
-    "/req-token/",
-    "/category/",
-    "/wp-json/",
-    "/xmlrpc.php/"
-   ],
-   "mode": "sitemap-only",
-   "post_sitemap": "https://request.network/post-sitemap.xml"
-  },
-  "RESOLV": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "RLS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/event/"
-   ]
-  },
-  "ROSE": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "SAHARA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/ko/",
-    "/ru/",
-    "/zh/"
-   ]
-  },
-  "SANTOS": {
-   "confidence": "low",
-   "exclude_prefixes": [
-    "/fr/"
-   ],
-   "mode": "sitemap-only",
-   "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
-  },
-  "SAPIEN": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "SCR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "SCRT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "SLX": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/ko/",
-    "/zh/"
-   ]
-  },
-  "SNT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "SOL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ],
-   "exclude_prefixes": [
-    "/ar/",
-    "/de/",
-    "/el/",
-    "/es/",
-    "/fi/",
-    "/fr/",
-    "/id/",
-    "/it/",
-    "/ja/",
-    "/ko/",
-    "/nl/",
-    "/pl/",
-    "/pt/",
-    "/ru/",
-    "/tr/",
-    "/uk/",
-    "/vi/",
-    "/zh/"
-   ]
-  },
-  "SONY": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "SPURS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ]
-  },
-  "SSV": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "STEEM": {
-   "confidence": "mid",
-   "include_prefixes": [
-    "/@steemitblog/"
-   ],
-   "exclude_prefixes": [
-    "/@steemitblog/",
-    "/@steemitblog/followers/",
-    "/privacy.html/"
-   ]
-  },
-  "STORJ": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog-posts/"
-   ]
-  },
-  "STX": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog-categories/"
-   ]
-  },
-  "SWELL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/post/"
-   ],
-   "exclude_prefixes": [
-    "/category/",
-    "/legal/"
-   ]
-  },
-  "SXT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "TWLO": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/en-us/blog/"
-   ],
-   "exclude_prefixes": [
-    "/en-us/lp/"
-   ]
-  },
-  "TWT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/converter/",
-    "/ko/"
-   ]
-  },
-  "USDC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "USDG": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/newsroom/"
-   ]
-  },
-  "USDP": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "USDT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/https://tether.io/blog/",
-    "/https://tether.io/news/"
-   ]
-  },
-  "USUAL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/",
-    "/updates/"
-   ]
-  },
-  "WBTC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/resources/blog/"
-   ],
-   "exclude_prefixes": [
-    "/en-eu/",
-    "/en/",
-    "/es-mx/",
-    "/ja-jp/",
-    "/ko-kr/",
-    "/pt-br/",
-    "/uk/",
-    "/resources/blog/page/"
-   ]
-  },
-  "WLD": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "XAUT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/https://tether.io/blog/",
-    "/https://tether.io/news/"
-   ]
-  },
-  "XCH": {
-   "confidence": "high",
-   "include_regex": "^/\\d{4}/\\d{2}/\\d{2}/",
-   "exclude_prefixes": [
-    "/blog/",
-    "/chia-signer/",
-    "/ip-trademarks/"
-   ]
-  },
-  "XMR": {
-   "confidence": "high",
-   "include_regex": "^/\\d{4}/\\d{2}/\\d{2}/",
-   "exclude_prefixes": [
-    "/blog/"
-   ]
-  },
-  "XNO": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/en/blog/"
-   ],
-   "exclude_prefixes": [
-    "/en/blog/author/",
-    "/en/blog/category/",
-    "/en/blog/rss/"
-   ]
-  },
-  "XPL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/company/blog/"
-   ],
-   "exclude_prefixes": [
-    "/es/",
-    "/ja/",
-    "/ko/",
-    "/pt/",
-    "/tr/",
-    "/vi/",
-    "/zh/"
-   ]
-  },
-  "XRP": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "XUSD": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog-post/"
-   ],
-   "exclude_prefixes": [
-    "/blog-category/"
-   ]
-  },
-  "ZAMA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/post/"
-   ]
-  },
-  "ZRX": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/post/"
-   ]
-  },
-  "ANTHROPIC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/p/"
-   ]
-  },
-  "BANK": {
-   "confidence": "high",
-   "exclude_prefixes": [
-    "/page/",
-    "/rss/",
-    "/tag/",
-    "/author/",
-    "/portal/",
-    "/webmentions/"
-   ]
-  },
-  "BARD": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "BCH": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/en/newsroom/"
-   ],
-   "exclude_prefixes": [
-    "/zh/",
-    "/es/",
-    "/ja/",
-    "/ko/",
-    "/de/",
-    "/fr/",
-    "/it/",
-    "/nl/",
-    "/no/"
-   ]
-  },
-  "COLLECT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "CTR": {
-   "confidence": "high",
-   "exclude_prefixes": [
-    "/page/",
-    "/rss/",
-    "/webmentions/"
-   ]
-  },
-  "CTSI": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/",
-    "/contributor-hub/"
-   ],
-   "exclude_prefixes": [
-    "/blog/category/",
-    "/contributor-hub/category/"
-   ]
-  },
-  "ENS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/post/"
-   ],
-   "exclude_prefixes": [
-    "/blog/author/"
-   ]
-  },
-  "FOGO": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/old/"
-   ]
-  },
-  "FORT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "GRASS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/learn/"
-   ]
-  },
-  "GWEI": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "HBAR": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/tag/",
-    "/blog/event-type/",
-    "/blog/category/",
-    "/blog/hedera-metrics/"
-   ]
-  },
-  "HYPER": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog-posts-new/"
-   ]
-  },
-  "IMX": {
-   "confidence": "mid",
-   "include_prefixes": [
-    "/blog/",
-    "/resources/insights/",
-    "/resources/guides/"
-   ],
-   "exclude_prefixes": [
-    "/resources/free-steam-tools/"
-   ]
-  },
-  "IP": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/category/",
-    "/blog/page/",
-    "/blog/rss.xml/"
-   ]
-  },
-  "IRYS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "ISRG": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/learn/"
-   ]
-  },
-  "JELLYJELLY": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "KERNEL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "KLAC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/learn/"
-   ]
-  },
-  "LRCX": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/learn/"
-   ]
-  },
-  "MENGO": {
-   "confidence": "low",
-   "exclude_prefixes": [
-    "/blog/",
-    "/blog-category/",
-    "/legal-hub/",
-    "/wp-json/",
-    "/feed/",
-    "/comments/",
-    "/it/",
-    "/es/",
-    "/pt-br/",
-    "/pt-pt/",
-    "/uk/",
-    "/teams/",
-    "/how-it-works/",
-    "/fan-tokens/",
-    "/rewards/",
-    "/security/",
-    "/campus/",
-    "/sustainability/",
-    "/cookies-policy/"
-   ],
-   "mode": "sitemap-only",
-   "post_sitemap": "https://www.socios.com/post-sitemap.xml"
-  },
-  "MINIMAX": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/",
-    "/news/"
-   ],
-   "exclude_prefixes": [
-    "/models/"
-   ]
-  },
-  "NIGHT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "OMI": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/category/",
-    "/blog/tag/",
-    "/blog/page/"
-   ]
-  },
-  "PI": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/page/"
-   ]
-  },
-  "SAFE": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "SFP": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/en/blog/"
-   ]
-  },
-  "SKY": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "SOXL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/learn/"
-   ]
-  },
-  "STBL": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "STRK": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "T": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "TAC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/es/",
-    "/ko/",
-    "/ru/",
-    "/zh/"
-   ]
-  },
-  "TER": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/learn/"
-   ]
-  },
-  "TREE": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "TRUTH": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "TSEM": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/learn/"
-   ]
-  },
-  "TTMI": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/learn/"
-   ]
-  },
-  "USDS": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "VANA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/posts/",
-    "/articles/"
-   ],
-   "exclude_prefixes": [
-    "/events/",
-    "/vana-press/",
-    "/academy/",
-    "/collectives/",
-    "/es/",
-    "/ko/",
-    "/pt/",
-    "/zh/"
-   ]
-  },
-  "W": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/products/",
-    "/pages/",
-    "/platform/",
-    "/case-studies/",
-    "/brand-and-press/"
-   ]
-  },
-  "WOO": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/blog/category/",
-    "/zh/",
-    "/vn/"
-   ]
-  },
-  "XEC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "XLM": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/ecosystem/",
-    "/blog/foundation-news/",
-    "/blog/developers/",
-    "/blog/policy/"
-   ],
-   "exclude_prefixes": [
-    "/events/",
-    "/es/blog/"
-   ]
-  },
-  "XTZ": {
-   "confidence": "high",
-   "exclude_prefixes": [
-    "/featured/",
-    "/author/"
-   ]
-  },
-  "ZRO": {
-   "confidence": "high",
-   "exclude_prefixes": [
-    "/followers/",
-    "/about/",
-    "/feed/",
-    "/m/signin/",
-    "/search/"
-   ]
-  },
-  "FIL": {
-   "confidence": "mid",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "FLOW": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/post/",
-    "/engineering-blogs/"
-   ]
-  },
-  "G": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "GNO": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "H": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/ko/"
-   ]
-  },
-  "HOT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "ICNT": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/articles/"
-   ]
-  },
-  "INJ": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/vn/",
-    "/ko/"
-   ]
-  },
-  "IOTX": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "KAVA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/"
-   ]
-  },
-  "LAYER": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/resources/blog/"
-   ]
-  },
-  "LAZIO": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/en/news/",
-    "/en/latest-news/"
-   ],
-   "exclude_prefixes": [
-    "/it/"
-   ]
-  },
-  "CHZ": {
-   "mode": "sitemap-only",
-   "post_sitemap": "https://www.chiliz.com/post-sitemap.xml",
-   "confidence": "high"
-  },
-  "BAT": {
-   "mode": "sitemap-only",
-   "post_sitemap": "https://basicattentiontoken.org/post-sitemap.xml",
-   "confidence": "high"
-  },
-  "OG": {
-   "mode": "sitemap-only",
-   "post_sitemap": "https://ogs.gg/post-sitemap.xml",
-   "confidence": "high"
-  },
-  "0G": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "ARC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
-  },
-  "CVC": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/news/",
-    "/field-notes/"
-   ]
-  },
-  "CYBER": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/article/"
-   ]
-  },
-  "FIDA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ],
-   "exclude_prefixes": [
-    "/zh-Hans/blog/",
-    "/ko/blog/",
-    "/pseudo/blog/"
-   ]
-  },
-  "PHA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/posts/"
-   ]
-  },
-  "TRIA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/en/blogs/"
-   ]
-  },
-  "ZORA": {
-   "confidence": "high",
-   "include_prefixes": [
-    "/blog/"
-   ]
+  "_comment": "per-source 文章 URL 规则(2026-07-03 · 17 agent 审计 205 嫌疑源 · 全 17 片到齐)· 只有 confidence=high 强制过滤",
+  "_modes": "include_prefixes: path 段级前缀(带尾斜杠) · include_regex: 日期型等正则 · exclude_prefixes: 语言变体/子栏目排除 · mode=sitemap-only: 真假URL同形站 · 直接用站方 post-sitemap.xml 白名单入队(不走 LIST/常规 sitemap)",
+  "rules": {
+    "ACM": {
+      "confidence": "mid",
+      "exclude_prefixes": [
+        "/blog/",
+        "/cdn-cgi/",
+        "/governance/",
+        "/why-chiliz-chain/",
+        "/vision2030/",
+        "/careers/",
+        "/events/",
+        "/glossary/",
+        "/privacy-policy/",
+        "/cookies-policy/",
+        "/terms-and-conditions/",
+        "/security/",
+        "/sustainability/",
+        "/the-chiliz-group/",
+        "/key-features/",
+        "/fan-token-network/",
+        "/become-a-validator/",
+        "/staking-risks-disclosure/",
+        "/documentation/",
+        "/recruitment-privacy-policy/",
+        "/wp-json/",
+        "/feed/",
+        "/comments/"
+      ],
+      "mode": "sitemap-only",
+      "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
+    },
+    "ADA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ],
+      "exclude_prefixes": [
+        "/de/",
+        "/es/",
+        "/ja/",
+        "/vi/"
+      ]
+    },
+    "ALGO": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/tag/",
+        "/blog/page/"
+      ]
+    },
+    "ANKR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/page/"
+      ]
+    },
+    "ARDR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ],
+      "exclude_prefixes": [
+        "/es/",
+        "/ko/",
+        "/zh-hans/"
+      ]
+    },
+    "ARKM": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/research/"
+      ]
+    },
+    "ASTR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/post/"
+      ],
+      "exclude_prefixes": [
+        "/ja/",
+        "/ko/"
+      ]
+    },
+    "AUDM": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/resources/"
+      ],
+      "exclude_prefixes": [
+        "/resources/unblocking-the-chain-a-jellyc-macropod-show/"
+      ],
+      "_note": "2026-07-05 核对:resources 混播客页 · 精确排除(travel-rule-faq 走全局 -faq$ 复合词)"
+    },
+    "AVA": {
+      "confidence": "mid",
+      "exclude_prefixes": [
+        "/news/",
+        "/about/",
+        "/community/",
+        "/governance/",
+        "/privacy-policy/",
+        "/terms-of-use/",
+        "/resources/",
+        "/ecosystem-partners/",
+        "/ava-token/",
+        "/ava-smart-program/",
+        "/ava-rewards-terms-and-conditions/",
+        "/ava-utility-token-disclaimer/",
+        "/nft-sale-and-purchase-agreement/",
+        "/wp-json/",
+        "/xmlrpc.php/"
+      ]
+    },
+    "AXL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "AZTEC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/zh/",
+        "/ja/",
+        "/ko/"
+      ]
+    },
+    "BABY": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "BILL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/ko/"
+      ]
+    },
+    "BIO": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog-posts/"
+      ]
+    },
+    "BRL1": {
+      "confidence": "mid",
+      "include_prefixes": [
+        "/projects/"
+      ]
+    },
+    "BTC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/en/posts/"
+      ],
+      "exclude_prefixes": [
+        "/uk/",
+        "/hi/",
+        "/it/",
+        "/sl/",
+        "/da/",
+        "/ca/",
+        "/de/",
+        "/es/",
+        "/fr/",
+        "/id/",
+        "/ru/",
+        "/ja/",
+        "/ko/",
+        "/zh_cn/",
+        "/zh_tw/"
+      ]
+    },
+    "CFG": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "CGPT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/",
+        "/guides/"
+      ],
+      "exclude_prefixes": [
+        "/ko/"
+      ]
+    },
+    "CORE": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "CSPR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ]
+    },
+    "CTC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/tag/",
+        "/blog/page/",
+        "/blog/rss/",
+        "/blog/webmentions/",
+        "/blog/assets/",
+        "/blog/public/"
+      ]
+    },
+    "DASH": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/",
+        "/news/"
+      ],
+      "exclude_prefixes": [
+        "/blog/page/"
+      ]
+    },
+    "DEEP": {
+      "confidence": "high",
+      "exclude_prefixes": [
+        "/about/",
+        "/author/",
+        "/tag/",
+        "/contribute-an-article/",
+        "/rss/",
+        "/webmentions/",
+        "/assets/",
+        "/public/",
+        "/file/"
+      ]
+    },
+    "DOGE": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/fr/",
+        "/de/",
+        "/he/",
+        "/zh-cn/",
+        "/pt/",
+        "/no/",
+        "/th/",
+        "/zh-tw/",
+        "/id/",
+        "/es/"
+      ]
+    },
+    "DRIFT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/updates/"
+      ]
+    },
+    "DYDX": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "EUR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/press/blog/date/"
+      ]
+    },
+    "EURI": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ],
+      "exclude_prefixes": [
+        "/news/page/"
+      ]
+    },
+    "LQTY": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "LYN": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/posts/"
+      ],
+      "exclude_prefixes": [
+        "/ja/",
+        "/zh/",
+        "/ko/",
+        "/de/",
+        "/fr/",
+        "/it/",
+        "/es/",
+        "/pt/"
+      ]
+    },
+    "MANA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/announcements/"
+      ]
+    },
+    "MED": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/2023/",
+        "/2025/",
+        "/2026/"
+      ]
+    },
+    "METIS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "MEW": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ]
+    },
+    "MNT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/ja/",
+        "/ru/",
+        "/zh/"
+      ]
+    },
+    "MOCA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "MOVE": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/article/"
+      ]
+    },
+    "MOVR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ]
+    },
+    "NEAR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "OGN": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "ON": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/category/"
+      ]
+    },
+    "OP": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/case-studies/"
+      ]
+    },
+    "ORBS": {
+      "confidence": "low",
+      "exclude_prefixes": [
+        "/liquidity-hub/",
+        "/faq/",
+        "/dtwap/",
+        "/dlimit/",
+        "/policy/"
+      ]
+    },
+    "PAXG": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "PEAQ": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "PHAROS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "PLUME": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "POL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "PORTO": {
+      "confidence": "low",
+      "exclude_prefixes": [
+        "/blog/",
+        "/fr/"
+      ],
+      "mode": "sitemap-only",
+      "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
+    },
+    "POWR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/media/"
+      ],
+      "exclude_prefixes": [
+        "/category/",
+        "/20/"
+      ]
+    },
+    "PRCL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "PROS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/resources/",
+        "/ecosystem/"
+      ]
+    },
+    "PYTH": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/mediaroom/",
+        "/publishers/",
+        "/events/"
+      ]
+    },
+    "QTUM": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/test2/"
+      ]
+    },
+    "RAD": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/t/"
+      ],
+      "exclude_prefixes": [
+        "/u/",
+        "/c/"
+      ]
+    },
+    "REQ": {
+      "confidence": "mid",
+      "exclude_prefixes": [
+        "/blog/",
+        "/privacy-policy/",
+        "/legal-notice/",
+        "/accept-crypto/",
+        "/contact/",
+        "/whitepaper/",
+        "/send-crypto/",
+        "/about-us/",
+        "/cookie-policy/",
+        "/api-terms-and-conditions/",
+        "/req-token/",
+        "/category/",
+        "/wp-json/",
+        "/xmlrpc.php/"
+      ],
+      "mode": "sitemap-only",
+      "post_sitemap": "https://request.network/post-sitemap.xml"
+    },
+    "RESOLV": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "RLS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/event/"
+      ]
+    },
+    "ROSE": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "SAHARA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/ko/",
+        "/ru/",
+        "/zh/"
+      ]
+    },
+    "SANTOS": {
+      "confidence": "low",
+      "exclude_prefixes": [
+        "/fr/"
+      ],
+      "mode": "sitemap-only",
+      "post_sitemap": "https://www.chiliz.com/post-sitemap.xml"
+    },
+    "SAPIEN": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "SCR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "SCRT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "SLX": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/ko/",
+        "/zh/"
+      ]
+    },
+    "SNT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "SOL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ],
+      "exclude_prefixes": [
+        "/ar/",
+        "/de/",
+        "/el/",
+        "/es/",
+        "/fi/",
+        "/fr/",
+        "/id/",
+        "/it/",
+        "/ja/",
+        "/ko/",
+        "/nl/",
+        "/pl/",
+        "/pt/",
+        "/ru/",
+        "/tr/",
+        "/uk/",
+        "/vi/",
+        "/zh/"
+      ]
+    },
+    "SONY": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "SPURS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ]
+    },
+    "SSV": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "STEEM": {
+      "confidence": "mid",
+      "include_prefixes": [
+        "/@steemitblog/"
+      ],
+      "exclude_prefixes": [
+        "/@steemitblog/",
+        "/@steemitblog/followers/",
+        "/privacy.html/"
+      ]
+    },
+    "STORJ": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog-posts/"
+      ]
+    },
+    "STX": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog-categories/"
+      ]
+    },
+    "SWELL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/post/"
+      ],
+      "exclude_prefixes": [
+        "/category/",
+        "/legal/"
+      ]
+    },
+    "SXT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "TWLO": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/en-us/blog/"
+      ],
+      "exclude_prefixes": [
+        "/en-us/lp/"
+      ]
+    },
+    "TWT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/converter/",
+        "/ko/"
+      ]
+    },
+    "USDC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "USDG": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/newsroom/"
+      ]
+    },
+    "USDP": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "USDT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/https://tether.io/blog/",
+        "/https://tether.io/news/"
+      ]
+    },
+    "USUAL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/",
+        "/updates/"
+      ]
+    },
+    "WBTC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/resources/blog/"
+      ],
+      "exclude_prefixes": [
+        "/en-eu/",
+        "/en/",
+        "/es-mx/",
+        "/ja-jp/",
+        "/ko-kr/",
+        "/pt-br/",
+        "/uk/",
+        "/resources/blog/page/"
+      ]
+    },
+    "WLD": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "XAUT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/https://tether.io/blog/",
+        "/https://tether.io/news/"
+      ]
+    },
+    "XCH": {
+      "confidence": "high",
+      "include_regex": "^/\\d{4}/\\d{2}/\\d{2}/",
+      "exclude_prefixes": [
+        "/blog/",
+        "/chia-signer/",
+        "/ip-trademarks/"
+      ]
+    },
+    "XMR": {
+      "confidence": "high",
+      "include_regex": "^/\\d{4}/\\d{2}/\\d{2}/",
+      "exclude_prefixes": [
+        "/blog/"
+      ]
+    },
+    "XNO": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/en/blog/"
+      ],
+      "exclude_prefixes": [
+        "/en/blog/author/",
+        "/en/blog/category/",
+        "/en/blog/rss/"
+      ]
+    },
+    "XPL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/company/blog/"
+      ],
+      "exclude_prefixes": [
+        "/es/",
+        "/ja/",
+        "/ko/",
+        "/pt/",
+        "/tr/",
+        "/vi/",
+        "/zh/"
+      ]
+    },
+    "XRP": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "XUSD": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog-post/"
+      ],
+      "exclude_prefixes": [
+        "/blog-category/"
+      ]
+    },
+    "ZAMA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/post/"
+      ]
+    },
+    "ZRX": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/post/"
+      ]
+    },
+    "ANTHROPIC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/p/"
+      ]
+    },
+    "BANK": {
+      "confidence": "high",
+      "exclude_prefixes": [
+        "/page/",
+        "/rss/",
+        "/tag/",
+        "/author/",
+        "/portal/",
+        "/webmentions/"
+      ]
+    },
+    "BARD": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "BCH": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/en/newsroom/"
+      ],
+      "exclude_prefixes": [
+        "/zh/",
+        "/es/",
+        "/ja/",
+        "/ko/",
+        "/de/",
+        "/fr/",
+        "/it/",
+        "/nl/",
+        "/no/"
+      ]
+    },
+    "COLLECT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "CTR": {
+      "confidence": "high",
+      "exclude_prefixes": [
+        "/page/",
+        "/rss/",
+        "/webmentions/"
+      ]
+    },
+    "CTSI": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/",
+        "/contributor-hub/"
+      ],
+      "exclude_prefixes": [
+        "/blog/category/",
+        "/contributor-hub/category/"
+      ]
+    },
+    "ENS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/post/"
+      ],
+      "exclude_prefixes": [
+        "/blog/author/"
+      ]
+    },
+    "FOGO": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/old/"
+      ]
+    },
+    "FORT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "GRASS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/learn/"
+      ]
+    },
+    "GWEI": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "HBAR": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/tag/",
+        "/blog/event-type/",
+        "/blog/category/",
+        "/blog/hedera-metrics/"
+      ]
+    },
+    "HYPER": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog-posts-new/"
+      ]
+    },
+    "IMX": {
+      "confidence": "mid",
+      "include_prefixes": [
+        "/blog/",
+        "/resources/insights/",
+        "/resources/guides/"
+      ],
+      "exclude_prefixes": [
+        "/resources/free-steam-tools/"
+      ]
+    },
+    "IP": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/category/",
+        "/blog/page/",
+        "/blog/rss.xml/"
+      ]
+    },
+    "IRYS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "ISRG": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/learn/"
+      ]
+    },
+    "JELLYJELLY": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "KERNEL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "KLAC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/learn/"
+      ]
+    },
+    "LRCX": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/learn/"
+      ]
+    },
+    "MENGO": {
+      "confidence": "low",
+      "exclude_prefixes": [
+        "/blog/",
+        "/blog-category/",
+        "/legal-hub/",
+        "/wp-json/",
+        "/feed/",
+        "/comments/",
+        "/it/",
+        "/es/",
+        "/pt-br/",
+        "/pt-pt/",
+        "/uk/",
+        "/teams/",
+        "/how-it-works/",
+        "/fan-tokens/",
+        "/rewards/",
+        "/security/",
+        "/campus/",
+        "/sustainability/",
+        "/cookies-policy/"
+      ],
+      "mode": "sitemap-only",
+      "post_sitemap": "https://www.socios.com/post-sitemap.xml"
+    },
+    "MINIMAX": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/",
+        "/news/"
+      ],
+      "exclude_prefixes": [
+        "/models/"
+      ]
+    },
+    "NIGHT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "OMI": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/category/",
+        "/blog/tag/",
+        "/blog/page/"
+      ]
+    },
+    "PI": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/page/"
+      ]
+    },
+    "SAFE": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "SFP": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/en/blog/"
+      ]
+    },
+    "SKY": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "SOXL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/learn/"
+      ]
+    },
+    "STBL": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "STRK": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "T": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "TAC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/es/",
+        "/ko/",
+        "/ru/",
+        "/zh/"
+      ]
+    },
+    "TER": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/learn/"
+      ]
+    },
+    "TREE": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "TRUTH": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "TSEM": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/learn/"
+      ]
+    },
+    "TTMI": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/learn/"
+      ]
+    },
+    "USDS": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "VANA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/posts/",
+        "/articles/"
+      ],
+      "exclude_prefixes": [
+        "/events/",
+        "/vana-press/",
+        "/academy/",
+        "/collectives/",
+        "/es/",
+        "/ko/",
+        "/pt/",
+        "/zh/"
+      ]
+    },
+    "W": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/products/",
+        "/pages/",
+        "/platform/",
+        "/case-studies/",
+        "/brand-and-press/"
+      ]
+    },
+    "WOO": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/blog/category/",
+        "/zh/",
+        "/vn/"
+      ]
+    },
+    "XEC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "XLM": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/ecosystem/",
+        "/blog/foundation-news/",
+        "/blog/developers/",
+        "/blog/policy/"
+      ],
+      "exclude_prefixes": [
+        "/events/",
+        "/es/blog/"
+      ]
+    },
+    "XTZ": {
+      "confidence": "high",
+      "exclude_prefixes": [
+        "/featured/",
+        "/author/"
+      ]
+    },
+    "ZRO": {
+      "confidence": "high",
+      "exclude_prefixes": [
+        "/followers/",
+        "/about/",
+        "/feed/",
+        "/m/signin/",
+        "/search/"
+      ]
+    },
+    "FIL": {
+      "confidence": "mid",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "FLOW": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/post/",
+        "/engineering-blogs/"
+      ]
+    },
+    "G": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "GNO": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "H": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/ko/"
+      ]
+    },
+    "HOT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "ICNT": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/articles/"
+      ]
+    },
+    "INJ": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/vn/",
+        "/ko/"
+      ]
+    },
+    "IOTX": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "KAVA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/"
+      ]
+    },
+    "LAYER": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/resources/blog/"
+      ]
+    },
+    "LAZIO": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/en/news/",
+        "/en/latest-news/"
+      ],
+      "exclude_prefixes": [
+        "/it/"
+      ]
+    },
+    "CHZ": {
+      "mode": "sitemap-only",
+      "post_sitemap": "https://www.chiliz.com/post-sitemap.xml",
+      "confidence": "high"
+    },
+    "BAT": {
+      "mode": "sitemap-only",
+      "post_sitemap": "https://basicattentiontoken.org/post-sitemap.xml",
+      "confidence": "high"
+    },
+    "OG": {
+      "mode": "sitemap-only",
+      "post_sitemap": "https://ogs.gg/post-sitemap.xml",
+      "confidence": "high"
+    },
+    "0G": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "ARC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    },
+    "CVC": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/news/",
+        "/field-notes/"
+      ]
+    },
+    "CYBER": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/article/"
+      ]
+    },
+    "FIDA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ],
+      "exclude_prefixes": [
+        "/zh-Hans/blog/",
+        "/ko/blog/",
+        "/pseudo/blog/"
+      ]
+    },
+    "PHA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/posts/"
+      ]
+    },
+    "TRIA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/en/blogs/"
+      ]
+    },
+    "ZORA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog/"
+      ]
+    }
   }
- }
 }

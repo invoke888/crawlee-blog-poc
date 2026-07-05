@@ -9,6 +9,7 @@ import {
     isNonArticleFile,
     isBlacklistedHost,
     isValidHttpUrl,
+    isNoiseUrl,
     filterArticlesWhitelistFirst,
     getThrottleGroup,
     isDcBannedHost,
@@ -185,4 +186,52 @@ test('平台 URL → feed 转换', () => {
     // mirror(Atom)
     assert.equal(mirrorToAtom('https://mirror.xyz/aglddao.eth'), 'https://mirror.xyz/aglddao.eth/feed/atom');
     assert.equal(mirrorToAtom('https://aevo.mirror.xyz/'), 'https://aevo.mirror.xyz/feed/atom');
+});
+
+// 🆕 2026-07-05 核对战役(20 agent · 385 条三源核对)新增过滤规则回归
+test('isNoiseUrl · 白名单词末段=栏目索引页(socios/chain.link/hive 实锤 · 存量核验零误伤)', () => {
+    assert.equal(isNoiseUrl('https://www.socios.com/es/blog/'), true); // 语言首页尾斜杠
+    assert.equal(isNoiseUrl('https://chain.link/newsroom'), true); // newsroom 也是白名单词
+    assert.equal(isNoiseUrl('https://hive.blog/@hiveio/posts'), true); // 账号文章列表
+    assert.equal(isNoiseUrl('https://www.twilio.com/en-us/blog/insights'), true); // 漏网的列表子页
+    // 真文不受影响:白名单词在中段
+    assert.equal(isNoiseUrl('https://www.socios.com/es/blog/some-article-slug'), false);
+    assert.equal(isNoiseUrl('https://blog.chain.link/scale-defi/'), false);
+});
+
+test('isNoiseUrl · 新复合词末段带白名单保护(RIF/macropod/NAORIS 实锤)', () => {
+    assert.equal(isNoiseUrl('https://rif.technology/terms-conditions/'), true);
+    assert.equal(isNoiseUrl('https://example.com/terms-and-conditions'), true);
+    assert.equal(isNoiseUrl('https://www.macropod.com/resources/travel-rule-faq'), true);
+    assert.equal(isNoiseUrl('https://www.naorisprotocol.com/mica-compliance-white-paper'), true);
+    // 白名单段保护:博客里的 FAQ/白皮书解读真文不误杀
+    assert.equal(isNoiseUrl('https://example.com/blog/what-is-mica-faq'), false);
+    assert.equal(isNoiseUrl('https://example.com/blog/reading-the-bitcoin-white-paper'), false);
+});
+
+test('isLikelyArticleUrl · thorchain 主站营销页(landing 词表扩充)', () => {
+    assert.equal(isLikelyArticleUrl('https://thorchain.org/brand-assets'), false);
+    assert.equal(isLikelyArticleUrl('https://thorchain.org/vision'), false);
+    assert.equal(isLikelyArticleUrl('https://thorchain.org/bond-rune'), false);
+    assert.equal(isLikelyArticleUrl('https://brl1.io/en/caso_de_uso'), false);
+    assert.equal(isLikelyArticleUrl('https://www.naorisprotocol.com/exchanges'), false);
+    // blog 子域真文不受影响
+    assert.equal(isLikelyArticleUrl('https://blog.thorchain.org/affiliate-fees-on-thorchain'), true);
+});
+
+test('isBlacklistedHost · 非博客官网导航站(RVN/NAORIS 实锤 · 真博客在 medium 不受影响)', () => {
+    assert.equal(isBlacklistedHost('https://ravencoin.org/halving/'), true);
+    assert.equal(isBlacklistedHost('https://www.naorisprotocol.com/exchanges'), true);
+    assert.equal(isBlacklistedHost('https://medium.com/naoris-protocol/some-post'), false);
+});
+
+test('normalizePublishedAt · 无年份日期 V8 默认 2001 → 当前年兜底(KAVA 实锤)', () => {
+    const fixed = normalizePublishedAt('Wed Nov, 12');
+    assert.notEqual(fixed, '');
+    assert.equal(fixed.startsWith('2001'), false); // 不再落 2001
+    const y = Number(fixed.slice(0, 4));
+    const nowY = new Date().getFullYear();
+    assert.equal(y === nowY || y === nowY - 1, true); // 当前年 · 未来>48h 则回退一年
+    // 真 2001 年日期不受影响
+    assert.equal(normalizePublishedAt('2001-11-12'), '2001-11-12T00:00:00.000Z');
 });
