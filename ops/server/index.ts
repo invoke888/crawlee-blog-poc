@@ -236,8 +236,9 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
             if (q.get('q')) { conds.push('(base_symbol LIKE ? OR url LIKE ?)'); params.push(`%${q.get('q')}%`, `%${q.get('q')}%`); }
             const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
             const dist = d.prepare(`SELECT kind, COUNT(*) c FROM crawl_errors ${where} GROUP BY kind ORDER BY c DESC`).all(...params);
+            const total = (d.prepare(`SELECT COUNT(*) c FROM crawl_errors ${where}`).get(...params) as { c: number }).c;
             const rows = d.prepare(`SELECT * FROM crawl_errors ${where} ORDER BY err_id DESC LIMIT 100 OFFSET ?`).all(...params, (page - 1) * 100);
-            json(res, 200, { dist, rows, page });
+            json(res, 200, { dist, rows, page, total });
             return;
         }
         if (path === '/api/proxy-config' && req.method === 'GET') {

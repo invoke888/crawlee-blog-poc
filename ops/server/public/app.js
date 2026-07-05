@@ -9,7 +9,8 @@ const api = async (path, opts) => {
 const toast = (msg) => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); };
 /* 时间显示铁律:一律北京时间 UTC+8 · 到秒不截断(2026-07-04 老板拍) */
 const pad2 = (n) => String(n).padStart(2, '0');
-const bj = (iso) => { const t = Date.parse(iso); if (Number.isNaN(t)) return null; const d = new Date(t + 8 * 3600000); return { y: d.getUTCFullYear(), mo: pad2(d.getUTCMonth() + 1), dd: pad2(d.getUTCDate()), h: pad2(d.getUTCHours()), mi: pad2(d.getUTCMinutes()), s: pad2(d.getUTCSeconds()) }; };
+/* 防御:sqlite CURRENT_TIMESTAMP 型 "YYYY-MM-DD HH:MM:SS"(无时区标记)是 UTC · 补 Z 防浏览器按本地时区误解析(2026-07-06 老板抓) */
+const bj = (iso) => { let s0 = String(iso); if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(s0)) s0 = s0.replace(' ', 'T') + 'Z'; const t = Date.parse(s0); if (Number.isNaN(t)) return null; const d = new Date(t + 8 * 3600000); return { y: d.getUTCFullYear(), mo: pad2(d.getUTCMonth() + 1), dd: pad2(d.getUTCDate()), h: pad2(d.getUTCHours()), mi: pad2(d.getUTCMinutes()), s: pad2(d.getUTCSeconds()) }; };
 const fmtBJ = (iso) => { if (!iso) return '—'; const p = bj(iso); return p ? `${p.y}-${p.mo}-${p.dd} ${p.h}:${p.mi}:${p.s}` : iso; };
 const fmtPub = (iso) => { if (!iso) return '—'; return iso.includes('T') ? fmtBJ(iso) : iso.slice(0, 10); }; // 站方只给日期的不硬造时间
 const fmtT = (iso) => { if (!iso) return '—'; const p = bj(iso); return p ? `${p.mo}-${p.dd} ${p.h}:${p.mi}:${p.s}` : iso; };
@@ -77,7 +78,8 @@ async function loadOverview() {
   $('ov-spark').innerHTML = days.length > 1 ? `<polyline fill="none" stroke="#8FB8DE" stroke-width="2" points="${days.map((x, i) => `${(i / (days.length - 1)) * 300},${52 - ((x.s || 0) / max) * 48}`).join(' ')}"/>` : '';
   const pmax = Math.max(1, ...sum.pipeToday.map((p) => p.s || 0));
   $('ov-pipes').innerHTML = sum.pipeToday.map((p) => `<div style="display:flex;gap:8px;align-items:center;font-size:12px;margin:6px 0"><span style="width:92px;color:var(--mute)">${esc(p.crawler)}</span><span style="height:11px;border-radius:3px;background:rgba(143,184,222,.35);width:${(p.s / pmax) * 55}%"></span><span>${p.s}</span></div>`).join('') || '<span class="mini">今日暂无</span>';
-  $('ov-runs').innerHTML = runs.map((r) => `<tr><td>${esc(r.run_id.slice(4, 20))}${r.batch_type === 'single' ? ` <span class="badge">单源:${esc(r.scope || '')}</span>` : ''}</td><td>${r.triggered_by === 'manual' ? '👆' : '⏱'}</td><td>${fmtT(r.finished_at)}</td><td>${dur(r.duration_s)}</td><td>${r.dataset_added ?? '—'}</td><td>${r.requests_failed ?? '—'}</td><td>${r.rpm_actual ?? '—'}</td><td>${stChip(r.status)}${r.notes ? ` <span class="mini" title="${esc(r.notes)}">ⓘ</span>` : ''}</td></tr>`).join('');
+  /* run 列显示北京开始时间(run_id 内嵌 UTC 戳会误读 · 2026-07-06 老板抓)· 原始 run_id 挂 title */
+  $('ov-runs').innerHTML = runs.map((r) => `<tr><td title="${esc(r.run_id)}">${fmtT(r.started_at)}${r.batch_type === 'single' ? ` <span class="badge">单源:${esc(r.scope || '')}</span>` : ''}</td><td>${r.triggered_by === 'manual' ? '👆' : '⏱'}</td><td>${fmtT(r.finished_at)}</td><td>${dur(r.duration_s)}</td><td>${r.dataset_added ?? '—'}</td><td>${r.requests_failed ?? '—'}</td><td>${r.rpm_actual ?? '—'}</td><td>${stChip(r.status)}${r.notes ? ` <span class="mini" title="${esc(r.notes)}">ⓘ</span>` : ''}</td></tr>`).join('');
 }
 $('btn-trigger').addEventListener('click', async () => {
   if (!confirm('立即触发一轮采集批次?')) return;
@@ -248,17 +250,21 @@ window.retryPush = async (url) => {
 };
 
 /* ── 错误日志 ── */
+let errPage = 1;
 async function loadErrors() {
   const runs = await api('/api/runs?limit=20');
-  $('err-run').innerHTML = '<option value="">近期全部批次</option>' + runs.map((r) => `<option value="${esc(r.run_id)}">${esc(r.run_id.slice(4, 20))}(${r.status})</option>`).join('');
+  /* 下拉显示北京时间(run_id UTC 戳误读 · 2026-07-06 老板抓) */
+  $('err-run').innerHTML = '<option value="">近期全部批次</option>' + runs.map((r) => `<option value="${esc(r.run_id)}">${fmtT(r.started_at)}(${r.status})</option>`).join('');
+  errPage = 1;
   await searchErrors();
 }
 async function searchErrors() {
-  const p = new URLSearchParams();
+  const p = new URLSearchParams({ page: errPage });
   if ($('err-run').value) p.set('run', $('err-run').value);
   if ($('err-kind').value) p.set('kind', $('err-kind').value);
   if ($('err-q').value) p.set('q', $('err-q').value);
   const d = await api(`/api/errors?${p}`);
+  $('err-page').textContent = `${d.page} / ${Math.max(1, Math.ceil((d.total ?? 0) / 100))}`;
   $('err-dist').innerHTML = d.dist.slice(0, 6).map((x) => `<div class="card"><div class="lab">${esc(x.kind)}</div><div class="v" style="font-size:19px;color:${x.kind.includes('403') || x.kind === 'cf_challenge' ? 'var(--bad)' : x.kind.includes('429') ? 'var(--warn)' : 'var(--ink)'}">${x.c}</div></div>`).join('') || '<div class="card"><div class="lab">本范围无错误</div><div class="v" style="font-size:19px">0</div></div>';
   $('err-body').innerHTML = d.rows.map((e) => `<tr><td>${fmtT(e.at)}</td><td><b>${esc(e.base_symbol || '—')}</b></td>
     <td><a href="${esc(e.url || '#')}" target="_blank" rel="noopener">${esc((e.url || '').replace(/^https?:\/\//, '').slice(0, 42))}</a></td>
@@ -266,7 +272,9 @@ async function searchErrors() {
     <td>${e.http_status ?? '—'}${e.retry_after_s ? `<span class="mini" title="retry-after"> ⏲${e.retry_after_s}s</span>` : ''}</td>
     <td class="det-sans mini" title="${esc(e.message || '')}">${esc((e.message || '').slice(0, 52))}</td><td>${e.retries ?? '—'}</td></tr>`).join('') || '<tr><td colspan="7" class="mini">无记录(超 30 天明细已清理)</td></tr>';
 }
-$('err-search').addEventListener('click', searchErrors);
+$('err-search').addEventListener('click', () => { errPage = 1; searchErrors(); });
+$('err-prev').addEventListener('click', () => { if (errPage > 1) { errPage -= 1; searchErrors(); } });
+$('err-next').addEventListener('click', () => { errPage += 1; searchErrors(); });
 
 /* ── 设置 ── */
 async function loadSettings() {
