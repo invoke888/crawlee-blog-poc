@@ -4,7 +4,7 @@
 // 顺序铁律:必须在收割过滤(run-batch)上线后执行,否则补漏扫描会把删掉的从 dataset 重新收进来
 import { writeFileSync } from 'node:fs';
 import { db } from '../shared/db.js';
-import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlockedSubdomainUrl, hostOfUrl, normalizedHostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
+import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlacklistedHost, isBlockedSubdomainUrl, hostOfUrl, normalizedHostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
 
 const confirm = process.argv.includes('--confirm');
 const d = db();
@@ -29,6 +29,7 @@ const doomed: (Row & { reason: string })[] = [];
 for (const r of rows) {
     let reason = '';
     if (isNonArticleFile(r.url)) reason = 'file';
+    else if (isBlacklistedHost(r.url)) reason = 'blacklisted_host'; // 🆕 2026-07-05 补(socios/ravencoin 型拉黑域)
     else if (isNoiseUrl(r.url)) reason = 'noise';
     else if (isLandingUrl(r.url)) reason = 'landing';
     else if (isBlockedSubdomainUrl(r.url, blogHostByToken.get(r.token_id))) reason = 'blocked_subdomain';

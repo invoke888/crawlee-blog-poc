@@ -11,7 +11,7 @@ import {
 } from '../shared/ledger.js';
 import { cfgNum } from '../shared/config.js';
 import { getProxyUrl, hashProxy } from '../shared/proxy-config.js';
-import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlockedSubdomainUrl, hostOfUrl, normalizedHostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
+import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlacklistedHost, isBlockedSubdomainUrl, hostOfUrl, normalizedHostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
 import { runDetector } from './detector.js';
 import { runPusher } from './pusher.js';
 
@@ -61,8 +61,9 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
     for (const r of db().prepare('SELECT token_id, blog_url FROM sources').all() as { token_id: number; blog_url: string }[]) {
         blogHostByToken.set(r.token_id, hostOfUrl(r.blog_url ?? ''));
     }
+    // 🆕 2026-07-05:补 isBlacklistedHost(此前缺 → 拉黑域行删除后 dataset 残留被补漏原样收回 · socios 险情)
     const kept = fresh.filter((a) =>
-        !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url)
+        !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url) && !isBlacklistedHost(a.url)
         && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)));
     const byToken = new Map<number, ArticleInput[]>();
     for (const a of kept) { const g = byToken.get(a.token_id) ?? []; g.push(a); byToken.set(a.token_id, g); }
@@ -96,7 +97,7 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
     const added = upsertArticles(passed, runId);
     // known 行回填:同款过滤后 upsert(COALESCE 只补空)· runId 传 null 不动 first_run_id 语义 · 不计 added
     const refreshKept = refresh.filter((a) =>
-        !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url)
+        !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url) && !isBlacklistedHost(a.url)
         && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)));
     if (refreshKept.length) {
         upsertArticles(refreshKept, null);
