@@ -124,3 +124,13 @@ body.unlocking #gate { animation: gate-out .45s .35s forwards; }
 @keyframes gate-out { to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { body.unlocking #gate, .gate-card.no { animation: none; } body.unlocking aside a { transition: none; } }
 @media (max-width: 640px) { #gate { inset: 0; } }
+
+/* 🆕 2026-07-06 老板拍博文页布局:固定列宽 · 标题30字在上/badge在下 · 正文窄 · 时间不换行 · push宽可推 */
+.tbl-art { table-layout: fixed; }
+.tbl-art td { overflow: hidden; }
+.tbl-art .c-title a { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+.tbl-art .t-badges { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
+.tbl-art .c-body { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tbl-art td.nw { white-space: nowrap; overflow: visible; }
+.tbl-art .c-push { white-space: nowrap; }
+.tbl-art .c-push .btn { margin-left: 4px; }

@@ -225,17 +225,17 @@ async function loadArticles() {
   $('art-page').textContent = `${d.page} / ${Math.max(1, Math.ceil(d.total / d.per))}`;
   const pushChip = (a) => a.push_status === 'pushed' ? '<span class="chip g">已推</span>'
     : a.push_status === 'failed' ? `<span class="chip r" title="${esc(a.push_error || '')}">失败</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">重推</button>`
-    : a.push_status === 'skipped_backlog' ? '<span class="chip">存量不推</span>'
+    : a.push_status === 'skipped_backlog' ? `<span class="chip">存量不推</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">推送</button>`
     : `<span class="chip y">未推</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">推送</button>`;
-  /* 列序(2026-07-04 老板拍):博客(点击跳博客站)/ 标题 / 正文 / 发布时间 / 采集时间 · 全时间到秒 */
+  /* 列序(2026-07-04 老板拍):博客(点击跳博客站)/ 标题 / 正文 / 发布时间 / 采集时间 · 全时间到秒
+     2026-07-06 老板拍布局:固定列宽 · 标题30字在上badge在下 · 正文窄 · 时间不换行 · push宽+存量可推 */
   $('art-body').innerHTML = d.rows.map((a) => `<tr>
     <td>${a.blog_url ? `<a href="${esc(a.blog_url)}" target="_blank" rel="noopener"><b>${esc(a.base_symbol)}</b></a>` : `<b>${esc(a.base_symbol)}</b>`}</td>
-    <td class="det-sans"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc((a.display_title || a.url).slice(0, 62))}</a>
-      ${a.shared_count > 1 ? `<span class="badge">共享×${a.shared_count}</span>` : ''}${a.desc_generic ? '<span class="badge" title="站级通用文案">站级文案</span>' : ''}
-      ${!a.title ? '<span class="badge">缺title</span>' : ''}${!a.published_at ? '<span class="badge">缺pub</span>' : ''}</td>
-    <td class="mini det-sans" title="${esc(String(a.body_excerpt || a.display_desc || '').slice(0, 300))}">${esc(String(a.body_excerpt || a.display_desc || '').replace(/\s+/g, ' ').slice(0, 60))}</td>
-    <td>${fmtPub(a.published_at)}</td><td>${fmtBJ(a.crawled_at)}</td>
-    <td><span class="chip">${esc(a.crawler)}</span></td><td>${pushChip(a)}</td></tr>`).join('');
+    <td class="det-sans c-title"><a href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.display_title || a.url)}">${esc((a.display_title || a.url).slice(0, 30))}</a>
+      <div class="t-badges">${a.shared_count > 1 ? `<span class="badge">共享×${a.shared_count}</span>` : ''}${a.desc_generic ? '<span class="badge" title="站级通用文案">站级文案</span>' : ''}${!a.title ? '<span class="badge">缺title</span>' : ''}${!a.published_at ? '<span class="badge">缺pub</span>' : ''}</div></td>
+    <td class="mini det-sans c-body" title="${esc(String(a.body_excerpt || a.display_desc || '').slice(0, 300))}">${esc(String(a.body_excerpt || a.display_desc || '').replace(/\s+/g, ' ').slice(0, 45))}</td>
+    <td class="nw">${fmtPub(a.published_at)}</td><td class="nw">${fmtBJ(a.crawled_at)}</td>
+    <td><span class="chip">${esc(a.crawler)}</span></td><td class="c-push">${pushChip(a)}</td></tr>`).join('');
 }
 $('art-search').addEventListener('click', () => { artPage = 1; loadArticles(); });
 $('art-prev').addEventListener('click', () => { if (artPage > 1) { artPage -= 1; loadArticles(); } });
