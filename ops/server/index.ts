@@ -155,15 +155,17 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
                 FROM sources s
                 LEFT JOIN (
                     -- 2026-07-05 老板抓 bug:完整度改"最近采集 3 条全部齐"口径(原来只看发布时间最新一条 · 与浮窗所见断层)
+                    -- 2026-07-05 老板抓 bug#2:最近发布=全库纯 MAX pub(拍板语义)· 曾被连带圈进 rn<=3 → 最近 3 条无日期的源显示 "-"(HIVE 实锤)
                     SELECT token_id,
                            MAX(articles_total) AS articles_total,
-                           MAX(NULLIF(published_at, '')) AS latest_pub_at,
+                           MAX(pub_full) AS latest_pub_at,
                            MIN(CASE WHEN title != '' THEN 1 ELSE 0 END) AS latest_title_ok,
                            MIN(CASE WHEN COALESCE(NULLIF(body_excerpt,''), NULLIF(description,'')) IS NOT NULL THEN 1 ELSE 0 END) AS latest_body_ok,
                            MIN(CASE WHEN published_at != '' THEN 1 ELSE 0 END) AS latest_pub_ok
                     FROM (
                         SELECT token_id, title, body_excerpt, description, published_at,
                                COUNT(*) OVER (PARTITION BY token_id) AS articles_total,
+                               MAX(NULLIF(published_at, '')) OVER (PARTITION BY token_id) AS pub_full,
                                ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY crawled_at DESC) AS rn
                         FROM articles
                     ) WHERE rn <= 3 GROUP BY token_id
