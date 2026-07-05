@@ -231,8 +231,7 @@ async function loadArticles() {
      2026-07-06 老板拍布局:固定列宽 · 标题30字在上badge在下 · 正文窄 · 时间不换行 · push宽+存量可推 */
   $('art-body').innerHTML = d.rows.map((a) => `<tr>
     <td>${a.blog_url ? `<a href="${esc(a.blog_url)}" target="_blank" rel="noopener"><b>${esc(a.base_symbol)}</b></a>` : `<b>${esc(a.base_symbol)}</b>`}</td>
-    <td class="det-sans c-title"><a href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.display_title || a.url)}">${esc((a.display_title || a.url).slice(0, 30))}</a>
-      <div class="t-badges">${a.shared_count > 1 ? `<span class="badge">共享×${a.shared_count}</span>` : ''}${a.desc_generic ? '<span class="badge" title="站级通用文案">站级文案</span>' : ''}${!a.title ? '<span class="badge">缺title</span>' : ''}${!a.published_at ? '<span class="badge">缺pub</span>' : ''}</div></td>
+    <td class="det-sans c-title">${a.shared_count > 1 ? `<span class="badge">共享×${a.shared_count}</span> ` : ''}${a.desc_generic ? '<span class="badge" title="站级通用文案">站级文案</span> ' : ''}${!a.title ? '<span class="badge">缺title</span> ' : ''}${!a.published_at ? '<span class="badge">缺pub</span> ' : ''}<a href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.display_title || a.url)}">${esc((a.display_title || a.url).slice(0, 30))}</a></td>
     <td class="mini det-sans c-body" title="${esc(String(a.body_excerpt || a.display_desc || '').slice(0, 300))}">${esc(String(a.body_excerpt || a.display_desc || '').replace(/\s+/g, ' ').slice(0, 45))}</td>
     <td class="nw">${fmtPub(a.published_at)}</td><td class="nw">${fmtBJ(a.crawled_at)}</td>
     <td><span class="chip">${esc(a.crawler)}</span></td><td class="c-push">${pushChip(a)}</td></tr>`).join('');
