@@ -42,14 +42,29 @@ export function normalizePublishedAt(raw: string | null | undefined): string {
     return fixYearlessDefault(t, s);
 }
 
+// 🆕 2026-07-05 老板拍:HTTP Last-Modified 兜底维度(billions.network 实锤 · 页面无日期时协议头大概率≈发布时间)
+// 防线:解析失败/与抓取时刻差<10min(动态生成的 now)/未来>48h → 全部返回空串不采用
+export function normalizeHeaderLastModified(raw: string | null | undefined, crawledAtMs: number): string {
+    if (!raw) return '';
+    const t = Date.parse(String(raw).trim());
+    if (Number.isNaN(t)) return '';
+    if (Math.abs(crawledAtMs - t) < 10 * 60 * 1000) return '';
+    if (t > crawledAtMs + 48 * 3600 * 1000) return '';
+    return new Date(t).toISOString();
+}
+
 // 🆕 2026-07-05 核对战役实锤(KAVA "Wed Nov, 12" 型无年份日期):V8 Date.parse 缺年份默认落 2001
 // 原串不含 "2001" 却解析出 2001 年 = 无年份格式 → 用当前年兜底;兜出未来 >48h 则回退一年(站点显示的是最近一次该日期)
+// 二轮复检实锤:V8 按进程本地时区解析该类串 · 非 UTC 时区直接换年会产生 -1 天漂移(KAVA Nov 12 存成 Nov 11T16:00Z)
+// → 取本地日月分量重建 UTC 午夜 · 任何进程时区结果一致
 function fixYearlessDefault(t: number, raw: string): string {
     const d = new Date(t);
-    if (d.getUTCFullYear() === 2001 && !raw.includes('2001')) {
+    if (d.getFullYear() === 2001 && !raw.includes('2001')) {
         const now = Date.now();
-        d.setUTCFullYear(new Date(now).getUTCFullYear());
-        if (d.getTime() - now > 48 * 3600 * 1000) d.setUTCFullYear(d.getUTCFullYear() - 1);
+        const y = new Date(now).getUTCFullYear();
+        let out = new Date(Date.UTC(y, d.getMonth(), d.getDate()));
+        if (out.getTime() - now > 48 * 3600 * 1000) out = new Date(Date.UTC(y - 1, d.getMonth(), d.getDate()));
+        return out.toISOString();
     }
     return d.toISOString();
 }

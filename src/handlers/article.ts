@@ -4,7 +4,7 @@ import { isLikelyArticleUrl } from '../config.js';
 import { isValidHttpUrl, isWhitelistedArticleUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
 import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt, titleRuleFor, bodyRuleFor, descRuleFor, extractBodyByHtmlRegex } from '../utils/date-extract.js';
-import { normalizePublishedAt } from '../utils/normalize-date.js';
+import { normalizePublishedAt, normalizeHeaderLastModified } from '../utils/normalize-date.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
 import { statCount, statSet, statRequest, recordError } from '../../shared/run-stats.js';
 import { classifySoftErrorPage } from '../../shared/error-classify.js';
@@ -268,6 +268,12 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
 
     // P3.5 Bug A · 1-to-N · 每个 source 一条 dataset(KLAC vs TTMI 都有数据)
     const crawledAt = new Date().toISOString();
+    // 🆕 2026-07-05 老板拍:HTTP Last-Modified 兜底维度(billions.network 实锤)
+    // 只存事实字段进 dataset · 是否用它填 published_at 由收割层按 fresh/known 决策
+    // (老文回填会被站点重发布戳污染 · the-ticker-is-bill last-modified=当天 实锤)
+    const headerLastModified = publishedAtFinal
+        ? ''
+        : normalizeHeaderLastModified((ctx.response?.headers?.['last-modified'] as string | undefined), Date.parse(crawledAt));
     for (const src of sources) {
         if (!underSourceCap(src.token_id)) continue; // 自测模式:该 token 已满额
         countSourcePush(src.token_id);
@@ -285,6 +291,7 @@ export async function detailHandler(ctx: CheerioCrawlingContext): Promise<void> 
             body_excerpt: bodyExcerpt,
             image,
             published_at: publishedAtFinal,
+            header_last_modified: headerLastModified,
             author,
             og_type: ogType,
             has_schema_blogposting: hasArticleSchema || hasJsonLdArticle,

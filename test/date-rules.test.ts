@@ -50,3 +50,22 @@ test('date-rules · ban meta 跳过全部 meta 层', () => {
     assert.equal(extractPublishedAt(load(html), 'https://x.com/blog/a', null), '2026-01-01');
     assert.equal(extractPublishedAt(load(html), 'https://x.com/blog/a', { ban: ['meta'] }), '');
 });
+
+// 🆕 2026-07-05 二轮复检:ICNT 型 DD/MM 站点声明重排(transform: 'dmy')
+import { extractPublishedAt as _epa } from '../src/utils/date-extract.js';
+import * as cheerio from 'cheerio';
+import { test as _t } from 'node:test';
+import _assert from 'node:assert/strict';
+
+_t('date transform dmy · ICNT 5/11/2024 = 11月5日(非5月11日)', () => {
+    const $ = cheerio.load('<div class="d">5/11/2024</div>');
+    const got = _epa($ as never, 'https://www.icn.global/articles/october-at-icn', {
+        selector: '.d', attr: 'text', regex: '(\\d{1,2}/\\d{1,2}/\\d{4})', transform: 'dmy',
+    });
+    _assert.equal(got, '2024-11-05');
+    // 无 transform 时原样返回(下游 normalize 按 day>12 规则处理)
+    const got2 = _epa($ as never, 'https://www.icn.global/articles/x', {
+        selector: '.d', attr: 'text', regex: '(\\d{1,2}/\\d{1,2}/\\d{4})',
+    });
+    _assert.equal(got2, '5/11/2024');
+});

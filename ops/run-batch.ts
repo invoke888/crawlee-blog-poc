@@ -49,6 +49,7 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
                 body_excerpt: (d.body_excerpt as string) ?? '',
                 published_at: (d.published_at as string) || (d.publishedTime as string) || '',
                 crawler: (d.crawler as string) ?? '', crawled_at: (d.crawledAt as string) ?? '',
+                header_last_modified: (d.header_last_modified as string) ?? '',
             };
             if (known.has(`${tokenId}|${url}`)) refresh.push(row);
             else fresh.push(row);
@@ -82,6 +83,16 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
         });
     });
     if (passed.length < fresh.length) console.log(`🧹 收割过滤:${fresh.length} → ${passed.length}(拦 ${fresh.length - passed.length} 条非博文/噪音 · 不进账本)`);
+    // 🆕 2026-07-05 老板拍:Last-Modified 兜底 · 仅 fresh 行(首抓时刻协议头≈发布时间 · billions 实锤;
+    // 老文回填禁用:站点重发布会刷新老文协议头 · the-ticker-is-bill 实锤)· 站级 date.ban 含 'last_modified' 可关
+    let lmFilled = 0;
+    for (const a of passed) {
+        if (a.published_at || !a.header_last_modified) continue;
+        if (rulesFor(a.url)?.date?.ban?.includes('last_modified')) continue;
+        a.published_at = a.header_last_modified;
+        lmFilled += 1;
+    }
+    if (lmFilled) console.log(`🕐 Last-Modified 兜底:${lmFilled} 条新文用协议头补发布时间`);
     const added = upsertArticles(passed, runId);
     // known 行回填:同款过滤后 upsert(COALESCE 只补空)· runId 传 null 不动 first_run_id 语义 · 不计 added
     const refreshKept = refresh.filter((a) =>

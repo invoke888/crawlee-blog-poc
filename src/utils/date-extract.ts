@@ -22,6 +22,16 @@ export interface DateRule {
     attr?: string;                // datetime | content | text
     regex?: string;               // 从 text 提日期;strategy=html_regex 时对整页源码跑
     strategy?: 'url_date' | 'none' | 'spa_only' | 'html_regex';
+    transform?: 'dmy';            // 站点声明日期为 日/月/年(ICNT 实锤)· 提取后重排 ISO 消歧义
+}
+
+// 🆕 2026-07-05 二轮复检实锤(ICNT "5/11/2024"=DD/MM 被默认 MM/DD 误解析 · 偏差半年):
+// normalize 只救 day>12 无歧义场景 · day≤12 必须靠站点级声明重排
+function applyDateTransform(v: string, rule?: DateRule | null): string {
+    if (!v || rule?.transform !== 'dmy') return v;
+    const m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(v.trim());
+    if (!m) return v;
+    return `${m[3]}-${m[2]!.padStart(2, '0')}-${m[1]!.padStart(2, '0')}`;
 }
 export interface TitleRule { ban?: string[]; selector?: string } // ban: ['og'] 跳过站级 og:title
 export interface BodyRule { selector?: string; strategy?: string; regex?: string } // 容器定点;strategy=html_regex 时对整页源码提取(RSC JSON articleBody 型 · Ondo 系实锤)
@@ -244,7 +254,7 @@ export function extractPublishedAt($: CheerioAPI, url: string, ruleOverride?: Da
     if (rule?.strategy === 'url_date') return extractDateFromUrl(url);
     if (rule?.strategy === 'html_regex' && rule.regex) { // Next.js flight payload 类:日期只在整页源码里(TTMI 实锤)
         const m = new RegExp(rule.regex, 'i').exec($.html() ?? '');
-        return m ? (m[1] ?? m[0]) : '';
+        return m ? applyDateTransform(m[1] ?? m[0], rule) : '';
     }
     if (rule?.selector) {
         // 遍历命中元素取首个提取成功的(QUICK 实锤:同 class 多元素 · first 是导航词 · 日期在第 3 个)
@@ -255,7 +265,7 @@ export function extractPublishedAt($: CheerioAPI, url: string, ruleOverride?: Da
                 const m = new RegExp(rule.regex, 'i').exec(v);
                 v = m ? (m[1] ?? m[0]) : '';
             }
-            if (v) return v;
+            if (v) return applyDateTransform(v, rule);
         }
         // selector 全落空(改版等)→ 走下方通用梯队(仍受 ban 约束)
     }

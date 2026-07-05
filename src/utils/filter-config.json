@@ -33,7 +33,9 @@
     "followers",
     "activity",
     "subpage",
-    "u"
+    "u",
+    "blog-category",
+    "blog-categories"
   ],
   "noise_last_segments": [
     "academy",

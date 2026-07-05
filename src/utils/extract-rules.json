@@ -248,10 +248,10 @@
       "date": {
         "selector": "div.text-small.text-muted",
         "attr": "text",
-        "regex": "(\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4})",
+        "regex": "((?:\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4})|(?:\\d{4}年\\d{1,2}月\\d{1,2}日))",
         "_conf": "high",
         "_sym": "BCH",
-        "_note": "标准 Bootstrap 模板,页面开头 logo 旁边固定结构:<div>by <strong>作者</strong></div><div class=\"text-small text-muted\">日期</div>,纯文本无 datetime/time 标签/meta/jsonld,通用梯队天然抓空。文中正文另外还"
+        "_note": "原正则 (\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4}) 只认英文月份型('09 January 2026')· 该站中/英文各自独立 slug 发布同一类公告(如本文中文版 slug 含'版本发布公告' vs 英文版 slug 'Announcing-Bitcoin-Cash-Node-v29-0-0')· 中文页日期是 '2021年8月15日' 格式,被原正则判空。已用同一 selector 实测该站英文样本得 '09 January 2026'、中文样本(issue URL)得 '2021年8月15日',站内无 time/meta/jsonld 任何日期信号(逐一实测确认全空)· 新正则用单捕获组包裹两个非捕获分支,同时兼容两种格式,selector/attr 不变。⚠️ 遗留问题(超出本次 rules 范围,仅记录不处理):中文分支捕获出的原始值 '2021年8月15日' 并非 ISO-8601 · 已用 Node 实测 Date.parse('2021年8月15日')=NaN(V8 不识别中文日期文本,英文分支 Date.parse('09 January 2026') 正常解析)。当前引擎 transform 字段仅支持 'dmy'(纯数字 D/M/Y 重排,见 date-extract.ts applyDateTransform)· 且单捕获组机制(m[1]??m[0])只能原样截取连续子串、无法在 regex 层面把'年/月/日'重排成'YYYY-MM-DD'。若要落地 ISO 需二选一:(a) 给 transform 新增 'zh_ymd' 变体并改 date-extract.ts 支持年月日→ISO 转换;(b) 等项目既定 published_at 全局 ISO-8601 normalizer 上线后统一处理(老板已拍板暂缓,见 project-todo-published-at-iso8601-normalizer.md 备忘)。本次先保证'不抽空'(拿到原始中文日期文本入库,好过完全 pub_missing),格式规范化留给后续 normalizer 战役,不在本次 rules 修复范围内擅自扩展。 · 2026-07-05 R3"
       },
       "title": {
         "ban": [
@@ -430,35 +430,43 @@
         "regex": "\"datePublished\":\"([^\"]+)\"",
         "_sym": "BNB",
         "_conf": "high"
+      },
+      "body": {
+        "selector": ".css-10nur8b",
+        "_sym": "BNB",
+        "_conf": "high",
+        "_note": "Next.js + emotion(CSS-in-JS)站 · 页面无 <article>/<main> 标签 → 通用兜底 'article p, main p' 0 命中 → 正文空。真实正文容器 .css-10nur8b(全页唯一 class)· 从 'TL;DR' 小节起直到文末 'The 0 Fee Movement Continues to Grow' 收尾段;容器内含费率/白名单对比表格(表格单元格也用 <p> 铺陈,如 'CEX'/'Assets'/'Binance' 等短词,已被引擎 <20 字符阈值自动过滤,不影响正文主体提取)。2 篇实测(issue 原 URL + 站内抽样交叉验证 1 篇 bnb-chain-the-web3-blueprint)class 与内容边界稳定一致。 · 2026-07-05 R3"
       }
     },
     "brl1.io": {
       "date": {
-        "selector": "div.framer-e6z3u p.framer-text",
+        "selector": "div:contains(\"Data da Publicação\") + div, div:contains(\"Publication Date\") + div",
         "attr": "text",
-        "regex": "(\\d{1,2} de \\w+\\.?\\s+de\\s+\\d{4}|[A-Za-z]{3,9}\\s+\\d{1,2},?\\s*\\d{4})",
+        "regex": "(\\d{1,2}\\s+(?:de\\s+)?\\w+\\.?\\s+(?:de\\s+)?\\d{4}|[A-Za-z]{3,9}\\s+\\d{1,2},?\\s*\\d{4})",
         "_sym": "BRL1",
         "_conf": "high",
-        "_note": "同一 selector 命中的元素本就是页面底部归属栏日期值(与 label『Publication Date』相邻的兄弟节点),原正则只认葡语格式导致 0/4 命中;正则改交替匹配葡语『DD de mês de YYYY』与英文归属栏『Mon DD, YYYY』(2选1捕获组仍为1个);4篇实测(3归档+1 curl)全部命中 Mar 11, 2025,selector 本身不用改 · 2026-07-05 核对战役"
+        "_note": "R1 规则(div.framer-e6z3u p.framer-text)本次 9 篇实测(issue样本 + 5篇归档pt-BR + 1篇归档en + 1篇curl-en + 1篇curl-es)其实全部仍能命中,但该 class 是 Framer 每次发布重新生成的组件实例哈希、结构性脆弱(同一层级仅一步之隔就有另一个'Site da Publicação'同构兄弟块用另一个哈希类名,一旦网站重新发布全站哈希齐变、旧 selector 会整体失效且无法提前验证下次哈希)。改为按归属栏 label 文本邻接定位、完全不依赖哈希类名:匹配文本含'Data da Publicação'(葡语)或'Publication Date'(英语)的 div,取其紧邻的下一个兄弟 div 即日期值;特意匹配'Data'/'Date'关键词以区别于同构的'Site da Publicação'/'Publication Site'(站点域字段,非日期)。9 篇实测该 selector 会连带命中 2 层祖先 div(因为 :contains 对祖先文本同样成立),但祖先层命中文本恒为空字符串,不影响引擎'取首个非空 regex 命中'的逐个遍历逻辑,目标值在文档序中恒排首位。正则同步扩展:原正则的葡语分支要求 'D de MMM. de YYYY' 必须带两个'de'胶水词,但 es 语种页面(/es/projects/...)实测显示的日期是无胶水词的葡语简写'11 mar 2025'(疑似该组件的 es 语言包未覆盖、回退葡语但省略了'de'),原正则对此会 0 命中;新正则把两个 'de' 均改为可选 (?:de\\s+)?,新增覆盖该简写格式,9 篇全部命中期望值(pt-BR 长格式'D de MMM. de YYYY'、简写'D MMM YYYY'、英文'Mon D, YYYY' 三种格式均覆盖)。⚠️下游遗留风险(超出本次 host 规则/selector 修复范围,汇报老板知悉):normalize-date.ts 的 normalizePublishedAt 最终靠原生 Date.parse 解析,已用 node -e 实测确认无法识别葡语月份缩写(如 'ago'/'out' 均返回 NaN;'mar'/'nov' 能过纯属与英文缩写同形的巧合),即本次 selector/regex 虽已修好抽取环节,但 pt-BR 语言的 published_at 传到 normalizePublishedAt 后仍会因 Date.parse 失败被置空——若要根治需在 normalize-date.ts 增加葡语月份名到英文的映射表,这不在本次 R3 host 规则修复范围内,建议另立任务处理(可能不止 brl1.io 一个 host 受影响)。 · 2026-07-05 R3复核 · 2026-07-05 R3"
       },
       "title": {
         "ban": [
           "og"
         ],
         "_sym": "BRL1",
-        "_conf": "medium"
+        "_conf": "medium",
+        "_note": "2026-07-05 R3"
       },
       "body": {
         "selector": "div.framer-7wmwm4",
         "_sym": "BRL1",
-        "_conf": "medium"
+        "_conf": "medium",
+        "_note": "2026-07-05 R3"
       },
       "desc": {
         "ban": [
           "og",
           "meta"
         ],
-        "_note": "站级口号 desc 复读实锤(SQL 全库扫)· ban 后自动落 jsonld/真正文"
+        "_note": "站级口号 desc 复读实锤(SQL 全库扫)· ban 后自动落 jsonld/真正文 · 2026-07-05 R3"
       }
     },
     "caldera.xyz": {
@@ -788,7 +796,9 @@
         "attr": "text",
         "regex": "(\\d{1,2}/\\d{1,2}/\\d{4})",
         "_sym": "ICNT",
-        "_conf": "low"
+        "_conf": "low",
+        "transform": "dmy",
+        "_note": "2026-07-05 二轮实锤 DD/MM 站 · transform dmy 消歧"
       },
       "body": {
         "selector": ".post-content-rich-text.w-richtext",
@@ -1152,6 +1162,12 @@
         "_conf": "high",
         "_sym": "OGN",
         "_note": "h1 后第一个 div(class 是 Tailwind 工具类,无语义)裸文本就是可见发布日期;注意内嵌 RSC payload 的 publishedAt/updatedAt 字段陷阱(3篇 updatedAt 几乎同一秒疑似批量迁移戳),但可见发布日期逐篇不同已验证(第2篇 Jun 1 vs 其余 Jul 2)为"
+      },
+      "body": {
+        "selector": "div.blog-post",
+        "_sym": "OGN",
+        "_conf": "high",
+        "_note": "现规则只配 date,body 完全无规则(page_value 空)。全站唯一 <div class=\"blog-post\"> 就是正文容器(内部还嵌了一个重复的 h1 标题,容器本身在 h1+date div 之外的第4个兄弟节点里)。抽取引擎对 selector 命中集合先 $(sel).find('p'),天然只取 <p> 段落、自动跳过内嵌的重复 h1/h2 标题,不会有标题复读。2 篇实测(issue 唯一样本 arm-morpho-markets curl 现抓 + 归档样本 june-2026-token-holder-update curl 复测)首句均与页面可见正文完全一致,12 段落/篇,无 footer/推荐位/导航污染。 · 2026-07-05 R3复核 · 2026-07-05 R3"
       }
     },
     "orochi.network": {
@@ -1249,6 +1265,12 @@
         "_conf": "high",
         "_sym": "PYTH",
         "_note": "同为 Framer 建站(与 ERA 同款套壳)但这个源保留了干净的 <time>(页面唯一)与 jsonld datePublished,二者一致且逐篇不同,与 db_pub 吻合。真正陷阱是 HTML 尾部部署注释'Published Jul 2, 2026, 3:05 PM'与'Other posts'卡片纯文本"
+      },
+      "body": {
+        "selector": ".framer-1kryppp",
+        "_sym": "PYTH",
+        "_conf": "high",
+        "_note": "Framer 建站(与 ERA/caldera.xyz 同款套壳)· 页面无 <article>/<main> 标签(真实容器是 <div id=\"main\">)· 原规则只配 date 未配 body → 通用兜底 'article p, main p' 0 命中 → 正文空。真实正文容器为 .framer-1kryppp(全页唯一 class · 无 data-framer-name 可用等更稳属性 · 已用同法验证与 caldera.xyz 案例一致)。容器从首个真实正文句 'Pyth Pro is live on Cardano.'(区别于页顶 hero 区 #article-lead 的摘要句)起,历经全部 h2 小节直到 'Get Started' 结尾段;容器尾部多余的4字 'Back' 返回链接因 <20 字符阈值被引擎自动过滤,不污染正文。2 篇实测(issue 原 URL + sitemap 抽样交叉验证 1 篇 the-ipo-oracle-*)首段与页面真值完全一致。 · 2026-07-05 R3"
       }
     },
     "rayls.com": {
@@ -1555,6 +1577,12 @@
         "_conf": "high",
         "_sym": "T",
         "_note": "正文里嵌了大量干扰日期(嵌入推特的日期、活动截止时间、月报所述月份本身等),不能简单'页面全文搜日期'。真实发布日期固定在 <div class=\"post_tags u-color-faded\"><p class=\"post_info\">分类</p><div>·</div><p class=\"post_date\">日"
+      },
+      "body": {
+        "selector": "article.post_content",
+        "_sym": "T",
+        "_conf": "high",
+        "_note": "现规则只配 date,body 未配。页面结构:顶部 <div class=\"post_intro-w\"> 是摘要卡(内含 h1 标题复读 + 一段导语,导语与正文首段文字相同,即 issue 所述'摘要卡与正文首段重复');真正的正文容器是其后独立 <section> 内的 <article class=\"post_content\">,与摘要卡是完全不同的 DOM 分支(不会二次抽到摘要卡)、与同级 <aside class=\"post_toc-w\">(目录侧栏)也是兄弟节点不会混入。抽取引擎 find('p') 天然只取 article 内的 <p>。2 篇实测(issue 唯一样本 bitcoin-gets-based curl 现抓 17 段落/15 有效 + 归档样本 mango-dao-tbtc curl 复测 8 段落)首句均与页面可见正文完全一致,无 footer/推荐位污染,也不再重复摘要卡文字。 · 2026-07-05 R3复核 · 2026-07-05 R3"
       }
     },
     "tottenhamhotspur.com": {},
@@ -1602,17 +1630,17 @@
     },
     "usual.money": {
       "date": {
-        "selector": "time[datetime]",
-        "attr": "datetime",
+        "strategy": "html_regex",
+        "regex": "\"date\",\"([^\"]+)\"",
         "_sym": "USUAL",
         "_conf": "high",
-        "_note": "2026-07-05 核对战役"
+        "_note": "R1 补漏复审:原 selector time[datetime](attr=datetime)只对 /blog/ 模板生效,/updates/ 模板整页无 <time> 标签/无 date meta/无 jsonld/无可见日期文本(纯 Framer 渲染,#main 是整页含 nav+footer 的大容器,可见日期字符串在正文里位置太靠后,通用兜底的 extractVisibleDate 前 600/2000 字窗口够不到)。但两个模板页面都内嵌 <script id=\"__framer__handoverData\">(Framer CMS 查询结果的 turbo-stream 式序列化文本,非合法 JSON,不能整体 JSON.parse,但可 regex 定位),按位置排列着字面量对 \"date\",\"<ISO 时间戳>\"(如 \"date\",\"2025-04-24T00:00:00.000Z\"),是 CMS 原始发布时间字段,精确到毫秒+显式 Z 时区,比原方案的 attr=datetime 一样精确、比新模板唯一可行的 attr=text(裸月份名文本,无时区标记,服务器 UTC+8 下有跨日风险)更安全。已用该 regex 对 3 篇 /blog/ + 3 篇 /updates/ 样本重测:6/6 命中且与原 time[datetime] 现行输出的日期完全一致 → 判定可完全替换原 selector+attr 方案,统一走 html_regex(html_regex 策略在代码里优先于 selector 分支且总是直接 return,和旧 selector/attr 共存等于旧字段变死代码,故不保留)。data-framer-name 属性有陷阱:值是 Framer 设计态占位名(如本例='January 24, 2025'),与真实发布日期(April 24, 2025)不同,已验证排除不用 · 2026-07-05 R3"
       },
       "body": {
-        "selector": "div.framer-1fnoqwr",
+        "selector": "div.framer-1fnoqwr, div.framer-1os5tnk",
         "_sym": "USUAL",
         "_conf": "high",
-        "_note": "2026-07-05 核对战役"
+        "_note": "R1 补漏:/updates/ 模板正文容器是 div.framer-1os5tnk,与 /blog/ 模板的 div.framer-1fnoqwr 不同壳类名;两模板互斥不会同页共存,逗号并列可安全共存两选择器。3 篇 /updates/ 样本验证:容器内 <p> 标签经代码里通用 ≥20 字过滤后,标题('Arbitrum Tracking' 17字)/日期碎片('All' 3字/'·' 1字/'April 24, 2025' 14字)全部被自然滤除,只留正文段落,干净无污染 · 2026-07-05 R3"
       },
       "desc": {
         "ban": [
@@ -1918,6 +1946,48 @@
         "_sym": "SWELL",
         "_conf": "high",
         "_note": "Webflow 站,正文容器 class='text-rich-text w-richtext'(Webflow CMS Rich Text 组件标准类名),每页唯一命中;5 篇均为长文 Deep Dive/公告帖,容器内 find('p') 即纯正文(含帖内自带的 CTA 链接属正文一部分,非站级推荐位/footer/订阅框,容器边界干净) · 2026-07-05 核对战役"
+      }
+    },
+    "coin98.com": {
+      "body": {
+        "selector": "article.gh-article .gh-content",
+        "_sym": "C98",
+        "_conf": "high",
+        "_note": "Ghost CMS 标准主题 · 无规则时通用兜底 'article p, main p' 命中范围过宽:同时抓到 header.gh-article-header 内的 <p class=\"gh-article-excerpt\">(与 meta description/og:description/jsonld description 三处一致复读的'简介卡',实测 2 篇均确认逐字重复)以及页面底部 gh-read-next 推荐区 3 张 article.gh-card 短摘要卡片(与本文无关的其他文章预览)→ 由于 header 在文档序上位于正文 section 之前,旧兜底输出确以 excerpt 摘要开头、真正文顺延至后(2 篇实测复现:第2篇甚至以 excerpt 全文起头拼接进真正文首句造成断句错位)。真实正文容器为 header 之外的 section.gh-content(Ghost 主题固定结构,2 篇样本均全页唯一)· 该 selector 天然排除 header 摘要段与 gh-read-next 推荐卡片(两者均不在 .gh-content 内)。改规则后 2 篇实测正文首句均为该篇独有叙述,不再是 description 复读。 · 2026-07-05 R3"
+      }
+    },
+    "coredao.org": {
+      "title": {
+        "selector": "[class*=\"TitleSection_title\"]",
+        "_sym": "CORE",
+        "_conf": "high",
+        "_note": "现无 title 规则(current_rules=null),梯队会走到 og:title/<title>(该站页面无 <h1>,h1Text 为空)。实锤 2 篇:①issue 样本 hermes-upgrade-guidelines-for-validtors-and-full-node-operators:og:title/<title> 均为旧值'Hermes Upgrade: Guidelines for Validators & Full Node Operators',但可见标题已改名为'Hermes Hardfork: Guidelines for Validators & Full Node Operators'(Upgrade→Hardfork,SEO meta 未随改名同步);②归档样本 the-hermes-upgrade-is-coming:og:title/<title> 均只是缩略占位'Hermes Upgrade',可见标题却是完整句'Hermes Upgrade: Hold CORE → Turbocharge BTC'。两篇均实锤'meta 标题滞后/缩略、可见标题才是真实值'。选择器用属性包含 [class*=\"TitleSection_title\"] 而非精确类名 TitleSection_title__0g72z,规避 CSS-module 构建哈希后缀漂移风险(该后缀由构建工具生成,下次发布可能变化,前缀精确 About 匹配更稳)。2 篇实测均全页唯一命中(count=1),取到正确可见标题。 · 2026-07-05 R3复核 · 2026-07-05 R3"
+      }
+    },
+    "orderly.network": {
+      "body": {
+        "selector": "div.orderly-prose",
+        "_sym": "ORDER",
+        "_conf": "high",
+        "_note": "Next.js 站;正文唯一容器 div.orderly-prose(3 篇样本 count 均=1,含标题+全文,无 footer/推荐位污染;select('p') 落空但容器本身可被下游 body 逻辑当整体用,通用 20 字过滤自动滤掉短标题/短语句噪声) · 2026-07-05 R3"
+      }
+    },
+    "socios.com": {
+      "body": {
+        "selector": "div.elementor-widget-theme-post-content",
+        "_sym": "CHZ",
+        "_conf": "high",
+        "_note": "WordPress+Elementor 站;真实文章页正文是 elementor 'theme-post-content' widget(count=1,3 篇真文样本验证干净,不含 elementor-toc 目录挂件/推荐卡片污染);此前'语言首页假博文'问题是另一战役已清的不同问题,本次是真实文章详情页 body 选择器缺失 · 2026-07-05 R3"
+      }
+    },
+    "hive.blog": {
+      "date": {
+        "selector": ".PostFull__time_author_category span[title]",
+        "attr": "title",
+        "regex": "(\\d{1,2}/\\d{1,2}/\\d{4}\\s+\\d{1,2}:\\d{2}\\s*[AP]M)",
+        "_sym": "HIVE",
+        "_conf": "high",
+        "_note": "页面可见'X years/months ago'是相对时间,但同一 byline 容器内 span 的 title 属性藏着绝对时间(如 title=\"12/26/2023 1:32 AM\"),与 meta[property=article:published_time] 交叉核对完全一致(2023-12-26T01:32:33 ↔ 12/26/2023 1:32 AM;2023-10-24T03:10:30 ↔ 10/24/2023 3:10 AM,2 篇样本双源互证)。容器 .PostFull__time_author_category 全页唯一(count=1);内部还有第二个 span[title]='Reputation'(声誉值 tooltip 不是日期),regex 天然不匹配自动跳过,无需额外 ban;同 div 下的 '(edited)' 编辑时间戳 span 不在本 selector 命中范围内,不会误采成发布时间。注:MM/DD/YYYY 无显式时区标记,Date.parse 按本地时区解析,与通用梯队里的 meta 兜底路径同源同风险(非本规则独有引入的新问题),架构级修复(强制 UTC)需改 date-extract.ts 非本次规则文件范畴 · 2026-07-05 R3"
       }
     }
   }

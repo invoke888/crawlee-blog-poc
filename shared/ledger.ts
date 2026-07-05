@@ -189,6 +189,7 @@ export interface ArticleInput {
     url: string; token_id: number; base_symbol?: string;
     title?: string; h1?: string; description?: string; jsonld_description?: string; body_excerpt?: string;
     published_at?: string; crawler?: string; crawled_at?: string;
+    header_last_modified?: string; // 🆕 2026-07-05 Last-Modified 兜底事实字段(收割层 fresh 行决策用 · 不入库)
 }
 
 export function upsertArticles(items: ArticleInput[], runId: string | null): number {

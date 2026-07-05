@@ -16,7 +16,7 @@ import {
     isDeadHost,
     isDirectHost,
 } from '../src/utils/article-filter.js';
-import { normalizePublishedAt } from '../src/utils/normalize-date.js';
+import { normalizePublishedAt, normalizeHeaderLastModified } from '../src/utils/normalize-date.js';
 import { mediumToRss, paragraphToRss, substackToRss } from '../src/handlers/medium.js';
 import { mirrorToAtom } from '../src/handlers/mirror.js';
 
@@ -232,6 +232,8 @@ test('normalizePublishedAt · 无年份日期 V8 默认 2001 → 当前年兜底
     const y = Number(fixed.slice(0, 4));
     const nowY = new Date().getFullYear();
     assert.equal(y === nowY || y === nowY - 1, true); // 当前年 · 未来>48h 则回退一年
+    // 二轮复检实锤:任何进程时区都必须重建出 UTC 午夜的 11-12(KAVA Nov 12 曾漂成 Nov 11T16:00Z)
+    assert.equal(fixed.includes('-11-12T00:00:00.000Z'), true);
     // 真 2001 年日期不受影响
     assert.equal(normalizePublishedAt('2001-11-12'), '2001-11-12T00:00:00.000Z');
 });
@@ -256,4 +258,18 @@ test('filterArticlesWhitelistFirst · host 级口径(OXT/NIL 双渠道实锤 · 
         { url: 'https://x.com/random-landing' },
     ];
     assert.deepEqual(filterArticlesWhitelistFirst(wwwMix), [{ url: 'https://www.x.com/blog/real' }]);
+});
+
+test('normalizeHeaderLastModified · Last-Modified 兜底三防线(2026-07-05 老板拍)', () => {
+    const now = Date.parse('2026-07-05T12:00:00.000Z');
+    // 正常值 → ISO
+    assert.equal(normalizeHeaderLastModified('Fri, 03 Jul 2026 15:04:18 GMT', now), '2026-07-03T15:04:18.000Z');
+    // 与抓取时刻差 <10min = 动态生成的 now → 丢
+    assert.equal(normalizeHeaderLastModified('Sun, 05 Jul 2026 11:55:00 GMT', now), '');
+    // 未来 >48h → 丢
+    assert.equal(normalizeHeaderLastModified('Fri, 10 Jul 2026 12:00:00 GMT', now), '');
+    // 解析失败/空 → 丢
+    assert.equal(normalizeHeaderLastModified('not-a-date', now), '');
+    assert.equal(normalizeHeaderLastModified('', now), '');
+    assert.equal(normalizeHeaderLastModified(undefined, now), '');
 });

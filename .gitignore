@@ -6,7 +6,8 @@ node_modules
 storage
 docs-reference
 .tmp
-.claude
+.claude/*
+!.claude/skills
 .playwright-mcp
 __pycache__
 .env.local
