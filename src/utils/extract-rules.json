@@ -1604,6 +1604,13 @@
     ],
     "_note": "站级口号 desc 复读实锤(SQL 全库扫)· ban 后自动落 jsonld/真正文"
    }
+  },
+  "bitcoincore.org": {
+   "date": {
+    "strategy": "url_date",
+    "_sym": "BTC",
+    "_note": "文章URL /en/YYYY/MM/DD/ 含日期 · 页面日期抽取梯队覆盖不到(R3终核)"
+   }
   }
  }
 }

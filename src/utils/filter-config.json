@@ -11,6 +11,7 @@
     "insights",
     "journal",
     "news",
+    "newsroom",
     "p",
     "post",
     "posts",
@@ -209,7 +210,8 @@
     "blog.axieinfinity.com": "substack",
     "blog.somnia.network": "substack",
     "blog.chainbase.com": "paragraph",
-    "newsletter.carv.io": "substack"
+    "newsletter.carv.io": "substack",
+    "blog.yearn.fi": "paragraph"
   },
   "_rss_feed_comment": "🆕 2026-07-03 老板拍 a:通用 RSS 源(detect-feed 实锤 ghost/wp/gatsby 等 60 host 有可用 feed)· 划归独立 rssCrawler(主力池)· 增量靠 seen-store · 列表页噪音随管线化消失 · sitemap-only 三站(chiliz/socios/ogs)保持原机制不进本名单",
   "rss_feed_overrides": {
