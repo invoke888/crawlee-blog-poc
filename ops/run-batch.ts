@@ -84,15 +84,21 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
         });
     });
     if (passed.length < fresh.length) console.log(`🧹 收割过滤:${fresh.length} → ${passed.length}(拦 ${fresh.length - passed.length} 条非博文/噪音 · 不进账本)`);
-    // 🆕 2026-07-05 老板拍:Last-Modified 兜底 · 仅 fresh 行(首抓时刻协议头≈发布时间 · billions 实锤;
-    // 老文回填禁用:站点重发布会刷新老文协议头 · the-ticker-is-bill 实锤)· 站级 date.ban 含 'last_modified' 可关
-    let lmFilled = 0;
-    for (const a of passed) {
-        if (a.published_at || !a.header_last_modified) continue;
-        if (rulesFor(a.url)?.date?.ban?.includes('last_modified')) continue;
-        a.published_at = a.header_last_modified;
-        lmFilled += 1;
-    }
+    // 🆕 2026-07-05 老板拍:Last-Modified 作为发布时间的最后兜底(billions 实锤)· 常态化进管线:
+    // fresh 行 + refresh 回填行都走(值=该文首抓时刻存进 dataset 的协议头 · 非重新请求 · 首抓≈发布时刻;
+    // 污染窗口仅 reset 重抓老文场景=站点重发布戳 · 老板知情拍板"所有没发布时间的都用它兜底")
+    // 站级 date.ban 含 'last_modified' 可关 · refresh 侧 COALESCE 只补空天然不覆盖非空
+    const lmFallback = (rows: ArticleInput[]): number => {
+        let n = 0;
+        for (const a of rows) {
+            if (a.published_at || !a.header_last_modified) continue;
+            if (rulesFor(a.url)?.date?.ban?.includes('last_modified')) continue;
+            a.published_at = a.header_last_modified;
+            n += 1;
+        }
+        return n;
+    };
+    const lmFilled = lmFallback(passed);
     if (lmFilled) console.log(`🕐 Last-Modified 兜底:${lmFilled} 条新文用协议头补发布时间`);
     const added = upsertArticles(passed, runId);
     // known 行回填:同款过滤后 upsert(COALESCE 只补空)· runId 传 null 不动 first_run_id 语义 · 不计 added
@@ -100,8 +106,9 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
         !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url) && !isBlacklistedHost(a.url)
         && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)));
     if (refreshKept.length) {
+        const lmRefill = lmFallback(refreshKept); // 🆕 回填路径同款兜底(常态化 · 不再依赖一次性脚本)
         upsertArticles(refreshKept, null);
-        console.log(`♻️ 旧行空字段回填:${refreshKept.length} 条参与 COALESCE 补空`);
+        console.log(`♻️ 旧行空字段回填:${refreshKept.length} 条参与 COALESCE 补空${lmRefill ? ` · 其中 ${lmRefill} 条带 Last-Modified 兜底` : ''}`);
     }
     return { added, sourcesWithNew: new Set(passed.map((a) => a.token_id)).size };
 }
