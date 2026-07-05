@@ -1279,7 +1279,11 @@
       "confidence": "mid",
       "include_prefixes": [
         "/blog/"
-      ]
+      ],
+      "exclude_prefixes": [
+        "/blog/cloudpaws-filecoin-onchain-cloud"
+      ],
+      "_note": "2026-07-06 全量清查:cloudpaws 重复短slug空壳页(真文=cloudpaws-establishing-...)精确排除"
     },
     "FLOW": {
       "confidence": "high",
