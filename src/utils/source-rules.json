@@ -348,14 +348,13 @@
     },
     "MNT": {
       "confidence": "high",
-      "include_prefixes": [
-        "/blog/"
-      ],
       "exclude_prefixes": [
         "/ja/",
         "/ru/",
         "/zh/"
-      ]
+      ],
+      "include_regex": "^/blog/[^/]+/[^/]+",
+      "_note": "2026-07-05 清查:/blog/<分类> 根页 8 条混入 · 要求两段路径;漏采70-80篇待sitemap自愈"
     },
     "MOCA": {
       "confidence": "high",
@@ -765,7 +764,12 @@
       "confidence": "high",
       "include_prefixes": [
         "/blog/"
-      ]
+      ],
+      "exclude_prefixes": [
+        "/blog/foundational-topics/",
+        "/blog/world/"
+      ],
+      "_note": "2026-07-05 清查:两条分类索引页混入(host 专属分类名 · 不入全局词表防误杀)"
     },
     "XAUT": {
       "confidence": "high",
@@ -1422,6 +1426,18 @@
       "include_prefixes": [
         "/blog/"
       ]
+    },
+    "HIVE": {
+      "confidence": "high",
+      "include_regex": "^/[^/]+/@[a-z0-9_.-]+/[^/]+/?$",
+      "_note": "2026-07-05 全库清查:hive.blog 真文=三段式 /{tag}/@{author}/{slug} · 17 条导航/列表/功能页混入实锤"
+    },
+    "MEGA": {
+      "confidence": "high",
+      "include_prefixes": [
+        "/blog-news/"
+      ],
+      "_note": "2026-07-05 清查:LIST 把导航/推广链接误收 5 条 · 限定真文前缀"
     }
   }
 }
