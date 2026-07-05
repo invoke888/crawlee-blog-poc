@@ -29,3 +29,12 @@ test('checkSourceRuleMulti · 共用 sitemap 多 token(任一 pass 即放行)', 
     assert.equal(checkSourceRuleMulti(['PYTH'], 'https://www.pyth.network/mediaroom'), false); // 唯一规则 reject
     assert.equal(checkSourceRuleMulti([], 'https://anything.com/x'), true); // 空 = 放行
 });
+
+test('checkSourceRule · SFP 栏目hub精确排除(2026-07-06 老板抓 · 与真文同形只能精确)', () => {
+    // 假 hub(栏目页)→ reject
+    assert.equal(checkSourceRule('SFP', 'https://www.safepal.com/en/blog/safepal-academy'), 'reject');
+    assert.equal(checkSourceRule('SFP', 'https://www.safepal.com/en/blog/product-tutorials'), 'reject');
+    // 真文(同形 /en/blog/<slug>)→ pass · 不误杀(铁律3a:精确不扩大)
+    assert.equal(checkSourceRule('SFP', 'https://www.safepal.com/en/blog/bnb-gas-free'), 'pass');
+    assert.equal(checkSourceRule('SFP', 'https://www.safepal.com/en/blog/cex-to-defi'), 'pass');
+});

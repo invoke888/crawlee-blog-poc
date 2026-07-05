@@ -1106,7 +1106,12 @@
       "confidence": "high",
       "include_prefixes": [
         "/en/blog/"
-      ]
+      ],
+      "exclude_prefixes": [
+        "/en/blog/safepal-academy",
+        "/en/blog/product-tutorials"
+      ],
+      "_note": "2026-07-06 老板抓:academy/tutorials 是栏目hub非文章 · 与真文/en/blog/<slug>同形 · noise_last精确段拦不住复合词 · 精确排除"
     },
     "SKY": {
       "confidence": "high",
