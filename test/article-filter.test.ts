@@ -273,3 +273,14 @@ test('normalizeHeaderLastModified · Last-Modified 兜底三防线(2026-07-05 �
     assert.equal(normalizeHeaderLastModified('', now), '');
     assert.equal(normalizeHeaderLastModified(undefined, now), '');
 });
+
+test('normalizePublishedAt · 葡/西语月份(BRL1 R3 实锤)', () => {
+    assert.equal(normalizePublishedAt('8 de ago. de 2024'), '2024-08-08T00:00:00.000Z');
+    assert.equal(normalizePublishedAt('7 de out. de 2024'), '2024-10-07T00:00:00.000Z');
+    assert.equal(normalizePublishedAt('11 de março de 2025'), '2025-03-11T00:00:00.000Z');
+    assert.equal(normalizePublishedAt('15 de enero de 2026'), '2026-01-15T00:00:00.000Z'); // 西语 enero
+});
+
+test('isBlacklistedHost · socios.com 整组拉黑(2026-07-05 老板拍:非真博客)', () => {
+    assert.equal(isBlacklistedHost('https://www.socios.com/blog/some-post'), true);
+});

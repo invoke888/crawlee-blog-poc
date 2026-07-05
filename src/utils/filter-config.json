@@ -305,7 +305,11 @@
     "593": "BLEND 迁X无博客(老板拍C)",
     "1599": "SIREN 项目崩盘(老板拍C)",
     "11314": "ICX 2026年底关闭迁SODAX(老板拍C)",
-    "11343": "SAGA 出售加密业务转型AI(老板拍C)"
+    "11343": "SAGA 出售加密业务转型AI(老板拍C)",
+    "456": "2026-07-05 老板拍:socios.com/blog 非真博客(Socios 平台营销栏目)· 整组拉黑",
+    "463": "2026-07-05 老板拍:socios.com/blog 非真博客(Socios 平台营销栏目)· 整组拉黑",
+    "1910": "2026-07-05 老板拍:socios.com/blog 非真博客(Socios 平台营销栏目)· 整组拉黑",
+    "2656": "2026-07-05 老板拍:socios.com/blog 非真博客(Socios 平台营销栏目)· 整组拉黑"
   },
   "file_extensions": [
     "jpg",
@@ -332,7 +336,8 @@
     "github.com",
     "github.io",
     "ravencoin.org",
-    "naorisprotocol.com"
+    "naorisprotocol.com",
+    "socios.com"
   ],
   "_throttled_comment": "限频域分流(2026-07-03 老板拍 · 独立代理池 + 低速队列)· medium=池B · 数据来源 2026-07-02 全量实测 429/403 分布",
   "throttled_domains": {

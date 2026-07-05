@@ -36,10 +36,23 @@ export function normalizePublishedAt(raw: string | null | undefined): string {
         // 🆕 2026-07-04 复检实锤(QUICK "March 15th 2025"):序数词/多余点号 Date.parse 不认 · 清洗后重试
         const cleaned = s.replace(/(\d)(?:st|nd|rd|th)\b/gi, '$1').replace(/(\w)\.(\s)/g, '$1$2');
         const t2 = Date.parse(cleaned);
-        if (Number.isNaN(t2)) return '';
+        if (Number.isNaN(t2)) return normalizePtEsDate(s);
         return fixYearlessDefault(t2, s);
     }
     return fixYearlessDefault(t, s);
+}
+
+// 🆕 2026-07-05 R3 实锤(BRL1 "8 de ago. de 2024"):Date.parse 不认葡/西语月份 · "D de mês de YYYY" 显式解析
+const PT_ES_MONTHS: Record<string, number> = {
+    jan: 0, ene: 0, fev: 1, feb: 1, mar: 2, abr: 3, mai: 4, may: 4, jun: 5,
+    jul: 6, ago: 7, set: 8, sep: 8, out: 9, oct: 9, nov: 10, dez: 11, dic: 11,
+};
+function normalizePtEsDate(s: string): string {
+    const m = /^(\d{1,2})\s+de\s+([a-zçã]{3,10})\.?\s+de\s+((?:19|20)\d{2})$/i.exec(s.trim());
+    if (!m) return '';
+    const mon = PT_ES_MONTHS[m[2]!.slice(0, 3).toLowerCase()];
+    if (mon === undefined) return '';
+    return new Date(Date.UTC(Number(m[3]), mon, Number(m[1]))).toISOString();
 }
 
 // 🆕 2026-07-05 老板拍:HTTP Last-Modified 兜底维度(billions.network 实锤 · 页面无日期时协议头大概率≈发布时间)
