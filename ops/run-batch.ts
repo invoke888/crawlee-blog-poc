@@ -13,6 +13,7 @@ import { cfgNum } from '../shared/config.js';
 import { getProxyUrl, hashProxy } from '../shared/proxy-config.js';
 import { isNoiseUrl, isNonArticleFile, isLandingUrl, isBlacklistedHost, isBlockedSubdomainUrl, hostOfUrl, normalizedHostOfUrl, isWhitelistedArticleUrl } from '../src/utils/article-filter.js';
 import { rulesFor } from '../src/utils/date-extract.js';
+import { checkSourceRuleMulti } from '../src/utils/source-rules.js';
 import { runDetector } from './detector.js';
 import { runPusher } from './pusher.js';
 
@@ -63,9 +64,11 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
         blogHostByToken.set(r.token_id, hostOfUrl(r.blog_url ?? ''));
     }
     // 🆕 2026-07-05:补 isBlacklistedHost(此前缺 → 拉黑域行删除后 dataset 残留被补漏原样收回 · socios 险情)
+    // 🆕 2026-07-06:补 checkSourceRuleMulti(此前缺 → source-rule exclude 只在采集侧生效 · dataset 残留绕过收割层回流 · filecoin cloudpaws 短URL 实锤)
+    const srOk = (a: ArticleInput) => checkSourceRuleMulti([a.base_symbol ?? ''], a.url);
     const kept = fresh.filter((a) =>
         !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url) && !isBlacklistedHost(a.url)
-        && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)));
+        && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)) && srOk(a));
     const byToken = new Map<number, ArticleInput[]>();
     for (const a of kept) { const g = byToken.get(a.token_id) ?? []; g.push(a); byToken.set(a.token_id, g); }
     // 白名单优先必须用全库口径(DIA 实锤:本批无白名单新文时组内判定全放行 → zktls-oracle 类产品页溜入)
@@ -107,7 +110,7 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
     // known 行回填:同款过滤后 upsert(COALESCE 只补空)· runId 传 null 不动 first_run_id 语义 · 不计 added
     const refreshKept = refresh.filter((a) =>
         !isNonArticleFile(a.url) && !isNoiseUrl(a.url) && !isLandingUrl(a.url) && !isBlacklistedHost(a.url)
-        && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)));
+        && !isBlockedSubdomainUrl(a.url, blogHostByToken.get(a.token_id)) && srOk(a));
     if (refreshKept.length) {
         const lmRefill = lmFallback(refreshKept); // 🆕 回填路径同款兜底(常态化 · 不再依赖一次性脚本)
         upsertArticles(refreshKept, null);
