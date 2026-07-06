@@ -422,7 +422,8 @@
     "www.mav.xyz",
     "www.perle.xyz",
     "www.sushi.com",
-    "www.xertra.com"
+    "www.xertra.com",
+    "multiversx.com"
   ],
   "_dead_comment": "永久放弃:非博客/死站/停更/平台封号(agent 实测判死 · 2026-07-03 老板拍 c)",
   "dead_hosts": [
@@ -467,7 +468,8 @@
     "www.unibase.com",
     "www.virtuals.io",
     "www.wenwencoin.com",
-    "x.com"
+    "x.com",
+    "blog.codatta.io"
   ],
   "_direct_comment": "跳过代理直连名单(老板拍 b):代理池 IP 在该域信誉低被单独挑战 · 服务器出口正常(agent 双路对照实测)",
   "direct_hosts": [
