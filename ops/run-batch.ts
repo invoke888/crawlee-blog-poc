@@ -166,6 +166,10 @@ export async function runBatch(opts: { trigger: 'scheduler' | 'manual'; batchTyp
         return { ok: false, reason: 'skipped_overlap' };
     }
 
+    // 🆕 2026-07-06 老板拍 b:严格每 interval 起跑一轮 —— 触发时刻即排下轮(原为批次结束后+interval · 实际 ~20min/轮)
+    // 批次超时超过 interval 时 tick 的 isRunActive 防重叠(到点跳过 · 空闲即跑)
+    advanceNextRun('crawl', runId);
+
     const env: NodeJS.ProcessEnv = { ...process.env, RUN_ID: runId, NODE_OPTIONS: '--max-old-space-size=3072' };
     if (opts.onlySymbols) env.ONLY_SYMBOLS = opts.onlySymbols;
 
@@ -197,14 +201,12 @@ export async function runBatch(opts: { trigger: 'scheduler' | 'manual'; batchTyp
                     const alertsOpened = runDetector(runId);
                     finishRun(runId, { status, exitCode: code, exitSignal: signal ?? null, datasetAdded: added, sourcesWithNew, alertsOpened, notes });
                     refreshLastArticleAt();
-                    advanceNextRun('crawl', runId);
                     archiveCleanup();
                     await runPusher(runId);
                     console.log(`🏁 批次 ${runId} 完成 status=${status} +${added} 篇 · 告警 ${alertsOpened}`);
                 } catch (e) {
                     console.error('⚠️ 批次收尾异常(下轮补漏扫描兜底):', (e as Error).message);
                     finishRun(runId, { status: timedOut ? 'timeout' : 'failed', exitCode: code, exitSignal: signal ?? null, notes: `收尾异常: ${(e as Error).message.slice(0, 120)}` });
-                    advanceNextRun('crawl', runId);
                 }
                 resolvePromise({ ok: true, runId });
             })();
@@ -213,7 +215,6 @@ export async function runBatch(opts: { trigger: 'scheduler' | 'manual'; batchTyp
             clearTimeout(killTimer);
             activeChild = null;
             finishRun(runId, { status: 'failed', notes: `spawn 失败: ${e.message.slice(0, 120)}` });
-            advanceNextRun('crawl', runId);
             resolvePromise({ ok: false, reason: 'spawn_error', runId });
         });
     });
