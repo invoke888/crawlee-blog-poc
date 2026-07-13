@@ -1,7 +1,7 @@
 // 🆕 2026-07-04 批次执行(计划书 §5.1):调度 tick 与手动触发共用唯一入口 runBatch()
 // 占位(SQLite 原子)→ spawn 采集器 → 超时(SIGTERM→SIGKILL)→ 收割 articles + 补漏 → detector → pusher
 import { spawn, type ChildProcess } from 'node:child_process';
-import { createWriteStream, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, existsSync } from 'node:fs';
+import { createWriteStream, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, existsSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { db } from '../shared/db.js';
@@ -36,15 +36,7 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
     const fresh: ArticleInput[] = [];
     // 🆕 2026-07-04 收敛轮实锤:known 行整体 skip 导致抽取器升级后旧行空字段永不自愈(ondo body 回填失败根因)
     // known 行也走同款过滤后 upsert(COALESCE 只补空字段 · 不覆盖非空)· 不计入本批新增
-    // 🆕 2026-07-13 OOM 根治:回填降频 —— 原每 15min 全量读+upsert dataset 全部 known 行(5 天积累 8175 条 · 2026-07-11 OOM 杀进程实锤)
-    // 回填目的=规则升级后补旧行空字段 · 默认 6h 一次(backfill_interval_min)· reset 清 last_backfill_at 保首轮必跑
-    const backfillDue = (() => {
-        try {
-            const iv = cfgNum('backfill_interval_min', 360) * 60_000;
-            const last = db().prepare(`SELECT value FROM app_config WHERE key = 'last_backfill_at'`).get() as { value?: string } | undefined;
-            return !last?.value || Date.now() - Date.parse(last.value) >= iv;
-        } catch { return true; }
-    })();
+    // 🆕 2026-07-13 根源改造后:dataset=运输带(收编后即清)· refresh 量=本轮重逢的少量新数据 · 6h 降频机制随之移除
     const refresh: ArticleInput[] = [];
     for (const f of files) {
         try {
@@ -53,7 +45,6 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
             const tokenId = d.token_id as number;
             if (!url || tokenId == null) continue;
             const isKnown = known.has(`${tokenId}|${url}`);
-            if (isKnown && !backfillDue) continue; // 未到回填周期 · known 行不进内存(OOM 元凶)
             const row: ArticleInput = {
                 url, token_id: tokenId, base_symbol: (d.base_symbol as string) ?? '',
                 title: (d.title as string) ?? '', h1: (d.h1 as string) ?? '',
@@ -127,12 +118,13 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
         upsertArticles(refreshKept, null);
         console.log(`♻️ 旧行空字段回填:${refreshKept.length} 条参与 COALESCE 补空${lmRefill ? ` · 其中 ${lmRefill} 条带 Last-Modified 兜底` : ''}`);
     }
-    if (backfillDue) {
-        try {
-            db().prepare(`INSERT OR REPLACE INTO app_config (key, value, value_type, category, label, updated_at)
-                          VALUES ('last_backfill_at', ?, 'string', 'push', '上次回填时刻(降频用)', ?)`).run(new Date().toISOString(), new Date().toISOString());
-        } catch { /* 记录失败下轮再跑回填 · 不致命 */ }
-    }
+    // 🆕 2026-07-13 根源改造:收编完成 → 清空运输带(整目录 · 非单文件 · 下轮 crawlee 重建空 dataset 编号从 1)
+    // dataset 不再积累 = OOM/timeout 元凶消失 + 陈年残留回流类 bug 根绝(socios/coin98/filecoin 历史坑的根子)
+    // 异常路径不清(catch 在调用方)· 崩溃窗口产物由下轮 harvest 兜底收编后再清
+    try {
+        rmSync(resolve(REPO, 'storage/datasets'), { recursive: true, force: true });
+        console.log(`🧺 运输带已清(本轮 ${files.length} entry 已收编)`);
+    } catch { /* 清不掉下轮重收 · upsert 幂等 */ }
     return { added, sourcesWithNew: new Set(passed.map((a) => a.token_id)).size };
 }
 
@@ -143,6 +135,15 @@ function archiveCleanup(): void {
         for (const f of readdirSync(LOGS_DIR)) {
             const p = resolve(LOGS_DIR, f);
             if (statSync(p).mtimeMs < cutoff) unlinkSync(p);
+        }
+    } catch { /* 目录不存在等 */ }
+    // 🆕 2026-07-13 根源改造:raw-html 存档 14 天 retention(memory 原方案 · kv 按 key 存删单文件安全 · 只占磁盘不拖批次)
+    try {
+        const rawCutoff = Date.now() - 14 * 86_400_000;
+        const rawDir = resolve(REPO, 'storage/key_value_stores/raw-html');
+        for (const f of readdirSync(rawDir)) {
+            const p = resolve(rawDir, f);
+            if (statSync(p).mtimeMs < rawCutoff) unlinkSync(p);
         }
     } catch { /* 目录不存在等 */ }
     cleanupOldErrors(30);

@@ -23,7 +23,6 @@ export const CONFIG_DEFAULTS: Record<string, { value: string; type: 'number' | '
     list_enqueue_limit: { value: '30', type: 'number', category: 'crawl', label: 'LIST 每页候选上限' },
     run_mirror: { value: '0', type: 'bool', category: 'crawl', label: 'mirror 流开关' },
     skip_medium: { value: '0', type: 'bool', category: 'crawl', label: '跳过 medium 流' },
-    backfill_interval_min: { value: '360', type: 'number', category: 'crawl', label: '旧行回填间隔(分钟 · 2026-07-13 OOM 根治)' },
     // alerts 阈值
     error_streak_runs: { value: '2', type: 'number', category: 'alerts', label: '连续出错升告警轮数' },
     error_streak_runs_red: { value: '4', type: 'number', category: 'alerts', label: '连续出错升红色轮数' },

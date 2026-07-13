@@ -22,7 +22,5 @@ for (const t of TARGETS) {
 // 下一轮批次标记 is_after_reset(detector 跳过环比误报)
 db().prepare(`INSERT OR REPLACE INTO app_config (key, value, value_type, category, label, updated_at)
               VALUES ('pending_reset_flag', '1', 'bool', 'schedule', '下一批次标 is_after_reset', ?)`).run(new Date().toISOString());
-// 🆕 2026-07-13:清回填高水位 → reset 后首轮必跑全量回填(规则升级补旧行的主场景)
-db().prepare(`DELETE FROM app_config WHERE key = 'last_backfill_at'`).run();
 console.log('✅ reset 完成 · sources.db(账本/articles)保留 · 下一批次将标 is_after_reset');
 process.exit(0);

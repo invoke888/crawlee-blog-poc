@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { isLikelyArticleUrl } from '../config.js';
 import { isValidHttpUrl, isWhitelistedArticleUrl } from '../utils/article-filter.js';
 import { checkSourceRuleMulti } from '../utils/source-rules.js';
+import { isKnownUrl } from '../utils/known-urls.js';
 import { extractH1, extractJsonLdMeta, extractVisibleDate, extractPublishedAt, titleRuleFor, bodyRuleFor, descRuleFor, extractBodyByHtmlRegex } from '../utils/date-extract.js';
 import { normalizePublishedAt, normalizeHeaderLastModified } from '../utils/normalize-date.js';
 import { underSourceCap, countSourcePush } from '../utils/per-source-cap.js';
@@ -66,6 +67,8 @@ export async function listHandler(ctx: CheerioCrawlingContext): Promise<void> {
             if (!isLikelyArticleUrl(abs)) return;
             // 🆕 2026-07-03 per-source 规则(17 agent 审计 · SPACE 类同域跑歪根治)
             if (!checkSourceRuleMulti(sources.map((s) => s.base_symbol), abs)) return;
+            // 🆕 2026-07-13 账本级 dedupe(queue 记忆已迁账本 · queue 每轮 drop):已入库不重抓
+            if (isKnownUrl(abs)) return;
             candidates.push({ url: abs, white: isWhitelistedArticleUrl(abs) });
         });
         candidates.sort((a, b) => Number(b.white) - Number(a.white)); // 稳定排序 · 白名单内保持页面出现顺序

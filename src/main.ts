@@ -9,6 +9,7 @@ import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost, URL_OVERRIDES } from './config.js';
 import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion, extractDateFromUrl, normalizedHostOfUrl } from './utils/article-filter.js';
 import { checkSourceRuleMulti, getSitemapOnly } from './utils/source-rules.js';
+import { loadKnownUrls, isKnownUrl } from './utils/known-urls.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
 // 🆕 2026-07-04 运维台对接(计划书 §3 契约):埋点/账本/配置中心/代理 DB 读 — 全部可选,零参数裸跑行为不变
 import { statCount, statRequest, recordError, snapshotStats } from '../shared/run-stats.js';
@@ -229,10 +230,20 @@ Configuration.getGlobalConfig().set('purgeOnStart', false);
 // 🆕 2026-07-03 RSS 流 article 级 dedupe(老板拍 a)· 跑前加载已见清单
 await loadSeen();
 
+// 🆕 2026-07-13 存储根源改造(老板拍):DETAIL 去重记忆迁账本 · queue 每轮 drop 重建不积累
+// (旧:queue 文件持久 dedupe 只增不减 · 5 天把批次 4.4min 拖到 15min 超时连环实锤)
+const knownCount = loadKnownUrls();
+console.log(`📚 账本去重记忆:${knownCount} 已知 URL(DETAIL 入队前跳过 · REFETCH 豁免)`);
+async function freshQueue(name: string): Promise<RequestQueue> {
+    const stale = await RequestQueue.open(name);
+    await stale.drop(); // 上一轮遗留(含 timeout 半途)整体丢弃 · 未入库的 URL 由本轮 LIST/sitemap 重新发现
+    return RequestQueue.open(name);
+}
+
 // 每个 Crawler 用 named RequestQueue · 避免共享 default queue 出 race condition
-const mediumQueue = await RequestQueue.open('medium');
-const generalQueue = await RequestQueue.open('general');
-const mirrorQueue = await RequestQueue.open('mirror');
+const mediumQueue = await freshQueue('medium');
+const generalQueue = await freshQueue('general');
+const mirrorQueue = await freshQueue('mirror');
 
 // 入口层全部加 RUN_SALT(增量修复)
 const mediumReqs = Array.from(mediumByRss.entries()).map(([rssUrl, assoc]) => ({
@@ -438,7 +449,7 @@ if (REFETCH_FILE) {
             url,
             uniqueKey: `${url}#refetch-${RUN_SALT}`,
             label: 'DETAIL',
-            userData: { sources_for_url: assoc, from_sitemap: false },
+            userData: { sources_for_url: assoc, from_sitemap: false, refetch: true }, // refetch=豁免账本 known-skip(强制重抓语义)
         } as (typeof listReqs)[number]);
     }
     console.log(`🎯 定向重抓:${refetchReqs.length} URL 入队(host 无 token 关联跳过 ${unmatched})`);
@@ -450,13 +461,16 @@ if (REFETCH_FILE) {
 const generalReqs: typeof listReqs = [];
 const slowReqs: typeof listReqs = [];
 let dcBannedDropped = 0;
+let knownSkipped = 0;
 for (const req of [...listReqs, ...sitemapReqs, ...sitemapOnlyReqs, ...refetchReqs]) {
     if (isDcBannedHost(req.url)) { dcBannedDropped += 1; continue; } // 兜底:跨源链接指向 DC-ban 域也 drop
+    // 🆕 2026-07-13 账本级 dedupe(替代 queue 文件记忆):已入库 DETAIL 不重抓 · refetch 豁免
+    if ((req as { label?: string }).label === 'DETAIL' && !(req.userData as { refetch?: boolean })?.refetch && isKnownUrl(req.url)) { knownSkipped += 1; continue; }
     (getThrottleGroup(req.url) ? slowReqs : generalReqs).push(req as (typeof listReqs)[number]);
 }
-console.log(`   · 分流:general ${generalReqs.length} · slow(限频域)${slowReqs.length}${dcBannedDropped ? ` · DC-ban drop ${dcBannedDropped}` : ''}`);
+console.log(`   · 分流:general ${generalReqs.length} · slow(限频域)${slowReqs.length} · 账本去重 skip ${knownSkipped}${dcBannedDropped ? ` · DC-ban drop ${dcBannedDropped}` : ''}`);
 
-const slowQueue = await RequestQueue.open('slow');
+const slowQueue = await freshQueue('slow');
 await mediumQueue.addRequests([...mediumReqs, ...paragraphReqs]);
 await generalQueue.addRequests(generalReqs);
 await slowQueue.addRequests(slowReqs);
