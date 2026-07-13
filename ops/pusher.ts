@@ -91,6 +91,19 @@ export function backfillOnFirstEnable(): number {
     return r.changes;
 }
 
+// 🆕 2026-07-13 新文守门(老板拍:确保以后推的是新文 · 滚动 7 天)
+// 背景:运输带切换后旧 queue"发现过但未入库"记忆蒸发 → 老文当新文涌入(crawled_at 全新)骗过 backlog 边界 → ECB 2021-2023 文误推实锤
+// 语义:发布超窗口的迟到首采,推送出口标 skipped_backlog(入库照常 · 库保持全量 · 面板手动推按钮不受影响)
+// pub 空的放行(spa 源新文无字段 · 按 crawled_at 现行为);只动 none(failed 重试/已推不碰)
+export const FRESH_WINDOW_DAYS = 7;
+
+export function skipStaleBeforePush(nowIso?: string): number {
+    const cutoff = new Date(new Date(nowIso ?? now()).getTime() - FRESH_WINDOW_DAYS * 24 * 3600 * 1000).toISOString();
+    const r = db().prepare(`UPDATE articles SET push_status = 'skipped_backlog'
+                            WHERE push_status = 'none' AND published_at IS NOT NULL AND published_at != '' AND published_at < ?`).run(cutoff);
+    return r.changes;
+}
+
 // runId=null 时为手动重推(面板按钮)· opts.retryUrls 限定范围 · opts.limit 测试推 N 篇 · dryOverride 强制演练
 export async function runPusher(runId: string | null, opts?: { retryUrls?: string[]; dryOverride?: boolean; limit?: number }): Promise<{ pushed: number; ok: number; failed: number; skipped: number; rejected: number }> {
     const result = { pushed: 0, ok: 0, failed: 0, skipped: 0, rejected: 0 };
@@ -99,6 +112,7 @@ export async function runPusher(runId: string | null, opts?: { retryUrls?: strin
     if (!enabled && !opts?.retryUrls && !opts?.dryOverride) return result; // 未接通且非手动 → 静默跳过
 
     if (enabled && !opts?.retryUrls) backfillOnFirstEnable();
+    if (!opts?.retryUrls) skipStaleBeforePush(); // 新文守门:自动推路径先拦超窗口老文(手动重推豁免)
 
     const baseUrl = cfgStr('push_api_url');
     const apiKey = cfgStr('push_api_key');
