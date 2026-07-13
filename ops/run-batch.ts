@@ -36,6 +36,15 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
     const fresh: ArticleInput[] = [];
     // 🆕 2026-07-04 收敛轮实锤:known 行整体 skip 导致抽取器升级后旧行空字段永不自愈(ondo body 回填失败根因)
     // known 行也走同款过滤后 upsert(COALESCE 只补空字段 · 不覆盖非空)· 不计入本批新增
+    // 🆕 2026-07-13 OOM 根治:回填降频 —— 原每 15min 全量读+upsert dataset 全部 known 行(5 天积累 8175 条 · 2026-07-11 OOM 杀进程实锤)
+    // 回填目的=规则升级后补旧行空字段 · 默认 6h 一次(backfill_interval_min)· reset 清 last_backfill_at 保首轮必跑
+    const backfillDue = (() => {
+        try {
+            const iv = cfgNum('backfill_interval_min', 360) * 60_000;
+            const last = db().prepare(`SELECT value FROM app_config WHERE key = 'last_backfill_at'`).get() as { value?: string } | undefined;
+            return !last?.value || Date.now() - Date.parse(last.value) >= iv;
+        } catch { return true; }
+    })();
     const refresh: ArticleInput[] = [];
     for (const f of files) {
         try {
@@ -43,6 +52,8 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
             const url = (d.url as string) ?? '';
             const tokenId = d.token_id as number;
             if (!url || tokenId == null) continue;
+            const isKnown = known.has(`${tokenId}|${url}`);
+            if (isKnown && !backfillDue) continue; // 未到回填周期 · known 行不进内存(OOM 元凶)
             const row: ArticleInput = {
                 url, token_id: tokenId, base_symbol: (d.base_symbol as string) ?? '',
                 title: (d.title as string) ?? '', h1: (d.h1 as string) ?? '',
@@ -53,7 +64,7 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
                 crawler: (d.crawler as string) ?? '', crawled_at: (d.crawledAt as string) ?? '',
                 header_last_modified: (d.header_last_modified as string) ?? '',
             };
-            if (known.has(`${tokenId}|${url}`)) refresh.push(row);
+            if (isKnown) refresh.push(row);
             else fresh.push(row);
         } catch { /* 单文件坏不拖垮收割 */ }
     }
@@ -115,6 +126,12 @@ function harvestArticles(runId: string | null): { added: number; sourcesWithNew:
         const lmRefill = lmFallback(refreshKept); // 🆕 回填路径同款兜底(常态化 · 不再依赖一次性脚本)
         upsertArticles(refreshKept, null);
         console.log(`♻️ 旧行空字段回填:${refreshKept.length} 条参与 COALESCE 补空${lmRefill ? ` · 其中 ${lmRefill} 条带 Last-Modified 兜底` : ''}`);
+    }
+    if (backfillDue) {
+        try {
+            db().prepare(`INSERT OR REPLACE INTO app_config (key, value, value_type, category, label, updated_at)
+                          VALUES ('last_backfill_at', ?, 'string', 'push', '上次回填时刻(降频用)', ?)`).run(new Date().toISOString(), new Date().toISOString());
+        } catch { /* 记录失败下轮再跑回填 · 不致命 */ }
     }
     return { added, sourcesWithNew: new Set(passed.map((a) => a.token_id)).size };
 }

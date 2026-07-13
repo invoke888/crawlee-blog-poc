@@ -20,6 +20,17 @@ export function recoverFromCrash(): void {
 function tick(): void {
     try {
         touchScheduleTick('crawl');
+        // 🆕 2026-07-13 死锁根治(2026-07-11 OOM 实锤 · 零采集2天):stale 孤儿检查每 tick 跑
+        // 原只在启动跑一次 → OOM 杀进程时刚 claim 的孤儿(<15min 不算 stale)重启后永无人清 → claim 连环撞死锁
+        if (!isRunActive()) {
+            const timeoutMin = cfgNum('batch_timeout_min', 30);
+            for (const run of findStaleRunningRuns(timeoutMin)) {
+                console.warn(`⚠️ tick 侦测 stale running 孤儿 ${run.run_id} → 标 crashed(解锁调度)`);
+                markRunCrashed(run.run_id);
+                upsertAlert({ token_id: null, base_symbol: null, type: 'run_interrupted', severity: 'red',
+                    detail: `批次 ${run.run_id} 孤儿(进程曾被杀)· tick 自愈清除` }, run.run_id);
+            }
+        }
         // interval 面板改动 → 每 tick 同步(热生效)
         ensureScheduleState('crawl', cfgNum('crawl_interval_min', 60) * 60_000);
         const st = getScheduleState('crawl');
