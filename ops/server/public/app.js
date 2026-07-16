@@ -225,7 +225,8 @@ async function loadArticles() {
   const d = await api(`/api/articles?${p}`);
   $('art-count').textContent = `共 ${d.total} 篇`;
   $('art-page').textContent = `${d.page} / ${Math.max(1, Math.ceil(d.total / d.per))}`;
-  const pushChip = (a) => a.push_status === 'pushed' ? '<span class="chip g">已推</span>'
+  /* 已推 chip 可点补推(2026-07-16 老板拍:点击→confirm→同意就补 · 下游 append-only 会多一条,弹窗明示)*/
+  const pushChip = (a) => a.push_status === 'pushed' ? `<span class="chip g" style="cursor:pointer" title="点击补推" onclick="repushConfirm('${esc(a.url)}')">已推</span>`
     : a.push_status === 'failed' ? `<span class="chip r" title="${esc(a.push_error || '')}">失败</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">重推</button>`
     : a.push_status === 'skipped_backlog' ? `<span class="chip">存量不推</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">推送</button>`
     : `<span class="chip y">未推</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">推送</button>`;
@@ -247,6 +248,11 @@ window.retryPush = async (url) => {
     toast(r.skipped > 0 && !r.ok ? 'push 未接通(演练跳过 · 设置页配 URL/SECRET 后生效)' : `推送:ok ${r.ok} · fail ${r.failed}`);
     loadArticles();
   } catch (e) { toast(e.message); }
+};
+/* 已推行补推:原生 confirm 确认后复用 retryPush(取消=零请求) */
+window.repushConfirm = (url) => {
+  if (!confirm('该文已推送过,确认补推一次?(下游将再收到一条)')) return;
+  window.retryPush(url);
 };
 
 /* ── 错误日志 ── */
