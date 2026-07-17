@@ -1751,11 +1751,6 @@
       }
     },
     "trustwallet.com": {
-      "date": {
-        "strategy": "spa_only",
-        "_sym": "TWT",
-        "_conf": "high"
-      },
       "body": {
         "strategy": "html_regex",
         "regex": "\"articleBody\":\"((?:[^\"\\\\]|\\\\.){80,}?)\"",
