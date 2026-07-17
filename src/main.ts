@@ -7,7 +7,7 @@ import { mediumRouter, mediumToRss, paragraphToRss, substackToRss, fetchAndPushS
 import { mirrorRouter, mirrorToAtom } from './handlers/mirror.js';
 import { listSources, type SourceRow } from './registry/db.js';
 import { isLikelyArticleUrl, isBlacklistedHost, URL_OVERRIDES } from './config.js';
-import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion, extractDateFromUrl, normalizedHostOfUrl } from './utils/article-filter.js';
+import { isValidHttpUrl, getThrottleGroup, isDcBannedHost, isDeadHost, isDirectHost, getPlatformOverride, getRssFeedOverride, getTokenExclusion, extractDateFromUrl, normalizedHostOfUrl, isBlockedSubdomainUrl, hostOfUrl } from './utils/article-filter.js';
 import { checkSourceRuleMulti, getSitemapOnly } from './utils/source-rules.js';
 import { loadKnownUrls, isKnownUrl } from './utils/known-urls.js';
 import { loadSeen, persistSeen } from './utils/seen-store.js';
@@ -333,6 +333,8 @@ const sitemapReqs = sitemapResults.flatMap((r, i) => {
     const articleUrls = (urls as string[]).filter((url) => {
         if (!isValidHttpUrl(url)) { sitemapInvalidUrls += 1; return false; }
         if (!isLikelyArticleUrl(url)) { sitemapNonArticle += 1; return false; }
+        // 🆕 2026-07-18 黑子域防线补进 sitemap 流(此前仅 LIST 流有 · SKR 政策页 lgl. 跨子域 URL 经 sitemap 绕过删了又回流实锤)
+        if (srcs.every((s) => isBlockedSubdomainUrl(url, hostOfUrl(s.blog_url)))) { sitemapNonArticle += 1; return false; }
         if (!checkSourceRuleMulti(chunkSyms, url)) { sitemapNonArticle += 1; return false; }
         return true;
     });
