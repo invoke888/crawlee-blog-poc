@@ -1455,6 +1455,14 @@
         "/content-hub/"
       ],
       "_note": "2026-07-05 全量清查:真文在 /content-hub/ · /rif-token 顶导混入"
+    },
+    "MON": {
+      "confidence": "high",
+      "exclude_prefixes": [
+        "/brand-and-media-kit",
+        "/infra"
+      ],
+      "_note": "blog.monad.xyz 站内链到 www.monad.xyz 品牌页/目录页被采(2026-07-17 agent 实锤非文章)· path 级精确拦零误伤"
     }
   }
 }

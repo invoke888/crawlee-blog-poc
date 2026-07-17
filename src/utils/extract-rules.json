@@ -2251,6 +2251,15 @@
         "_sym": "HUMA",
         "_note": "HubSpot 站,正文是从 Google Docs 粘贴的富文本,段落全部是 div/span/br 混排、无一个 <p> 标签。通用兜底 'article p, main p' 只命中1个 <p>(class='blog-header__email',文本 'info@huma.finance' 共18字符),被引擎 <20 字符阈值过滤掉 → body_excerpt 现存应为空值。真实正文容器 div.blog-post__body(article.blog-post 内,全页唯一);新选择器 find('p') 结果为0会触发引擎'容器直取'兜底,直接取整个富文本块文本。2 篇存档(=全部给定样本)cheerio 生产引擎实测干净,4728/5076 字,不含侧栏 blog-comments-container/blog-post__related-posts/blog-post__pagination(均为兄弟节点非子节点)。 · 2026-07-05 全量清查"
       }
+    },
+    "www.allora.network": {
+      "date": {
+        "selector": ".blog-header-contain .blog-grid-date",
+        "attr": "text",
+        "_sym": "ALLO",
+        "_conf": "high",
+        "_note": "h1 后紧跟的可见 byline(July 25, 2024)· 3 值互异排除构建戳 · ⚠️页面另有 Webflow 'Last Published' 站级构建戳注释与下方 related 网格同 class 日期 · selector 限定 header 容器内避开 · 2026-07-17 调研"
+      }
     }
   }
 }

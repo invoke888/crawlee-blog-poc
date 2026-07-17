@@ -482,7 +482,8 @@
     "jobs",
     "status",
     "help",
-    "support"
+    "support",
+    "lgl"
   ],
   "_blocked_subdomain_comment": "2026-07-04 质量战役:这些子域前缀不可能是博客(Falcon docs.* 混入实锤)· 仅当 URL host 与源 blog_url host 不同时拦"
 }
