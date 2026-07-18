@@ -377,6 +377,7 @@
     "blog.zentry.com",
     "blog.zksync.io",
     "bullamascot.io",
+    "centrifuge.io",
     "cheems.pet",
     "civic.com",
     "cow.fi",
@@ -398,6 +399,7 @@
     "mirror.xyz",
     "moonbirds.com",
     "morpho.org",
+    "multiversx.com",
     "news.aspecta.ai",
     "okzoo.app",
     "polymesh.network",
@@ -423,8 +425,7 @@
     "www.mav.xyz",
     "www.perle.xyz",
     "www.sushi.com",
-    "www.xertra.com",
-    "multiversx.com"
+    "www.xertra.com"
   ],
   "_dead_comment": "永久放弃:非博客/死站/停更/平台封号(agent 实测判死 · 2026-07-03 老板拍 c)",
   "dead_hosts": [

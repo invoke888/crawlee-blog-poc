@@ -26,6 +26,15 @@ export function normalizePublishedAt(raw: string | null | undefined): string {
         }
         return '';
     }
+    // 🆕 2026-07-18 中文纪年(BCH 中文版公告 "2021年8月15日" 实锤 · 老板拍C):V8 Date.parse 不认 · UTC 重建零时区漂移
+    const zh = /^((?:19|20)\d{2})年(\d{1,2})月(\d{1,2})日$/.exec(s);
+    if (zh) {
+        const [, y, mo, d] = zh;
+        if (Number(mo) >= 1 && Number(mo) <= 12 && Number(d) >= 1 && Number(d) <= 31) {
+            return new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d))).toISOString();
+        }
+        return '';
+    }
     // 🆕 2026-07-04 收敛轮(COLLECT 27/01/2026 实锤):D/M/YYYY 仅在日>12 无歧义时救 · ≤12 分不清日月不猜
     const dmy = /^(\d{1,2})\/(\d{1,2})\/((?:19|20)\d{2})$/.exec(s);
     if (dmy && Number(dmy[1]) > 12 && Number(dmy[2]) >= 1 && Number(dmy[2]) <= 12) {
