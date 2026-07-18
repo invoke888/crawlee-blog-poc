@@ -50,6 +50,9 @@ export function db(): Database.Database {
     _db.exec(readFileSync(OPS_SCHEMA, 'utf-8'));
     // 物化列:最后出文时间(run-batch 批末 UPDATE · /api/sources 不实时扫 articles)
     ensureColumn(_db, 'sources', 'last_article_at', 'last_article_at TEXT');
+    // 🆕 2026-07-18 推送记录查看(老板拍):最近一次真推的 item JSON 与单文结果 · dry 不写 · 补推覆盖
+    ensureColumn(_db, 'articles', 'push_request', 'push_request TEXT');
+    ensureColumn(_db, 'articles', 'push_response', 'push_response TEXT');
     return _db;
 }
 

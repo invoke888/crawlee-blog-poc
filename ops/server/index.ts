@@ -299,6 +299,15 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
         }
         if (path === '/api/schedule/pause' && req.method === 'POST') { setPaused('crawl', true); json(res, 200, { ok: true }); return; }
         if (path === '/api/schedule/resume' && req.method === 'POST') { setPaused('crawl', false); json(res, 200, { ok: true }); return; }
+        if (path === '/api/push/detail' && req.method === 'GET') {
+            // 🆕 2026-07-18 推送记录查看(老板拍):最近一次真推的请求/返回 · 上线前推送无记录
+            const u = url.searchParams.get('url') ?? '';
+            if (!u) { json(res, 400, { error: 'url required' }); return; }
+            const r = d.prepare(`SELECT push_request, push_response, push_status, pushed_at FROM articles WHERE url = ? LIMIT 1`).get(u);
+            if (!r) { json(res, 404, { error: 'not found' }); return; }
+            json(res, 200, r);
+            return;
+        }
         if (path === '/api/push/retry' && req.method === 'POST') {
             const body = await readBody(req);
             const urls = (body.urls as string[]) ?? [];

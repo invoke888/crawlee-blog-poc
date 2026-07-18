@@ -225,9 +225,10 @@ async function loadArticles() {
   const d = await api(`/api/articles?${p}`);
   $('art-count').textContent = `共 ${d.total} 篇`;
   $('art-page').textContent = `${d.page} / ${Math.max(1, Math.ceil(d.total / d.per))}`;
-  /* 已推 chip 可点补推(2026-07-16 老板拍:点击→confirm→同意就补 · 下游 append-only 会多一条,弹窗明示)*/
-  const pushChip = (a) => a.push_status === 'pushed' ? `<span class="chip g" style="cursor:pointer" title="点击补推" onclick="repushConfirm('${esc(a.url)}')">已推</span>`
-    : a.push_status === 'failed' ? `<span class="chip r" title="${esc(a.push_error || '')}">失败</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">重推</button>`
+  /* 已推 chip 可点补推(2026-07-16 老板拍)· 📄 查看最近一次推送请求/返回(2026-07-18 老板拍)*/
+  const detailBtn = (a) => ` <span style="cursor:pointer" title="查看推送请求/返回" onclick="showPushDetail('${esc(a.url)}')">📄</span>`;
+  const pushChip = (a) => a.push_status === 'pushed' ? `<span class="chip g" style="cursor:pointer" title="点击补推" onclick="repushConfirm('${esc(a.url)}')">已推</span>${detailBtn(a)}`
+    : a.push_status === 'failed' ? `<span class="chip r" title="${esc(a.push_error || '')}">失败</span>${detailBtn(a)} <button class="btn" onclick="retryPush('${esc(a.url)}')">重推</button>`
     : a.push_status === 'skipped_backlog' ? `<span class="chip">存量不推</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">推送</button>`
     : `<span class="chip y">未推</span> <button class="btn" onclick="retryPush('${esc(a.url)}')">推送</button>`;
   /* 列序(2026-07-04 老板拍):博客(点击跳博客站)/ 标题 / 正文 / 发布时间 / 采集时间 · 全时间到秒
@@ -253,6 +254,29 @@ window.retryPush = async (url) => {
 window.repushConfirm = (url) => {
   if (!confirm('该文已推送过,确认补推一次?(下游将再收到一条)')) return;
   window.retryPush(url);
+};
+/* 📄 推送记录弹层:最近一次真推的请求/返回(2026-07-18 老板拍 · 上线前的推送无记录) */
+window.showPushDetail = async (url) => {
+  try {
+    const d = await api(`/api/push/detail?url=${encodeURIComponent(url)}`);
+    const fmt = (s) => { try { return JSON.stringify(JSON.parse(s), null, 2); } catch { return s || ''; } };
+    const body = (d.push_request || d.push_response)
+      ? `<h4 style="margin:8px 0 4px">发送(request item)</h4><pre>${esc(fmt(d.push_request))}</pre>
+         <h4 style="margin:12px 0 4px">返回(response)</h4><pre>${esc(fmt(d.push_response))}</pre>`
+      : `<p class="mini">该文推送时尚未开启记录(2026-07-18 前的推送无留档)· 状态:${esc(d.push_status)} · 推送于 ${esc(d.pushed_at || '—')}</p>`;
+    let m = $('push-detail-modal');
+    if (!m) {
+      m = document.createElement('div');
+      m.id = 'push-detail-modal';
+      m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99;display:flex;align-items:center;justify-content:center';
+      m.addEventListener('click', (e) => { if (e.target === m) m.remove(); });
+      document.body.appendChild(m);
+    }
+    m.innerHTML = `<div style="background:var(--bg,#16181d);border:1px solid #333;border-radius:8px;max-width:720px;max-height:80vh;overflow:auto;padding:16px 20px;min-width:420px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><b>推送记录</b>
+      <span style="cursor:pointer;font-size:18px" onclick="document.getElementById('push-detail-modal').remove()">×</span></div>
+      <p class="mini" style="word-break:break-all">${esc(url)}</p>${body}</div>`;
+  } catch (e) { toast(e.message); }
 };
 
 /* ── 错误日志 ── */

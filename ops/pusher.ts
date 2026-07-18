@@ -73,9 +73,12 @@ async function ingestBatch(baseUrl: string, apiKey: string, secret: string, item
     return json.data ?? { accepted: 0, rejected: 0, rejections: [] };
 }
 
-function markByUrl(url: string, status: string, error?: string): void {
-    db().prepare(`UPDATE articles SET push_status = ?, pushed_at = ?, push_error = ?, push_retries = push_retries + ? WHERE url = ?`)
-        .run(status, status === 'pushed' ? now() : null, error ?? null, status === 'failed' ? 1 : 0, url);
+// detail:真推时的该文 item JSON + 单文结果(2026-07-18 老板拍 · 面板弹窗查看)· 无 detail 的调用不动已存记录
+export function markByUrl(url: string, status: string, error?: string, detail?: { request: string; response: string }): void {
+    db().prepare(`UPDATE articles SET push_status = ?, pushed_at = ?, push_error = ?, push_retries = push_retries + ?,
+                  push_request = COALESCE(?, push_request), push_response = COALESCE(?, push_response) WHERE url = ?`)
+        .run(status, status === 'pushed' ? now() : null, error ?? null, status === 'failed' ? 1 : 0,
+            detail?.request ?? null, detail?.response ?? null, url);
 }
 
 // push 开关首次打开时的一次性存量回填(push_enabled_at 记在 app_config)
@@ -155,12 +158,17 @@ export async function runPusher(runId: string | null, opts?: { retryUrls?: strin
             if (dry) { result.skipped += slice.length; continue; }
             const rejectedIdx = new Map(r.rejections.map((x) => [x.index, x.reason]));
             slice.forEach(([url], idx) => {
-                if (rejectedIdx.has(idx)) { result.rejected += 1; markByUrl(url, 'failed', `rejected:${rejectedIdx.get(idx)}`); }
-                else { result.ok += 1; markByUrl(url, 'pushed'); }
+                const detail = (res: object) => ({ request: JSON.stringify(items[idx]), response: JSON.stringify({ ...res, batch_size: slice.length, at: now() }) });
+                if (rejectedIdx.has(idx)) { result.rejected += 1; markByUrl(url, 'failed', `rejected:${rejectedIdx.get(idx)}`, detail({ result: 'rejected', reason: rejectedIdx.get(idx) })); }
+                else { result.ok += 1; markByUrl(url, 'pushed', undefined, detail({ result: 'accepted' })); }
             });
         } catch (e) {
             const err = ((e as Error).message ?? String(e)).slice(0, 200);
-            if (!dry) { result.failed += slice.length; slice.forEach(([url]) => markByUrl(url, 'failed', err)); }
+            if (!dry) {
+                result.failed += slice.length;
+                slice.forEach(([url], idx) => markByUrl(url, 'failed', err,
+                    { request: JSON.stringify(items[idx]), response: JSON.stringify({ result: 'error', error: err, batch_size: slice.length, at: now() }) }));
+            }
             console.error(`⚠️ push batch 失败(${i}~):${err}`);
         }
     }
