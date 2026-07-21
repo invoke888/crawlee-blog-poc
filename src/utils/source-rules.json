@@ -411,7 +411,10 @@
         "/dtwap/",
         "/faq/",
         "/liquidity-hub/",
-        "/policy/"
+        "/policy/",
+        "/blog/orbsftx/",
+        "/blog/getting-ready-for-round-7-of-orbs-rewards-distribution/",
+        "/blog/coinsbit-exchange-lists-orbs-token-orbs/"
       ],
       "_note": "2026-07-05 全量清查:/ai/skills 产品页混入(真文单段/<slug>)"
     },
@@ -1463,6 +1466,21 @@
         "/infra"
       ],
       "_note": "blog.monad.xyz 站内链到 www.monad.xyz 品牌页/目录页被采(2026-07-17 agent 实锤非文章)· path 级精确拦零误伤"
+    },
+    "ME": {
+      "confidence": "high",
+      "exclude_prefixes": [
+        "/showcase/",
+        "/changelog/"
+      ],
+      "_note": "2026-07-21 告警清理:LIST 每轮露出的栏目页重定向循环 internal ×864/天(agent 07-17 实锤非文章)"
+    },
+    "BANANA": {
+      "confidence": "high",
+      "exclude_prefixes": [
+        "/old-home/"
+      ],
+      "_note": "2026-07-21 告警清理:固定死链 soft_404 ×144/天"
     }
   }
 }
